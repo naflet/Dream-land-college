@@ -1,0 +1,701 @@
+
+/* ==========================================================
+   APPLICATION PAGE STYLES
+   CAMPUSES PAGE HERO STYLE + APPLICATION CONTENT
+========================================================== */
+
+.dl-application-page {
+  background: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dl-application-page main {
+  flex-grow: 1;
+}
+
+/* ==========================================================
+   SHELL
+========================================================== */
+
+.dl-application-page .dl-shell {
+  width: min(1180px, calc(100% - 48px));
+  max-width: 1180px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   ANIMATIONS
+========================================================== */
+
+@keyframes dlFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dlSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dlBounceIn {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.dl-fade-in {
+  animation: dlFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.dl-slide-up {
+  animation: dlSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================================
+   APPLICATION HERO
+   SAME STYLE AS CAMPUSES HERO
+========================================================== */
+
+.dl-application-hero {
+  background:
+    linear-gradient(
+      120deg,
+      rgba(3, 7, 18, 0.96),
+      rgba(21, 128, 61, 0.84)
+    ),
+    url("https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1800&q=85")
+      center / cover;
+
+  color: #ffffff;
+  width: 100%;
+  min-height: 360px;
+  padding: 3.5rem 0;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* ==========================================================
+   HERO CONTENT
+   SAME ALIGNMENT AS CAMPUSES
+========================================================== */
+
+.dl-application-hero .dl-shell {
+  width: min(1180px, calc(100% - 48px));
+  max-width: 1180px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.dl-application-hero .dl-hero-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.dl-application-hero .dl-page-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  max-width: 100%;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dl-application-hero h1 {
+  max-width: 800px;
+  margin: 12px 0 0;
+  color: #ffffff;
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+  font-weight: 800;
+}
+
+.dl-application-hero p {
+  max-width: 680px;
+  margin: 16px 0 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   CONTENT & LAYOUT
+========================================================== */
+
+.dl-application-content {
+  padding: 60px 0 90px;
+  background: #ffffff;
+}
+
+.dl-application-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 50px;
+  align-items: start;
+}
+
+.dl-application-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 30px;
+}
+
+.dl-application-intro .dl-section-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #15803d;
+  display: block;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.dl-application-intro h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 4px;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+}
+
+.dl-application-intro p {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+/* ==========================================================
+   PROGRESS CARD
+========================================================== */
+
+.dl-application-progress-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.dl-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.dl-progress-header strong {
+  color: #15803d;
+}
+
+.dl-progress-bar-track {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.dl-progress-bar-fill {
+  height: 100%;
+  background: #15803d;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.dl-application-progress-card p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ==========================================================
+   FAQ
+========================================================== */
+
+.dl-application-faq {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.dl-faq-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0f172a;
+  margin-bottom: 14px;
+}
+
+.dl-faq-title h3 {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+
+.dl-faq-item {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.dl-faq-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.dl-faq-item button {
+  width: 100%;
+  background: none;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  padding: 4px 0;
+  gap: 10px;
+}
+
+.dl-faq-item button:hover {
+  color: #15803d;
+}
+
+.dl-chevron {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.dl-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+.dl-faq-answer p {
+  font-size: 12.5px;
+  color: #64748b;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* ==========================================================
+   SECURE NOTE
+========================================================== */
+
+.dl-application-note {
+  background: #f0fdf4;
+  border: 1px solid #dcfce7;
+  padding: 16px;
+  border-radius: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  color: #15803d;
+}
+
+.dl-application-note span {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #166534;
+}
+
+/* ==========================================================
+   FORM
+========================================================== */
+
+.dl-application-form {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05);
+}
+
+.dl-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+.dl-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dl-form-full {
+  grid-column: span 2;
+  margin-top: 4px;
+}
+
+.dl-form-group label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.dl-required {
+  color: #ef4444;
+}
+
+.dl-form-group input,
+.dl-form-group select,
+.dl-form-group textarea {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 14px;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.dl-form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.dl-form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.dl-form-group input:focus,
+.dl-form-group select:focus,
+.dl-form-group textarea:focus {
+  background: #ffffff;
+  border-color: #15803d;
+  box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.12);
+}
+
+/* ==========================================================
+   PROGRAM PREVIEW
+========================================================== */
+
+.dl-program-preview-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f0fdf4;
+  border: 1px solid #dcfce7;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-top: 22px;
+  color: #15803d;
+}
+
+.dl-program-preview-badge span {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #166534;
+  display: block;
+}
+
+.dl-program-preview-badge strong {
+  font-size: 13.5px;
+  color: #0f172a;
+}
+
+/* ==========================================================
+   BUTTON
+========================================================== */
+
+.dl-form-actions {
+  margin-top: 28px;
+}
+
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.15);
+}
+
+.dl-btn-primary {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.dl-btn-primary:hover {
+  background: #166534;
+  box-shadow: 0 6px 16px rgba(21, 128, 61, 0.25);
+  transform: translateY(-1px);
+}
+
+.dl-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.dl-form-disclaimer {
+  display: block;
+  text-align: center;
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin-top: 18px;
+}
+
+/* ==========================================================
+   SUCCESS VIEW
+========================================================== */
+
+.dl-application-success {
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 55px 40px;
+  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.07);
+}
+
+.dl-success-icon {
+  width: 86px;
+  height: 86px;
+  background: #f0fdf4;
+  border: 1px solid #dcfce7;
+  color: #15803d;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 26px;
+  animation: dlBounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dl-application-success h1 {
+  font-size: clamp(23px, 3vw, 29px);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+  margin: 0 0 14px;
+}
+
+.dl-application-success p {
+  max-width: 470px;
+  margin: 0 auto 28px;
+  font-size: 15px;
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.dl-application-success .dl-btn {
+  width: auto;
+  min-width: 230px;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 14px 24px;
+}
+
+/* ==========================================================
+   RESPONSIVE
+   SAME HERO SIZING SYSTEM AS CAMPUSES
+========================================================== */
+
+@media (max-width: 1100px) {
+  .dl-application-hero .dl-shell,
+  .dl-application-page .dl-shell {
+    width: min(100% - 40px, 1000px);
+  }
+
+  .dl-application-layout {
+    grid-template-columns: 320px 1fr;
+    gap: 35px;
+  }
+}
+
+@media (max-width: 992px) {
+  .dl-application-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .dl-application-intro {
+    position: static;
+  }
+}
+
+@media (max-width: 900px) {
+  .dl-application-hero {
+    min-height: 330px;
+    padding: 3rem 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .dl-application-hero {
+    min-height: 300px;
+    padding: 2.7rem 0;
+  }
+
+  .dl-application-hero .dl-shell,
+  .dl-application-page .dl-shell {
+    width: calc(100% - 40px);
+  }
+
+  .dl-application-hero h1 {
+    font-size: clamp(30px, 7vw, 42px);
+  }
+
+  .dl-application-hero p {
+    font-size: 14.5px;
+  }
+
+  .dl-application-content {
+    padding: 45px 0 65px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dl-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .dl-form-full {
+    grid-column: span 1;
+  }
+
+  .dl-application-form {
+    padding: 28px 20px;
+  }
+
+  .dl-application-success {
+    padding: 40px 22px;
+  }
+
+  .dl-application-success h1 {
+    font-size: 23px;
+  }
+
+  .dl-application-success .dl-btn {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .dl-application-hero {
+    min-height: 275px;
+    padding: 2.4rem 0;
+  }
+
+  .dl-application-hero .dl-shell,
+  .dl-application-page .dl-shell {
+    width: calc(100% - 32px);
+  }
+
+  .dl-application-hero h1 {
+    font-size: clamp(28px, 9vw, 38px);
+    line-height: 1.12;
+  }
+
+  .dl-application-hero p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .dl-application-content {
+    padding: 38px 0 55px;
+  }
+
+  .dl-application-intro h2 {
+    font-size: 24px;
+  }
+
+  .dl-application-form {
+    border-radius: 18px;
+    padding: 24px 16px;
+  }
+
+  .dl-application-success {
+    border-radius: 20px;
+    padding: 36px 18px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dl-application-hero {
+    min-height: 260px;
+    padding: 2.1rem 0;
+  }
+
+  .dl-application-hero .dl-shell,
+  .dl-application-page .dl-shell {
+    width: calc(100% - 28px);
+  }
+
+  .dl-application-hero h1 {
+    font-size: 28px;
+  }
+
+  .dl-application-hero p {
+    font-size: 13.5px;
+  }
+}

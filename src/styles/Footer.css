@@ -1,0 +1,288 @@
+/* ==========================================================
+   NEXT-LEVEL FOOTER STYLING
+   DREAM LAND COLLEGE BRAND COLORS
+   ========================================================== */
+
+.dl-footer {
+  background-color: rgba(21, 128, 61, 0.84);
+  color: #ffffff;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.dl-footer * {
+  box-sizing: border-box;
+}
+
+/* College Green Glow Line at the Top */
+.dl-footer-glow-bar {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #166534, #4ade80, #166534);
+  opacity: 0.9;
+}
+
+/* Main Grid Layout */
+.dl-footer-main {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
+  gap: 40px;
+  padding: 70px 20px 50px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Brand Section */
+.dl-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dl-footer-logo-wrapper {
+  display: inline-block;
+  background: #ffffff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: fit-content;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dl-footer-logo-image {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+.dl-footer-description {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #f0fdf4;
+  margin: 0;
+}
+
+/* Accreditations Badges */
+.dl-footer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dl-footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-weight: 600;
+}
+
+/* Social Icons */
+.dl-footer-socials {
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+.dl-footer-social {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.dl-footer-social:hover {
+  background: #ffffff;
+  color: #15803d;
+  border-color: #ffffff;
+  transform: translateY(-3px);
+}
+
+/* Column Headings */
+.dl-footer-column h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 22px;
+  position: relative;
+  letter-spacing: 0.5px;
+}
+
+.dl-footer-column h3::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 24px;
+  height: 2px;
+  background-color: #bbf7d0;
+  border-radius: 2px;
+}
+
+/* Links List */
+.dl-footer-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dl-footer-links-list li a {
+  color: #f0fdf4;
+  text-decoration: none;
+  font-size: 0.92rem;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.dl-footer-links-list li a:hover {
+  color: #ffffff;
+  transform: translateX(4px);
+}
+
+/* Contact Registrar Section */
+.dl-footer-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.dl-footer-contact-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dl-footer-contact-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.dl-contact-label {
+  font-size: 0.75rem;
+  color: #dcfce7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.dl-footer-contact-text a,
+.dl-footer-contact-text p {
+  color: #ffffff;
+  font-size: 0.9rem;
+  text-decoration: none;
+  margin: 0;
+  transition: color 0.2s ease;
+}
+
+.dl-footer-contact-text a:hover {
+  color: #bbf7d0;
+}
+
+/* Bottom Bar */
+.dl-footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(0, 0, 0, 0.12);
+  padding: 20px 20px;
+}
+
+.dl-footer-bottom-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.dl-footer-bottom-inner p {
+  font-size: 0.85rem;
+  color: #f0fdf4;
+  margin: 0;
+}
+
+.dl-footer-bottom-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.dl-footer-bottom-links a {
+  color: #f0fdf4;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s ease;
+}
+
+.dl-footer-bottom-links a:hover {
+  color: #ffffff;
+}
+
+.dl-footer-apply-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff !important;
+  color: #166534 !important;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  transition: all 0.2s ease !important;
+}
+
+.dl-footer-apply-btn:hover {
+  background: #dcfce7 !important;
+  transform: translateY(-2px);
+}
+
+/* ==========================================================
+   RESPONSIVE MEDIA QUERIES
+   ========================================================== */
+
+@media (max-width: 1024px) {
+  .dl-footer-main {
+    grid-template-columns: 1fr 1fr;
+    gap: 35px;
+    padding: 50px 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dl-footer-main {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 40px 20px;
+  }
+
+  .dl-footer-bottom-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .dl-footer-bottom-links {
+    justify-content: center;
+  }
+}
