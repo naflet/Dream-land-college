@@ -1,22 +1,39 @@
+
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Dream Land College</title>
-    <script type="text/javascript">
-      // Single Page Apps for GitHub Pages
-      // Redirects all requests to index.html with the correct path/query/hash
-      var segmentCount = 1; // Set to 1 because your repo is /Dream-land-college/
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + segmentCount).join('/') + '/?p=/' +
-        l.pathname.slice(1).split('/').slice(segmentCount).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirecting...</title>
+</head>
+<body>
+  <script>
+    (function () {
+      var segmentCount = 1;
+      var location = window.location;
+
+      location.replace(
+        location.protocol +
+        "//" +
+        location.hostname +
+        (location.port ? ":" + location.port : "") +
+        location.pathname
+          .split("/")
+          .slice(0, 1 + segmentCount)
+          .join("/") +
+        "/?/" +
+        location.pathname
+          .slice(1)
+          .split("/")
+          .slice(segmentCount)
+          .join("/")
+          .replace(/&/g, "~and~") +
+        (location.search
+          ? "&" + location.search.slice(1).replace(/&/g, "~and~")
+          : "") +
+        location.hash
       );
-    </script>
-  </head>
-  <body>
-  </body>
+    })();
+  </script>
+</body>
 </html>
