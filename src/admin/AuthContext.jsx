@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useContext,
@@ -6,10 +7,6 @@ import React, {
 } from "react";
 
 import authService from "./services/authService";
-import {
-  getToken,
-  saveAuth,
-} from "./services/api";
 
 const AuthContext = createContext(null);
 
@@ -17,18 +14,14 @@ export function AuthProvider({ children }) {
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // =====================================================
+  // VERIFY ADMIN SESSION
+  // =====================================================
+
   useEffect(() => {
     let mounted = true;
 
     const verifySession = async () => {
-      if (!getToken()) {
-        if (mounted) {
-          setAdmin(null);
-          setLoading(false);
-        }
-        return;
-      }
-
       try {
         const currentAdmin = await authService.getCurrentAdmin();
 
@@ -36,7 +29,7 @@ export function AuthProvider({ children }) {
           setAdmin(currentAdmin);
         }
       } catch {
-        authService.logout();
+        authService.clearLocalAuth();
 
         if (mounted) {
           setAdmin(null);
@@ -55,26 +48,41 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  // =====================================================
+  // LOGIN
+  // =====================================================
+
   const login = async (email, password) => {
     const response = await authService.login(email, password);
+
     setAdmin(response.admin);
+
     return response.admin;
   };
 
-  const logout = () => {
-    authService.logout();
-    setAdmin(null);
+  // =====================================================
+  // LOGOUT
+  // =====================================================
+
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      setAdmin(null);
+    }
   };
+
+  // =====================================================
+  // UPDATE ADMIN INFORMATION
+  // =====================================================
 
   const updateAdmin = (updatedAdmin) => {
-    const token = getToken();
-
-    if (token) {
-      saveAuth(token, updatedAdmin);
-    }
-
     setAdmin(updatedAdmin);
   };
+
+  // =====================================================
+  // ROLE CHECKING
+  // =====================================================
 
   const hasRole = (...roles) => {
     return !!admin && roles.includes(admin.role);

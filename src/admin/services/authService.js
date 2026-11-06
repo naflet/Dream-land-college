@@ -1,9 +1,5 @@
 
-import api, {
-  saveAuth,
-  clearAuth,
-  getStoredAdmin,
-} from "./api";
+import api, { clearAuth } from "./api";
 
 const authService = {
   async login(email, password) {
@@ -12,11 +8,12 @@ const authService = {
       password,
     });
 
-    if (!response?.token || !response?.admin) {
+    if (!response?.success || !response?.admin) {
       throw new Error("Invalid login response from the server.");
     }
 
-    saveAuth(response.token, response.admin);
+    // The server has already set the HttpOnly cookie.
+    clearAuth();
 
     return response;
   },
@@ -31,11 +28,15 @@ const authService = {
     throw new Error("Unable to retrieve administrator information.");
   },
 
-  getStoredAdmin() {
-    return getStoredAdmin();
+  async logout() {
+    try {
+      await api.post("/auth/logout", {});
+    } finally {
+      clearAuth();
+    }
   },
 
-  logout() {
+  clearLocalAuth() {
     clearAuth();
   },
 };

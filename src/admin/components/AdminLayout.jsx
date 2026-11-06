@@ -17,7 +17,6 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronDown,
-  Building2,
   ClipboardList,
   Star,
   Mail,
@@ -399,7 +398,11 @@ export default function AdminLayout() {
       <aside className={`admin-sidebar ${sidebarOpen ? "is-open" : ""}`}>
         <div className="admin-sidebar-brand">
           <div className="admin-brand-mark">
-            <Building2 size={23} />
+            <img
+              src={collegeLogo}
+              alt="Dream Land College Logo"
+              className="admin-sidebar-logo"
+            />
           </div>
 
           <div className="admin-brand-text">
@@ -501,9 +504,7 @@ export default function AdminLayout() {
           </div>
 
           <div className="admin-topbar-right">
-            {/* ===================================
-                REAL ADMIN NOTIFICATIONS
-            =================================== */}
+            {/* REAL ADMIN NOTIFICATIONS */}
 
             <div className="admin-notif-container" ref={notifRef}>
               <button
@@ -591,9 +592,7 @@ export default function AdminLayout() {
               )}
             </div>
 
-            {/* ===================================
-                ADMIN ACCOUNT DROPDOWN
-            =================================== */}
+            {/* ADMIN ACCOUNT DROPDOWN */}
 
             <div className="admin-dropdown-wrapper" ref={dropdownRef}>
               <button

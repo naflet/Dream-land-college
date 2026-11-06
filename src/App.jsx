@@ -82,15 +82,13 @@ function ScrollToTop() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/Dream-land-college">
       <AuthProvider>
         <ScrollToTop />
 
         <Routes>
 
-          {/* ==================================================
-              PUBLIC WEBSITE ROUTES
-          ================================================== */}
+          {/* PUBLIC WEBSITE ROUTES */}
 
           <Route path="/" element={<Home />} />
 
@@ -121,95 +119,78 @@ function App() {
 
           <Route path="/contact" element={<Contact />} />
 
-          {/* ==================================================
-              ADMIN LOGIN
-          ================================================== */}
+          {/* ADMIN LOGIN */}
 
           <Route
             path="/admin/login"
             element={<AdminLogin />}
           />
 
-          {/* ==================================================
-              PROTECTED ADMIN ROUTES
-          ================================================== */}
+          {/* PROTECTED ADMIN ROUTES */}
 
           <Route element={<ProtectedRoute />}>
             <Route path="/admin" element={<AdminLayout />}>
 
-              {/* Dashboard */}
               <Route
                 index
                 element={<AdminDashboard />}
               />
 
-              {/* Campus Management */}
               <Route
                 path="campuses"
                 element={<AdminCampuses />}
               />
 
-              {/* Program Management */}
               <Route
                 path="programs"
                 element={<AdminPrograms />}
               />
 
-              {/* Staff Management */}
               <Route
                 path="staff"
                 element={<AdminStaff />}
               />
 
-              {/* News Management */}
               <Route
                 path="news"
                 element={<AdminNews />}
               />
 
-              {/* Academic Calendar Management */}
               <Route
                 path="academic-calendar"
                 element={<AdminAcademicCalendar />}
               />
 
-              {/* Testimonials Management */}
               <Route
                 path="testimonials"
                 element={<AdminTestimonials />}
               />
 
-              {/* Student Applications Management */}
               <Route
                 path="applications"
                 element={<AdminApplications />}
               />
 
-              {/* Consultations Management */}
               <Route
                 path="consultations"
                 element={<AdminConsultations />}
               />
 
-              {/* Contact Messages Management */}
               <Route
                 path="contact-messages"
                 element={<AdminContactMessages />}
               />
 
-              {/* Vacancies Management */}
               <Route
                 path="vacancies"
                 element={<AdminVacancies />}
               />
 
-              {/* Job Applications Management */}
               <Route
                 path="job-applications"
                 element={<AdminJobApplications />}
               />
 
-              {/* My Profile */}
               <Route
                 path="profile"
                 element={<AdminProfile />}
@@ -218,9 +199,7 @@ function App() {
             </Route>
           </Route>
 
-          {/* ==================================================
-              CATCH-ALL FALLBACK ROUTE
-          ================================================== */}
+          {/* CATCH-ALL FALLBACK ROUTE */}
 
           <Route
             path="*"

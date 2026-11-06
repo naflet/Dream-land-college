@@ -1,7 +1,13 @@
 
 import React, { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { LockKeyhole, Mail, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import {
+  LockKeyhole,
+  Mail,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+} from "lucide-react";
 import { useAuth } from "../AuthContext";
 import "../styles/admin-auth.css";
 
@@ -19,15 +25,22 @@ export default function AdminLogin() {
   const destination = location.state?.from?.pathname || "/admin";
 
   if (loading) {
-    return <div className="admin-login-loading">Checking session...</div>;
+    return (
+      <div className="admin-login-loading">
+        Checking session...
+      </div>
+    );
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to={destination} replace />;
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (submitting) return;
+
     setError("");
 
     if (!email.trim() || !password) {
@@ -37,7 +50,9 @@ export default function AdminLogin() {
 
     try {
       setSubmitting(true);
+
       await login(email.trim(), password);
+
       navigate(destination, { replace: true });
     } catch (err) {
       setError(err.message || "Login failed. Please try again.");
@@ -67,8 +82,10 @@ export default function AdminLogin() {
           )}
 
           <label htmlFor="admin-email">Email address</label>
+
           <div className="admin-login-input">
             <Mail size={19} />
+
             <input
               id="admin-email"
               type="email"
@@ -76,13 +93,18 @@ export default function AdminLogin() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              maxLength={254}
               required
             />
           </div>
 
           <label htmlFor="admin-password">Password</label>
+
           <div className="admin-login-input">
             <LockKeyhole size={19} />
+
             <input
               id="admin-password"
               type={showPassword ? "text" : "password"}
@@ -90,16 +112,24 @@ export default function AdminLogin() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
+              maxLength={128}
               required
             />
 
             <button
               type="button"
               className="admin-password-toggle"
-              onClick={() => setShowPassword((previous) => !previous)}
+              onClick={() =>
+                setShowPassword((previous) => !previous)
+              }
               aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
             >
-              {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+              {showPassword ? (
+                <EyeOff size={19} />
+              ) : (
+                <Eye size={19} />
+              )}
             </button>
           </div>
 

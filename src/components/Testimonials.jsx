@@ -15,49 +15,20 @@ import {
 } from "lucide-react";
 
 import api from "../admin/services/api";
+import supabase from "../config/supabase";
 import "../styles/Testimonials.css";
 
-const testimonials = [
-  {
-    id: 1,
-    category: "Accounting",
-    quote:
-      "The practical financial lab sessions and Peachtree software training at Dream Land College gave me a distinct edge during recruitment. I landed my auditing position immediately after graduation!",
-    name: "Abebech Tadesse",
-    role: "Accounting B.Sc. Graduate — Senior Auditor at Commercial Bank",
-    avatar:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250",
-  },
-  {
-    id: 2,
-    category: "Computer Science",
-    quote:
-      "Dream Land College provided a supportive learning environment where students can develop knowledge, confidence, and real-world technical skills for the Ethiopian job market.",
-    name: "Yonas Alemayehu",
-    role: "Computer Science B.Sc. Graduate — Software Engineer",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
-  },
-  {
-    id: 3,
-    category: "Management",
-    quote:
-      "The college creates fantastic opportunities for students to learn, collaborate, and build practical competencies that accelerate their future careers.",
-    name: "Tigist Mekonnen",
-    role: "Management B.Sc. Graduate — Operations Supervisor",
-    avatar:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=250",
-  },
-];
-
 function Testimonials() {
+  const [testimonials, setTestimonials] = useState([]);
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [activeIndex, setActiveIndex] = useState(0);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [submitError, setSubmitError] = useState("");
 
   const [storyForm, setStoryForm] = useState({
@@ -66,6 +37,59 @@ function Testimonials() {
     quote: "",
     program: "Computer Science",
   });
+
+  // FETCH APPROVED TESTIMONIALS DIRECTLY FROM SUPABASE
+  const fetchTestimonials = async () => {
+    try {
+      setIsLoading(true);
+      setLoadError("");
+
+      const { data, error } = await supabase
+        .from("testimonials")
+        .select(
+          "id, author_name, author_role, content, image, category, created_at"
+        )
+        .eq("status", "approved")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      const formattedTestimonials = (data || []).map((item) => ({
+        id: item.id,
+        category: item.category || "General",
+        quote: item.content,
+        name: item.author_name,
+        role: item.author_role || "Dream Land College Alumni",
+        avatar: item.image || "",
+      }));
+
+      setTestimonials(formattedTestimonials);
+    } catch (error) {
+      console.error("Fetch testimonials error:", error);
+
+      setLoadError(
+        error.message || "Unable to load testimonials. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  // GET AVAILABLE CATEGORIES FROM DATABASE
+  const categories = [
+    "ALL",
+    ...new Set(
+      testimonials
+        .map((item) => item.category)
+        .filter(Boolean)
+    ),
+  ];
 
   const filteredTestimonials = testimonials.filter((item) => {
     if (activeFilter === "ALL") return true;
@@ -105,7 +129,7 @@ function Testimonials() {
     }, 6000);
 
     return () => window.clearInterval(timer);
-  }, [filteredTestimonials.length]);
+  }, [filteredTestimonials.length, activeFilter]);
 
   const currentItem =
     filteredTestimonials[activeIndex] || filteredTestimonials[0];
@@ -148,7 +172,7 @@ function Testimonials() {
     }));
   };
 
-  // Submit directly through the shared backend API service
+  // SUBMIT TESTIMONIAL TO EXISTING BACKEND
   const handleStorySubmit = async (event) => {
     event.preventDefault();
 
@@ -188,7 +212,6 @@ function Testimonials() {
         );
       }
 
-      // The backend has confirmed that the record was saved.
       setIsSubmitted(true);
 
       window.setTimeout(() => {
@@ -242,36 +265,55 @@ function Testimonials() {
           </button>
         </div>
 
-        {/* FILTER TABS */}
-        <div
-          className="dl-modality-tabs-row"
-          style={{
-            justifyContent: "center",
-            marginBottom: "35px",
-          }}
-        >
-          {[
-            "ALL",
-            "COMPUTER SCIENCE",
-            "ACCOUNTING",
-            "MANAGEMENT",
-          ].map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className={`dl-modality-tab-btn ${
-                activeFilter === tab ? "active" : ""
-              }`}
-              onClick={() => setActiveFilter(tab)}
-            >
-              {tab === "ALL" ? "All Stories" : tab}
-            </button>
-          ))}
-        </div>
+        {/* DYNAMIC FILTER TABS */}
+        {!isLoading && !loadError && testimonials.length > 0 && (
+          <div
+            className="dl-modality-tabs-row"
+            style={{
+              justifyContent: "center",
+              marginBottom: "35px",
+            }}
+          >
+            {categories.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                className={`dl-modality-tab-btn ${
+                  activeFilter === tab ? "active" : ""
+                }`}
+                onClick={() => setActiveFilter(tab)}
+              >
+                {tab === "ALL" ? "All Stories" : tab.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* TESTIMONIAL STAGE */}
         <div className="dl-testimonial-stage">
-          {filteredTestimonials.length > 0 ? (
+
+          {isLoading ? (
+            <div className="dl-gallery-empty-state">
+              <Loader2
+                size={38}
+                className="at-spinning"
+              />
+              <p>Loading graduate testimonials...</p>
+            </div>
+          ) : loadError ? (
+            <div className="dl-gallery-empty-state">
+              <GraduationCap size={40} />
+              <p>{loadError}</p>
+
+              <button
+                type="button"
+                className="dl-btn dl-btn-primary"
+                onClick={fetchTestimonials}
+              >
+                Try Again
+              </button>
+            </div>
+          ) : filteredTestimonials.length > 0 ? (
             <article
               className="dl-testimonial-card dl-fade-in"
               key={currentItem.id}
@@ -303,11 +345,32 @@ function Testimonials() {
 
               <div className="dl-testimonial-person">
                 <div className="dl-testimonial-avatar-wrapper">
-                  <img
-                    src={currentItem.avatar}
-                    alt={currentItem.name}
-                    className="dl-testimonial-avatar-img"
-                  />
+                  {currentItem.avatar ? (
+                    <img
+                      src={currentItem.avatar}
+                      alt={currentItem.name}
+                      className="dl-testimonial-avatar-img"
+                      loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="dl-testimonial-avatar-img"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "#e0f2fe",
+                        color: "#183b56",
+                        fontSize: "20px",
+                        fontWeight: "800",
+                      }}
+                    >
+                      {currentItem.name?.charAt(0)?.toUpperCase() || "D"}
+                    </div>
+                  )}
                 </div>
 
                 <div className="dl-testimonial-person-info">
@@ -319,13 +382,17 @@ function Testimonials() {
           ) : (
             <div className="dl-gallery-empty-state">
               <GraduationCap size={40} />
-              <p>No testimonials found for this category yet.</p>
+              <p>
+                {testimonials.length === 0
+                  ? "No approved testimonials are available yet."
+                  : "No testimonials found for this category yet."}
+              </p>
             </div>
           )}
         </div>
 
         {/* BOTTOM CONTROLS */}
-        {filteredTestimonials.length > 1 && (
+        {filteredTestimonials.length > 1 && !isLoading && !loadError && (
           <div className="dl-testimonial-nav-row">
             <button
               type="button"

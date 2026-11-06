@@ -1,6 +1,8 @@
 
 import React, { useEffect, useState } from "react";
+
 import { Link, useParams } from "react-router-dom";
+
 import {
   ArrowLeft,
   ArrowRight,
@@ -18,7 +20,8 @@ import {
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import publicApi from "../services/publicApi";
+import supabase from "../config/supabase";
+
 import "../styles/ProgramDetail.css";
 
 function ProgramDetail() {
@@ -42,21 +45,52 @@ function ProgramDetail() {
         setLoading(true);
         setError("");
 
-        const response = await publicApi.get(
-          `/programs/${encodeURIComponent(programId)}`
-        );
-
-        if (!response?.success || !response?.data) {
+        if (!programId) {
           throw new Error("Program information could not be found.");
         }
 
+        // Fetch program directly from Supabase.
+        const { data: programData, error: programError } =
+          await supabase
+            .from("programs")
+            .select("*")
+            .eq("slug", programId)
+            .eq("is_active", true)
+            .maybeSingle();
+
+        if (programError) {
+          throw programError;
+        }
+
+        if (!programData) {
+          throw new Error("Program information could not be found.");
+        }
+
+        // Fetch campuses connected to this program.
+        const { data: campusData, error: campusError } =
+          await supabase
+            .from("program_campuses")
+            .select("program_id, campus:campuses(id, name, slug)")
+            .eq("program_id", programData.id);
+
+        if (campusError) {
+          throw campusError;
+        }
+
         if (isMounted) {
-          setProgram(response.data);
+          setProgram({
+            ...programData,
+            campuses: campusData || [],
+          });
         }
       } catch (err) {
+        console.error("Error fetching program:", err);
+
         if (isMounted) {
           setProgram(null);
-          setError(err.message || "Unable to load program information.");
+          setError(
+            err.message || "Unable to load program information."
+          );
         }
       } finally {
         if (isMounted) {
@@ -83,8 +117,12 @@ function ProgramDetail() {
             <span className="dl-section-label">
               Dream Land College
             </span>
+
             <h1>Loading Program...</h1>
-            <p>Please wait while we load the program information.</p>
+
+            <p>
+              Please wait while we load the program information.
+            </p>
           </div>
         </main>
 
@@ -106,7 +144,9 @@ function ProgramDetail() {
             </span>
 
             <h1>
-              {error ? "Unable to Load Program" : "Program not found"}
+              {error
+                ? "Unable to Load Program"
+                : "Program not found"}
             </h1>
 
             <p>
@@ -129,7 +169,7 @@ function ProgramDetail() {
     );
   }
 
-  // Normalize backend fields
+  // Normalize program fields
   const modes = Array.isArray(program.modes)
     ? program.modes
     : [];
@@ -223,9 +263,12 @@ function ProgramDetail() {
                 <div className="dl-program-info-icon">
                   <Clock3 size={21} />
                 </div>
+
                 <div>
                   <small>Duration</small>
-                  <strong>{program.duration || "Not specified"}</strong>
+                  <strong>
+                    {program.duration || "Not specified"}
+                  </strong>
                 </div>
               </article>
 
@@ -236,6 +279,7 @@ function ProgramDetail() {
                 <div className="dl-program-info-icon">
                   <CreditCard size={21} />
                 </div>
+
                 <div>
                   <small>Monthly Payment</small>
                   <strong>{monthlyPayment}</strong>
@@ -249,6 +293,7 @@ function ProgramDetail() {
                 <div className="dl-program-info-icon">
                   <Layers size={21} />
                 </div>
+
                 <div>
                   <small>Current Level</small>
                   <strong>{currentLevel}</strong>
@@ -262,6 +307,7 @@ function ProgramDetail() {
                 <div className="dl-program-info-icon">
                   <MapPin size={21} />
                 </div>
+
                 <div>
                   <small>Campuses</small>
                   <strong>
@@ -309,10 +355,12 @@ function ProgramDetail() {
                       <div className="dl-heading-icon">
                         <BookOpen size={21} />
                       </div>
+
                       <div>
                         <span className="dl-section-label">
                           Curriculum
                         </span>
+
                         <h2>What you will learn</h2>
                       </div>
                     </div>
@@ -327,9 +375,11 @@ function ProgramDetail() {
                           <span className="dl-feature-number">
                             {String(index + 1).padStart(2, "0")}
                           </span>
+
                           <div className="dl-feature-check">
                             <CheckCircle2 size={18} />
                           </div>
+
                           <p>{item}</p>
                         </article>
                       ))}
@@ -344,10 +394,12 @@ function ProgramDetail() {
                       <div className="dl-heading-icon">
                         <Target size={21} />
                       </div>
+
                       <div>
                         <span className="dl-section-label">
                           Competencies
                         </span>
+
                         <h2>Skills you will develop</h2>
                       </div>
                     </div>
@@ -362,6 +414,7 @@ function ProgramDetail() {
                           <span>
                             <CheckCircle2 size={17} />
                           </span>
+
                           <p>{skill}</p>
                         </div>
                       ))}
@@ -376,10 +429,12 @@ function ProgramDetail() {
                       <div className="dl-heading-icon">
                         <BriefcaseBusiness size={21} />
                       </div>
+
                       <div>
                         <span className="dl-section-label">
                           Opportunities
                         </span>
+
                         <h2>Your career paths</h2>
                       </div>
                     </div>
@@ -394,6 +449,7 @@ function ProgramDetail() {
                           <div>
                             <ArrowRight size={17} />
                           </div>
+
                           <span>{career}</span>
                         </div>
                       ))}
@@ -407,9 +463,11 @@ function ProgramDetail() {
                     <span className="dl-section-label">
                       Flexibility
                     </span>
+
                     <h2 className="dl-simple-section-title">
                       Available study modes
                     </h2>
+
                     <div className="dl-study-modes">
                       {modes.map((mode, index) => (
                         <span
@@ -445,6 +503,7 @@ function ProgramDetail() {
                     <div className="dl-sidebar-payment-icon">
                       <CreditCard size={20} />
                     </div>
+
                     <div>
                       <small>Monthly Investment</small>
                       <strong>{monthlyPayment}</strong>
@@ -453,6 +512,7 @@ function ProgramDetail() {
 
                   <div className="dl-sidebar-row">
                     <Layers size={18} />
+
                     <div>
                       <small>Current Academic Level</small>
                       <strong>{currentLevel}</strong>
@@ -461,16 +521,21 @@ function ProgramDetail() {
 
                   <div className="dl-sidebar-row">
                     <Clock3 size={18} />
+
                     <div>
                       <small>Duration</small>
-                      <strong>{program.duration || "Not specified"}</strong>
+                      <strong>
+                        {program.duration || "Not specified"}
+                      </strong>
                     </div>
                   </div>
 
                   <div className="dl-sidebar-row">
                     <MapPin size={18} />
+
                     <div>
                       <small>Campuses</small>
+
                       <strong>
                         {campuses.length > 0
                           ? campuses.join(", ")

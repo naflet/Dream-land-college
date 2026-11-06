@@ -1,3 +1,4 @@
+
 /* ==========================================================================
    Dream Land College - Modern Admin Dashboard Layout (Green Theme)
    ========================================================================== */
@@ -8,32 +9,35 @@
   --admin-primary-hover: #15803d;
   --admin-primary-light: rgba(22, 163, 74, 0.1);
   --admin-primary-glow: rgba(22, 163, 74, 0.28);
-  
+
   --admin-sidebar-bg: #0f172a;
   --admin-sidebar-card: #1e293b;
   --admin-sidebar-text: #94a3b8;
   --admin-sidebar-heading: #64748b;
   --admin-sidebar-active: #ffffff;
-  
+
   --admin-bg-main: #f8fafc;
   --admin-topbar-bg: #ffffff;
   --admin-border-light: #e2e8f0;
   --admin-border-subtle: #f1f5f9;
-  
+
   --admin-text-main: #0f172a;
   --admin-text-muted: #64748b;
-  
+
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 80px;
   --topbar-height: 70px;
-  
+
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
   --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.12);
   --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
 }
 
-/* Global Container & Box-Sizing Fixes */
+/* ==========================================================================
+   GLOBAL CONTAINER
+   ========================================================================== */
+
 .admin-layout,
 .admin-layout * {
   box-sizing: border-box;
@@ -50,7 +54,10 @@
   overflow-x: hidden;
 }
 
-/* Sidebar Styling */
+/* ==========================================================================
+   SIDEBAR
+   ========================================================================== */
+
 .admin-sidebar {
   width: var(--sidebar-width);
   background-color: var(--admin-sidebar-bg);
@@ -63,11 +70,16 @@
   left: 0;
   z-index: 50;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
-  transition: transform 0.3s var(--transition-smooth), width 0.3s var(--transition-smooth);
+  transition:
+    transform 0.3s var(--transition-smooth),
+    width 0.3s var(--transition-smooth);
   box-shadow: var(--shadow-lg);
 }
 
-/* Brand Header */
+/* ==========================================================================
+   SIDEBAR BRAND HEADER
+   ========================================================================== */
+
 .admin-sidebar-brand {
   display: flex;
   align-items: center;
@@ -79,18 +91,41 @@
   flex-shrink: 0;
 }
 
+/* COLLEGE LOGO CONTAINER */
+
 .admin-brand-mark {
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(135deg, var(--admin-primary), #22c55e);
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  box-shadow: 0 4px 12px var(--admin-primary-glow);
+  overflow: hidden;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px var(--admin-primary-glow);
+  transition: all 0.25s ease;
 }
+
+.admin-brand-mark:hover {
+  transform: scale(1.04);
+  box-shadow: 0 5px 16px var(--admin-primary-glow);
+}
+
+/* ACTUAL COLLEGE LOGO IMAGE */
+
+.admin-sidebar-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  padding: 3px;
+}
+
+/* BRAND TEXT */
 
 .admin-brand-text {
   display: flex;
@@ -115,7 +150,10 @@
   text-transform: uppercase;
 }
 
-/* Collapse Toggle Button (Desktop) */
+/* ==========================================================================
+   SIDEBAR COLLAPSE TOGGLE
+   ========================================================================== */
+
 .admin-sidebar-collapse-toggle {
   display: flex;
   align-items: center;
@@ -140,7 +178,10 @@
   color: #ffffff;
 }
 
-/* Close Button (Mobile) */
+/* ==========================================================================
+   MOBILE SIDEBAR CLOSE BUTTON
+   ========================================================================== */
+
 .admin-sidebar-close {
   display: none;
   background: transparent;
@@ -152,7 +193,10 @@
   margin-left: auto;
 }
 
-/* Navigation Items */
+/* ==========================================================================
+   NAVIGATION
+   ========================================================================== */
+
 .admin-navigation {
   flex: 1;
   overflow-y: auto;
@@ -229,7 +273,10 @@
   transform: translateX(0);
 }
 
-/* Sidebar Footer Profile & Logout */
+/* ==========================================================================
+   SIDEBAR FOOTER PROFILE & LOGOUT
+   ========================================================================== */
+
 .admin-sidebar-bottom {
   padding: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -311,7 +358,10 @@
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 }
 
-/* Main Workspace Layout */
+/* ==========================================================================
+   MAIN WORKSPACE
+   ========================================================================== */
+
 .admin-main {
   flex: 1;
   display: flex;
@@ -322,7 +372,10 @@
   width: calc(100% - var(--sidebar-width));
 }
 
-/* Professional Header Topbar */
+/* ==========================================================================
+   TOPBAR
+   ========================================================================== */
+
 .admin-topbar {
   height: var(--topbar-height);
   background-color: var(--admin-topbar-bg);
@@ -375,17 +428,20 @@
 }
 
 /* ==========================================================================
-   Circular College Logo & Beautified Text Styling
+   TOPBAR COLLEGE LOGO
    ========================================================================== */
+
 .admin-header-logo {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #ffffff;
   border: 2px solid var(--admin-primary);
   box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
   flex-shrink: 0;
   transition: transform 0.2s ease;
+  padding: 2px;
 }
 
 .admin-header-logo:hover {
@@ -409,7 +465,10 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-/* ========================================================================== */
+
+/* ==========================================================================
+   TOPBAR RIGHT ACTIONS
+   ========================================================================== */
 
 .admin-topbar-right {
   display: flex;
@@ -418,7 +477,10 @@
   position: relative;
 }
 
-/* Icon Action Buttons (Notifications) */
+/* ==========================================================================
+   NOTIFICATION BUTTON
+   ========================================================================== */
+
 .admin-notif-container {
   position: relative;
 }
@@ -460,12 +522,23 @@
 }
 
 @keyframes badgePulse {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
-/* User Account Trigger Button */
+/* ==========================================================================
+   USER ACCOUNT BUTTON
+   ========================================================================== */
+
 .admin-dropdown-wrapper {
   position: relative;
 }
@@ -532,7 +605,10 @@
   color: var(--admin-primary);
 }
 
-/* Animated Dropdown Menus */
+/* ==========================================================================
+   DROPDOWN MENUS
+   ========================================================================== */
+
 .admin-dropdown-menu {
   position: absolute;
   top: calc(100% + 12px);
@@ -540,7 +616,9 @@
   background: #ffffff;
   border: 1px solid var(--admin-border-light);
   border-radius: 14px;
-  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+  box-shadow:
+    0 12px 32px -4px rgba(15, 23, 42, 0.12),
+    0 4px 8px -2px rgba(15, 23, 42, 0.04);
   animation: dropdownSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   z-index: 100;
   overflow: hidden;
@@ -551,13 +629,17 @@
     opacity: 0;
     transform: translateY(-8px) scale(0.97);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
 
-/* User Profile Dropdown */
+/* ==========================================================================
+   USER PROFILE DROPDOWN
+   ========================================================================== */
+
 .admin-user-dropdown {
   width: 260px;
   padding: 8px;
@@ -668,7 +750,10 @@
   border-color: #ef4444;
 }
 
-/* Notifications Dropdown */
+/* ==========================================================================
+   NOTIFICATIONS DROPDOWN
+   ========================================================================== */
+
 .admin-notif-dropdown {
   width: 320px;
   padding: 0;
@@ -743,7 +828,10 @@
   color: var(--admin-text-muted);
 }
 
-/* Main Body Content & Footer */
+/* ==========================================================================
+   MAIN BODY CONTENT & FOOTER
+   ========================================================================== */
+
 .admin-content {
   flex: 1;
   padding: 32px;
@@ -761,7 +849,10 @@
   text-align: center;
 }
 
-/* Collapsed Desktop State */
+/* ==========================================================================
+   COLLAPSED DESKTOP SIDEBAR
+   ========================================================================== */
+
 .admin-layout.sidebar-collapsed .admin-sidebar {
   width: var(--sidebar-collapsed-width);
 }
@@ -780,6 +871,17 @@
   display: none;
 }
 
+.admin-layout.sidebar-collapsed .admin-sidebar-brand {
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.admin-layout.sidebar-collapsed .admin-brand-mark {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+}
+
 .admin-layout.sidebar-collapsed .admin-sidebar-collapse-toggle {
   transform: translateY(-50%) rotate(180deg);
 }
@@ -795,7 +897,10 @@
   background: transparent;
 }
 
-/* Mobile Overlay */
+/* ==========================================================================
+   MOBILE OVERLAY
+   ========================================================================== */
+
 .admin-sidebar-overlay {
   position: fixed;
   inset: 0;
@@ -806,7 +911,10 @@
   cursor: pointer;
 }
 
-/* Responsive Breakpoints */
+/* ==========================================================================
+   RESPONSIVE: TABLET AND SMALL DESKTOP
+   ========================================================================== */
+
 @media (max-width: 1024px) {
   .admin-sidebar {
     transform: translateX(-100%);
@@ -843,25 +951,34 @@
   }
 }
 
+/* ==========================================================================
+   RESPONSIVE: MOBILE
+   ========================================================================== */
+
 @media (max-width: 640px) {
   .admin-account-info {
     display: none;
   }
+
   .admin-topbar-account {
     padding: 4px;
     background: transparent;
     border: none;
   }
+
   .admin-topbar-title strong {
     font-size: 0.95rem;
   }
+
   .admin-badge-wrapper span {
     font-size: 0.62rem;
   }
+
   .admin-header-logo {
     width: 26px;
     height: 26px;
   }
+
   .admin-dropdown-menu {
     right: -10px;
     width: calc(100vw - 32px);

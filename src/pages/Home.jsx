@@ -30,7 +30,7 @@ import Testimonials from "../components/Testimonials";
 import Accreditation from "../components/Accreditation";
 
 import programs from "../data/programs";
-import publicApi from "../services/publicApi";
+import supabase from "../config/supabase";
 
 import "../styles/global.css";
 import "../styles/home.css";
@@ -109,7 +109,7 @@ function Home() {
   const [newsItems, setNewsItems] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
 
-  // Fetch published Academic Calendar events
+  // Fetch published Academic Calendar events directly from Supabase
   useEffect(() => {
     let isMounted = true;
 
@@ -117,12 +117,18 @@ function Home() {
       try {
         setCalendarLoading(true);
 
-        const response = await publicApi.get("/academic-calendar");
+        const { data, error } = await supabase
+          .from("academic_calendar")
+          .select("*")
+          .eq("is_published", true)
+          .order("event_date", { ascending: true });
 
-        if (isMounted && response?.success) {
-          setCalendarItems(
-            Array.isArray(response.data) ? response.data : []
-          );
+        if (error) {
+          throw error;
+        }
+
+        if (isMounted) {
+          setCalendarItems(Array.isArray(data) ? data : []);
         }
       } catch (error) {
         console.error("Failed to load academic calendar:", error);
@@ -144,7 +150,7 @@ function Home() {
     };
   }, []);
 
-  // Fetch latest published News & Updates
+  // Fetch latest published News & Updates directly from Supabase
   useEffect(() => {
     let isMounted = true;
 
@@ -152,16 +158,19 @@ function Home() {
       try {
         setNewsLoading(true);
 
-        const response = await publicApi.get("/news/published");
+        const { data, error } = await supabase
+          .from("news")
+          .select("*")
+          .eq("status", "published")
+          .order("published_at", { ascending: false })
+          .limit(3);
 
-        if (isMounted && response?.success) {
-          const publishedNews = Array.isArray(response.news)
-            ? response.news
-            : Array.isArray(response.data)
-              ? response.data
-              : [];
+        if (error) {
+          throw error;
+        }
 
-          setNewsItems(publishedNews.slice(0, 3));
+        if (isMounted) {
+          setNewsItems(Array.isArray(data) ? data : []);
         }
       } catch (error) {
         console.error("Failed to load news:", error);
@@ -921,8 +930,7 @@ function Home() {
                 </div>
               ) : newsItems.length > 0 ? (
                 newsItems.map((item) => (
-                  <Link
-                    to={`/news/${item.slug}`}
+                  <div
                     className="dl-news-card"
                     key={item.id}
                   >
@@ -950,12 +958,15 @@ function Home() {
 
                       <p>{item.excerpt || item.description || ""}</p>
 
-                      <strong>
+                      <Link
+                        to="/news"
+                        className="dl-card-link"
+                      >
                         Read more
                         <ArrowRight size={15} />
-                      </strong>
+                      </Link>
                     </div>
-                  </Link>
+                  </div>
                 ))
               ) : (
                 <div className="dl-news-empty">
