@@ -112,7 +112,7 @@ function Gallery() {
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
               <span className="dl-page-kicker">
-                <Sparkles size={14} /> College Gallery
+                College Gallery
               </span>
             </div>
 

@@ -1,11 +1,9 @@
-
 import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   Star,
   Quote,
-  Sparkles,
   MessageSquarePlus,
   X,
   Check,
@@ -52,9 +50,7 @@ function Testimonials() {
         .eq("status", "approved")
         .order("created_at", { ascending: false });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const formattedTestimonials = (data || []).map((item) => ({
         id: item.id,
@@ -68,7 +64,6 @@ function Testimonials() {
       setTestimonials(formattedTestimonials);
     } catch (error) {
       console.error("Fetch testimonials error:", error);
-
       setLoadError(
         error.message || "Unable to load testimonials. Please try again."
       );
@@ -84,30 +79,21 @@ function Testimonials() {
   // GET AVAILABLE CATEGORIES FROM DATABASE
   const categories = [
     "ALL",
-    ...new Set(
-      testimonials
-        .map((item) => item.category)
-        .filter(Boolean)
-    ),
+    ...new Set(testimonials.map((item) => item.category).filter(Boolean)),
   ];
 
   const filteredTestimonials = testimonials.filter((item) => {
     if (activeFilter === "ALL") return true;
-
     return item.category.toUpperCase() === activeFilter.toUpperCase();
   });
 
   const nextTestimonial = () => {
     if (!filteredTestimonials.length) return;
-
-    setActiveIndex(
-      (current) => (current + 1) % filteredTestimonials.length
-    );
+    setActiveIndex((current) => (current + 1) % filteredTestimonials.length);
   };
 
   const previousTestimonial = () => {
     if (!filteredTestimonials.length) return;
-
     setActiveIndex(
       (current) =>
         (current - 1 + filteredTestimonials.length) %
@@ -229,7 +215,8 @@ function Testimonials() {
       console.error("Testimonial submission error:", error);
 
       setSubmitError(
-        error.message || "Unable to submit your testimonial. Please try again."
+        error.message ||
+          "Unable to submit your testimonial. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -240,11 +227,11 @@ function Testimonials() {
     <section className="dl-testimonials" id="testimonials">
       <div className="dl-container">
 
-        {/* HEADER & ACTION ROW */}
+        {/* CENTERED HEADER */}
         <div className="dl-testimonials-header-row">
           <div className="dl-testimonials-heading">
             <span className="dl-section-label">
-              <Sparkles size={13} /> STUDENT SUCCESS
+              STUDENT SUCCESS
             </span>
 
             <h2>What Our Graduates Say</h2>
@@ -267,13 +254,7 @@ function Testimonials() {
 
         {/* DYNAMIC FILTER TABS */}
         {!isLoading && !loadError && testimonials.length > 0 && (
-          <div
-            className="dl-modality-tabs-row"
-            style={{
-              justifyContent: "center",
-              marginBottom: "35px",
-            }}
-          >
+          <div className="dl-modality-tabs-row dl-testimonial-filter-row">
             {categories.map((tab) => (
               <button
                 key={tab}
@@ -291,13 +272,9 @@ function Testimonials() {
 
         {/* TESTIMONIAL STAGE */}
         <div className="dl-testimonial-stage">
-
           {isLoading ? (
             <div className="dl-gallery-empty-state">
-              <Loader2
-                size={38}
-                className="at-spinning"
-              />
+              <Loader2 size={38} className="at-spinning" />
               <p>Loading graduate testimonials...</p>
             </div>
           ) : loadError ? (
@@ -327,8 +304,8 @@ function Testimonials() {
                     <Star
                       key={index}
                       size={18}
-                      fill="#f59e0b"
-                      color="#f59e0b"
+                      fill="#d4af37"
+                      color="#d4af37"
                     />
                   ))}
                 </div>
@@ -362,8 +339,8 @@ function Testimonials() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: "#e0f2fe",
-                        color: "#183b56",
+                        background: "#dcfce7",
+                        color: "#15803d",
                         fontSize: "20px",
                         fontWeight: "800",
                       }}

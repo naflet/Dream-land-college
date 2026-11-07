@@ -1,170 +1,669 @@
+
 /* ==========================================================
-   VACANCIES HERO SECTION
+   DREAM LAND COLLEGE - VACANCIES PAGE
+   MATCHED WITH LIBRARY, NEWS AND GALLERY DESIGN
 ========================================================== */
-.dl-vacancies-hero {
-  background:
-    linear-gradient(
-      120deg,
-      rgba(3, 7, 18, 0.96),
-      rgba(21, 128, 61, 0.84)
-    ),
-    url("https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1800&q=85")
-      center / cover;
-  color: #ffffff;
-  padding: 3.5rem 1rem 4.5rem 1rem;
+
+/* ==========================================================
+   ANIMATIONS
+========================================================== */
+
+@keyframes dlVacancyFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.dl-vacancies-content {
-  padding: 60px 1rem 90px 1rem;
+@keyframes dlVacancyFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ==========================================================
+   PAGE BASE
+========================================================== */
+
+.dl-vacancies-page {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
   background: #f8fafc;
-  min-height: 550px;
 }
 
-/* ==========================================================
-   VACANCIES GRID & CARDS (FULLY RESPONSIVE)
-========================================================== */
-.dl-vacancies-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  max-width: 1100px;
+.dl-vacancies-page *,
+.dl-vacancies-hero *,
+.dl-vacancies-content * {
+  box-sizing: border-box;
+}
+
+.dl-vacancies-hero .dl-shell,
+.dl-vacancies-content .dl-shell {
+  width: min(1200px, calc(100% - 40px));
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-.dl-vacancy-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+/* ==========================================================
+   VACANCIES HERO SECTION
+========================================================== */
+
+.dl-page .dl-vacancies-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-height: 390px;
+  padding: 75px 0 70px;
   display: flex;
-  flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  word-break: break-word;
+  align-items: center;
+
+  background: linear-gradient(
+    120deg,
+    rgba(3, 7, 18, 0.97),
+    rgba(15, 55, 34, 0.96),
+    rgba(21, 128, 61, 0.90)
+  ) !important;
+
+  color: #ffffff !important;
 }
 
-.dl-vacancy-card:hover {
-  border-color: #15803d;
-  box-shadow: 0 12px 30px rgba(21, 128, 61, 0.1);
-  transform: translateY(-4px);
+/* Decorative circles */
+
+.dl-vacancies-hero::before,
+.dl-vacancies-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
 }
+
+.dl-vacancies-hero::before {
+  width: 380px;
+  height: 380px;
+  right: -100px;
+  top: -180px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 0 0 35px rgba(255, 255, 255, 0.025),
+    0 0 0 75px rgba(255, 255, 255, 0.02);
+}
+
+.dl-vacancies-hero::after {
+  width: 250px;
+  height: 250px;
+  left: -100px;
+  bottom: -160px;
+  background: rgba(34, 197, 94, 0.13);
+  filter: blur(5px);
+}
+
+.dl-vacancies-hero .dl-shell {
+  position: relative;
+  z-index: 2;
+}
+
+/* ==========================================================
+   HERO BADGE
+========================================================== */
+
+.dl-vacancies-hero .dl-hero-badge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.dl-vacancies-hero .dl-page-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  padding: 9px 17px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+/* ==========================================================
+   HERO TITLE
+========================================================== */
+
+.dl-vacancies-hero h1 {
+  max-width: 850px;
+  margin: 0 0 20px;
+  color: #ffffff !important;
+  font-size: clamp(36px, 5vw, 57px);
+  font-weight: 800;
+  line-height: 1.13;
+  letter-spacing: -1.7px;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   HERO DESCRIPTION
+========================================================== */
+
+.dl-vacancies-hero > .dl-shell > p {
+  max-width: 690px;
+  margin: 0;
+  color: #e2e8f0 !important;
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+/* ==========================================================
+   HERO STATS
+========================================================== */
+
+.dl-vacancies-hero .dl-hero-stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.dl-vacancies-hero .dl-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 205px;
+  padding: 15px 19px;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.dl-vacancies-hero .dl-stat-pill:hover {
+  transform: translateY(-4px);
+  border-color: #d4af37;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dl-vacancies-hero .dl-stat-pill svg {
+  flex-shrink: 0;
+  color: #86efac;
+}
+
+.dl-vacancies-hero .dl-stat-pill div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dl-vacancies-hero .dl-stat-pill strong {
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.dl-vacancies-hero .dl-stat-pill span {
+  margin-top: 4px;
+  color: #d1fae5 !important;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ==========================================================
+   VACANCIES CONTENT SECTION
+========================================================== */
+
+.dl-vacancies-content {
+  width: 100%;
+  min-height: 550px;
+  padding: 65px 0 85px;
+  background: #f8fafc !important;
+}
+
+/* ==========================================================
+   VACANCIES GRID
+========================================================== */
+
+.dl-vacancies-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 25px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: dlVacancyFade 0.4s ease;
+}
+
+/* ==========================================================
+   VACANCY CARDS
+   SAME GOLD HOVER AS LIBRARY
+========================================================== */
+
+.dl-vacancy-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 15px;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+  word-break: break-word;
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    outline-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.dl-vacancy-card:hover,
+.dl-vacancy-card:focus-within {
+  transform: translateY(-5px);
+  border-color: #d4af37 !important;
+  outline: 1px solid #d4af37;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.10);
+}
+
+/* ==========================================================
+   VACANCY HEADER ROW
+========================================================== */
 
 .dl-vacancy-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 18px;
 }
+
+/* ==========================================================
+   VACANCY ICON
+========================================================== */
 
 .dl-vacancy-icon {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  color: #15803d;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  border: 1px solid #dcfce7;
+  border-radius: 14px;
+  background: #f0fdf4;
+  color: #15803d;
+  transition: all 0.25s ease;
 }
+
+.dl-vacancy-card:hover .dl-vacancy-icon {
+  border-color: #bbf7d0;
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* ==========================================================
+   VACANCY TYPE BADGE
+========================================================== */
 
 .dl-vacancy-type-badge {
+  padding: 5px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 50px;
   background: #f1f5f9;
   color: #334155;
-  padding: 4px 12px;
-  border-radius: 20px;
   font-size: 11.5px;
   font-weight: 700;
-  border: 1px solid #e2e8f0;
 }
+
+/* ==========================================================
+   VACANCY TITLE
+========================================================== */
 
 .dl-vacancy-card h2 {
+  margin: 0 0 10px;
+  color: #0f172a;
   font-size: 18px;
   font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 10px;
   line-height: 1.4;
+  transition: color 0.25s ease;
 }
 
-.dl-vacancy-desc {
-  font-size: 13.5px;
-  color: #64748b;
-  line-height: 1.6;
-  margin-bottom: 20px;
-  flex-grow: 1;
+.dl-vacancy-card:hover h2 {
+  color: #15803d;
 }
+
+/* ==========================================================
+   VACANCY DESCRIPTION
+========================================================== */
+
+.dl-vacancy-desc {
+  flex-grow: 1;
+  margin: 0 0 20px;
+  color: #64748b;
+  font-size: 13.5px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   VACANCY META INFORMATION
+========================================================== */
 
 .dl-vacancy-meta-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
-  background: #f8fafc;
+  gap: 10px;
+  margin: 0 0 20px;
   padding: 14px;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  border: 1px solid #f1f5f9;
+  background: #f8fafc;
 }
 
 .dl-vacancy-meta-list div {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  align-items: flex-start;
+  gap: 9px;
   color: #475569;
+  font-size: 13px;
   font-weight: 600;
-  word-break: break-word;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.dl-vacancy-meta-list div svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #15803d;
+}
+
+/* ==========================================================
+   VACANCY ACTION BUTTONS
+========================================================== */
+
+.dl-vacancy-card .dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: fit-content;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dl-vacancy-card .dl-btn-primary {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.dl-vacancy-card .dl-btn-primary:hover {
+  background: #166534;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(21, 128, 61, 0.20);
 }
 
 /* ==========================================================
    GENERAL INQUIRY BANNER
 ========================================================== */
+
 .dl-vacancy-inquiry-box {
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  border-radius: 20px;
-  padding: 30px;
-  color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 24px;
-  max-width: 1100px;
-  margin: 0 auto;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.dl-vacancy-inquiry-box h3 {
-  font-size: 19px;
-  font-weight: 800;
+  width: 100%;
+  max-width: 1200px;
+  margin: 45px auto 0;
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 15px;
+  background: linear-gradient(
+    120deg,
+    #0f172a,
+    #183b30,
+    #166534
+  );
   color: #ffffff;
-  margin-bottom: 6px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
+  transition: box-shadow 0.3s ease;
 }
 
-.dl-vacancy-inquiry-box p {
-  font-size: 13.5px;
-  color: #94a3b8;
-  max-width: 600px;
-  line-height: 1.5;
+.dl-vacancy-inquiry-box:hover {
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.16);
 }
 
 /* ==========================================================
-   MOBILE BREAKPOINTS
+   INQUIRY BANNER TEXT
 ========================================================== */
-@media (max-width: 768px) {
+
+.dl-vacancy-inquiry-box h3 {
+  margin: 0 0 8px;
+  color: #ffffff !important;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.dl-vacancy-inquiry-box p {
+  max-width: 600px;
+  margin: 0;
+  color: #cbd5e1 !important;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   INQUIRY BANNER BUTTON
+========================================================== */
+
+.dl-vacancy-inquiry-box .dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 12px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 9px;
+  background: #22c55e;
+  color: #052e16;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dl-vacancy-inquiry-box .dl-btn:hover {
+  transform: translateY(-3px);
+  border-color: #d4af37;
+  background: #dcfce7;
+  color: #14532d;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================
+   RESPONSIVE DESIGN
+========================================================== */
+
+@media (max-width: 1100px) {
+  .dl-vacancies-grid {
+    gap: 20px;
+  }
+
+  .dl-vacancy-card {
+    padding: 21px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .dl-vacancies-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .dl-vacancy-inquiry-box {
+    padding: 26px;
+  }
+}
+
+@media (max-width: 700px) {
+  .dl-page .dl-vacancies-hero {
+    min-height: auto;
+    padding: 65px 0 60px;
+  }
+
+  .dl-vacancies-hero .dl-shell,
+  .dl-vacancies-content .dl-shell {
+    width: calc(100% - 32px);
+  }
+
+  .dl-vacancies-hero h1 {
+    font-size: clamp(32px, 8vw, 43px);
+  }
+
+  .dl-vacancies-hero > .dl-shell > p {
+    font-size: 14px;
+  }
+
+  .dl-vacancies-content {
+    padding: 50px 0 65px;
+  }
+
   .dl-vacancies-grid {
     grid-template-columns: 1fr;
-    padding: 0 0.5rem;
+    gap: 20px;
   }
+
+  .dl-vacancy-card {
+    padding: 22px;
+  }
+
   .dl-vacancy-inquiry-box {
     flex-direction: column;
     align-items: stretch;
     text-align: center;
-    padding: 24px 16px;
+    gap: 18px;
+    margin-top: 35px;
+    padding: 25px 20px;
   }
+
+  .dl-vacancy-inquiry-box p {
+    margin: 0 auto;
+  }
+
+  .dl-vacancy-inquiry-box .dl-btn {
+    align-self: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .dl-vacancies-hero .dl-shell,
+  .dl-vacancies-content .dl-shell {
+    width: calc(100% - 32px);
+  }
+
+  .dl-vacancies-hero h1 {
+    letter-spacing: -1px;
+  }
+
+  .dl-vacancies-hero > .dl-shell > p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .dl-vacancies-hero .dl-stat-pill {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dl-vacancies-content {
+    padding: 40px 0 55px;
+  }
+
   .dl-vacancy-card {
-    padding: 20px;
+    padding: 19px;
+  }
+
+  .dl-vacancy-card h2 {
+    font-size: 17px;
+  }
+
+  .dl-vacancy-meta-list {
+    padding: 12px;
+  }
+
+  .dl-vacancy-inquiry-box {
+    padding: 23px 16px;
+  }
+
+  .dl-vacancy-inquiry-box h3 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dl-vacancies-hero h1 {
+    font-size: 28px;
+  }
+
+  .dl-vacancy-header-row {
+    align-items: flex-start;
+  }
+
+  .dl-vacancy-type-badge {
+    font-size: 10.5px;
+  }
+}
+
+/* ==========================================================
+   TOUCH DEVICES
+========================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  .dl-vacancy-card:hover {
+    transform: none;
+    border-color: #e2e8f0 !important;
+    outline-color: transparent;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+  }
+
+  .dl-vacancy-card:hover .dl-vacancy-icon {
+    border-color: #dcfce7;
+    background: #f0fdf4;
+    color: #15803d;
+  }
+
+  .dl-vacancy-card:hover h2 {
+    color: #0f172a;
+  }
+}
+
+/* ==========================================================
+   REDUCED MOTION
+========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-vacancies-page *,
+  .dl-vacancies-hero *,
+  .dl-vacancies-content * {
+    animation: none !important;
+    transition: none !important;
   }
 }

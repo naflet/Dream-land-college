@@ -17,8 +17,31 @@ import {
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import publicApi from "../services/publicApi";
+import supabase from "../config/supabase";
 import "../styles/Campuses.css";
+
+const SUPABASE_URL = "https://odlhnquliietvrkgjnym.supabase.co";
+const CAMPUS_BUCKET = "campus-images";
+
+const getCampusImageUrl = (imagePath) => {
+  if (!imagePath) return "";
+
+  // Support existing complete image URLs.
+  if (
+    imagePath.startsWith("https://") ||
+    imagePath.startsWith("http://")
+  ) {
+    return imagePath;
+  }
+
+  // Remove leading slashes to avoid malformed URLs.
+  const cleanPath = imagePath.replace(/^\/+/, "");
+
+  return `${SUPABASE_URL}/storage/v1/object/public/${CAMPUS_BUCKET}/${cleanPath
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/")}`;
+};
 
 function Campuses() {
   const [campusesData, setCampusesData] = useState([]);
@@ -26,50 +49,84 @@ function Campuses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchCampuses = async () => {
-      try {
-        setLoading(true);
-        setError("");
+  const fetchCampuses = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-        const response = await publicApi.get("/campuses");
+      const { data, error: supabaseError } = await supabase
+        .from("campuses")
+        .select("*");
 
-        if (!response?.success || !Array.isArray(response.data)) {
-          throw new Error("Unable to load campus information.");
-        }
-
-        const formattedCampuses = response.data.map((campus) => ({
-          ...campus,
-          shortName:
-            campus.shortName ||
-            campus.name?.replace(/\s+Campus$/i, "") ||
-            campus.name,
-          image: campus.image || "",
-          facilities: Array.isArray(campus.facilities)
-            ? campus.facilities
-            : [],
-          mapQuery:
-            campus.map_url ||
-            `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-              campus.address || campus.name
-            )}`
-        }));
-
-        setCampusesData(formattedCampuses);
-
-        if (formattedCampuses.length > 0) {
-          setActiveCampusId(formattedCampuses[0].id);
-        }
-      } catch (err) {
-        console.error("Error loading campuses:", err);
-        setError(
-          err.message || "Unable to load campus information. Please try again."
-        );
-      } finally {
-        setLoading(false);
+      if (supabaseError) {
+        throw supabaseError;
       }
-    };
 
+      if (!Array.isArray(data)) {
+        throw new Error("Unable to load campus information.");
+      }
+
+      const formattedCampuses = data.map((campus) => ({
+        ...campus,
+
+        shortName:
+          campus.shortName ||
+          campus.name?.replace(/\s+Campus$/i, "") ||
+          campus.name,
+
+        // Build public Supabase Storage image URL.
+        image: getCampusImageUrl(
+          campus.image_path || campus.image || ""
+        ),
+
+        facilities: Array.isArray(campus.facilities)
+          ? campus.facilities
+          : typeof campus.facilities === "string"
+            ? (() => {
+                try {
+                  const parsed = JSON.parse(campus.facilities);
+                  return Array.isArray(parsed) ? parsed : [];
+                } catch {
+                  return [];
+                }
+              })()
+            : [],
+
+        mapQuery:
+          campus.map_url ||
+          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            campus.address || campus.name
+          )}`
+      }));
+
+      setCampusesData(formattedCampuses);
+
+      if (formattedCampuses.length > 0) {
+        setActiveCampusId((currentId) => {
+          const existingCampus = formattedCampuses.find(
+            (campus) => String(campus.id) === String(currentId)
+          );
+
+          return existingCampus
+            ? existingCampus.id
+            : formattedCampuses[0].id;
+        });
+      } else {
+        setActiveCampusId(null);
+      }
+    } catch (err) {
+      console.error("Error loading campuses:", err);
+
+      setError(
+        err.message ||
+          "Unable to load campus information. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchCampuses();
   }, []);
 
@@ -78,7 +135,7 @@ function Campuses() {
   );
 
   const handleRetry = () => {
-    window.location.reload();
+    fetchCampuses();
   };
 
   return (
@@ -91,7 +148,7 @@ function Campuses() {
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
               <span className="dl-page-kicker">
-                <Sparkles size={14} /> Our Campuses
+                Our Campuses
               </span>
             </div>
 
@@ -129,7 +186,6 @@ function Campuses() {
         {/* CAMPUSES CONTENT SECTION */}
         <section className="dl-campuses-content">
           <div className="dl-shell">
-
             <div
               className="dl-centered-header"
               style={{ marginBottom: "30px" }}
@@ -145,6 +201,7 @@ function Campuses() {
             ) : error ? (
               <div style={{ textAlign: "center", padding: "50px 20px" }}>
                 <p>{error}</p>
+
                 <button
                   type="button"
                   className="dl-btn dl-btn-primary"
@@ -193,13 +250,20 @@ function Campuses() {
                     >
                       <div className="dl-campus-featured-grid">
                         <div className="dl-campus-featured-img">
-                          {activeCampus.image && (
+                          {activeCampus.image ? (
                             <img
                               src={activeCampus.image}
                               alt={activeCampus.name}
                               loading="lazy"
+                              onError={(e) => {
+                                console.error(
+                                  "Campus image failed to load:",
+                                  activeCampus.image
+                                );
+                                e.currentTarget.style.display = "none";
+                              }}
                             />
-                          )}
+                          ) : null}
 
                           <span className="dl-campus-badge-overlay">
                             <MapPin size={14} />{" "}
@@ -329,13 +393,20 @@ function Campuses() {
                           onClick={() => setActiveCampusId(campus.id)}
                         >
                           <div className="dl-campus-detail-image">
-                            {campus.image && (
+                            {campus.image ? (
                               <img
                                 src={campus.image}
                                 alt={`${campus.name} campus`}
                                 loading="lazy"
+                                onError={(e) => {
+                                  console.error(
+                                    "Campus image failed to load:",
+                                    campus.image
+                                  );
+                                  e.currentTarget.style.display = "none";
+                                }}
                               />
-                            )}
+                            ) : null}
 
                             <span>
                               <MapPin size={14} />
@@ -389,7 +460,6 @@ function Campuses() {
                 )}
               </>
             )}
-
           </div>
         </section>
       </main>

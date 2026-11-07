@@ -1,12 +1,13 @@
 
 /* ==========================================================
    DREAM LAND COLLEGE - TESTIMONIALS SECTION
-   MATCHED WITH NEWS & EVENTS DESIGN
+   HOME PAGE BRAND-ALIGNED DESIGN
+   CONSISTENT GOLD BORDER HOVER EFFECTS
 ========================================================== */
 
 .dl-testimonials {
   width: 100%;
-  padding: 75px 1rem 85px;
+  padding: clamp(50px, 8vw, 80px) 0;
   background: #f8fafc;
   position: relative;
   overflow: hidden;
@@ -18,64 +19,158 @@
 }
 
 /* ==========================================================
-   TESTIMONIALS HEADER
+   TESTIMONIALS HEADER - CENTERED
 ========================================================== */
 
 .dl-testimonials-header-row {
   width: 100%;
-  max-width: 1150px;
-  margin: 0 auto 35px;
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  padding: 0 clamp(16px, 3vw, 24px);
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 24px;
-  flex-wrap: wrap;
+  text-align: center;
 }
 
 .dl-testimonials-heading {
+  width: 100%;
+  max-width: 800px;
   min-width: 0;
-  flex: 1 1 500px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.dl-testimonials-heading .dl-section-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  margin: 0 auto 12px;
+  color: #15803d;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 1.5px;
+  text-align: center;
 }
 
 .dl-testimonials-heading h2 {
-  font-size: 26px;
+  width: 100%;
+  font-size: clamp(1.8rem, 3.5vw, 2.2rem);
   font-weight: 800;
-  color: #0f172a;
-  margin: 6px 0 0;
-  line-height: 1.3;
-  letter-spacing: -0.4px;
+  color: #15803d;
+  margin: 0 auto 15px;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .dl-testimonials-subtext {
-  font-size: 14px;
-  color: #64748b;
-  max-width: 550px;
-  margin: 8px 0 0;
-  line-height: 1.65;
+  width: 100%;
+  max-width: 650px;
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
+  color: #555555;
+  margin: 0 auto;
+  line-height: 1.6;
+  text-align: center;
 }
 
 /* ==========================================================
-   SHARE STORY BUTTON
+   SHARED HOVER TRANSITION
+========================================================== */
+
+.dl-share-story-btn,
+.dl-testimonial-filter-row button,
+.dl-testimonial-arrow,
+.dl-testimonial-card {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* ==========================================================
+   SHARE YOUR STORY BUTTON
 ========================================================== */
 
 .dl-share-story-btn {
   flex: 0 0 auto;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
-  border-radius: 10px;
-  padding: 11px 17px;
-  font-size: 13px;
+  background: #15803d;
+  border: 1px solid #15803d;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 0.95rem;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .dl-share-story-btn:hover {
-  background: #f0fdf4;
-  border-color: #15803d;
+  background: #d4af37;
+  border-color: #d4af37;
+  color: #14532d;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
+}
+
+/* ==========================================================
+   TESTIMONIAL FILTER TABS
+   ALL STORIES / COMPUTER SCIENCE / ACCOUNTING / MANAGEMENT
+========================================================== */
+
+.dl-testimonial-filter-row {
+  justify-content: center;
+  margin: 0 auto 35px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Common filter button style */
+.dl-testimonial-filter-row button {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
   color: #15803d;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Consistent gold border hover */
+.dl-testimonial-filter-row button:hover {
+  background: #ffffff;
+  color: #15803d;
+  border-color: #d4af37;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
+}
+
+/* Active category */
+.dl-testimonial-filter-row button.active {
+  background: #15803d;
+  color: #ffffff;
+  border-color: #15803d;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Active category hover */
+.dl-testimonial-filter-row button.active:hover {
+  background: #15803d;
+  color: #ffffff;
+  border-color: #d4af37;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
 }
 
 /* ==========================================================
@@ -84,9 +179,10 @@
 
 .dl-testimonial-stage {
   width: 100%;
-  max-width: 850px;
+  max-width: 900px;
   min-height: 300px;
   margin: 0 auto;
+  padding: 0 clamp(16px, 3vw, 24px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,18 +197,18 @@
   max-width: 850px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 32px;
+  border-radius: 16px;
+  padding: clamp(24px, 4vw, 35px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   position: relative;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   word-break: break-word;
   overflow-wrap: anywhere;
 }
 
 .dl-testimonial-card:hover {
-  border-color: #15803d;
-  box-shadow: 0 12px 30px rgba(21, 128, 61, 0.1);
+  border-color: #d4af37;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
 }
 
 /* ==========================================================
@@ -133,10 +229,11 @@
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
+  color: #d4af37;
 }
 
 .dl-testimonial-quote-icon {
-  color: #dcfce7;
+  color: #d4af37;
   flex-shrink: 0;
 }
 
@@ -146,9 +243,9 @@
 
 .dl-testimonial-card blockquote {
   width: 100%;
-  font-size: 15px;
-  line-height: 1.8;
-  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: #4a5568;
   font-weight: 500;
   font-style: italic;
   margin: 0 0 26px;
@@ -164,7 +261,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #e2e8f0;
   padding-top: 20px;
   flex-wrap: wrap;
 }
@@ -175,8 +272,8 @@
   min-width: 52px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid #15803d;
-  background: #f0fdf4;
+  border: 2px solid #d4af37;
+  background: #dcfce7;
   flex-shrink: 0;
 }
 
@@ -194,16 +291,16 @@
 
 .dl-testimonial-person-info strong {
   display: block;
-  font-size: 14px;
+  font-size: 0.95rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #15803d;
   margin-bottom: 4px;
   overflow-wrap: anywhere;
 }
 
 .dl-testimonial-person-info span {
   display: block;
-  font-size: 12.5px;
+  font-size: 0.85rem;
   color: #64748b;
   font-weight: 500;
   overflow-wrap: anywhere;
@@ -228,23 +325,24 @@
   height: 42px;
   min-width: 42px;
   min-height: 42px;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  color: #15803d;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   flex-shrink: 0;
 }
 
 .dl-testimonial-arrow:hover {
-  background: #15803d;
-  color: #ffffff;
-  border-color: #15803d;
+  background: #ffffff;
+  color: #15803d;
+  border-color: #d4af37;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
 }
 
 .dl-testimonial-dots {
@@ -268,7 +366,8 @@
 }
 
 .dl-testimonial-dots button:hover {
-  background: #86efac;
+  background: #d4af37;
+  transform: scale(1.2);
 }
 
 .dl-testimonial-dots button.active {
@@ -283,8 +382,9 @@
 
 .dl-testimonial-arrow:focus-visible,
 .dl-testimonial-dots button:focus-visible,
-.dl-share-story-btn:focus-visible {
-  outline: 3px solid rgba(21, 128, 61, 0.3);
+.dl-share-story-btn:focus-visible,
+.dl-testimonial-filter-row button:focus-visible {
+  outline: 3px solid rgba(212, 175, 55, 0.45);
   outline-offset: 3px;
 }
 
@@ -294,15 +394,15 @@
 
 @media (max-width: 900px) {
   .dl-testimonials {
-    padding: 65px 1rem 75px;
+    padding: 65px 0 75px;
   }
 
   .dl-testimonials-header-row {
-    align-items: flex-start;
+    align-items: center;
   }
 
   .dl-testimonials-heading {
-    flex: 1 1 100%;
+    flex: none;
   }
 
   .dl-testimonial-stage {
@@ -320,30 +420,31 @@
 
 @media (max-width: 768px) {
   .dl-testimonials {
-    padding: 55px 16px 65px;
+    padding: 55px 0 65px;
   }
 
   .dl-testimonials-header-row {
     width: 100%;
     margin-bottom: 25px;
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: 17px;
   }
 
   .dl-testimonials-heading {
     width: 100%;
     flex: none;
+    text-align: center;
   }
 
   .dl-testimonials-heading h2 {
-    font-size: 24px;
+    font-size: 1.7rem;
   }
 
   .dl-testimonials-subtext {
     width: 100%;
     max-width: 100%;
-    font-size: 13.5px;
+    font-size: 0.9rem;
   }
 
   .dl-share-story-btn {
@@ -351,6 +452,15 @@
     min-height: 44px;
     justify-content: center;
     align-self: stretch;
+  }
+
+  .dl-testimonial-filter-row {
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .dl-testimonial-filter-row button {
+    padding: 9px 15px;
   }
 
   .dl-testimonial-stage {
@@ -361,7 +471,7 @@
   .dl-testimonial-card {
     width: 100%;
     padding: 24px;
-    border-radius: 18px;
+    border-radius: 14px;
   }
 
   .dl-testimonial-card-top {
@@ -370,7 +480,7 @@
   }
 
   .dl-testimonial-card blockquote {
-    font-size: 14.5px;
+    font-size: 0.9rem;
     line-height: 1.7;
     margin-bottom: 22px;
   }
@@ -392,20 +502,20 @@
 
 @media (max-width: 480px) {
   .dl-testimonials {
-    padding: 48px 12px 58px;
+    padding: 48px 0 58px;
   }
 
   .dl-testimonials-heading h2 {
-    font-size: 22px;
+    font-size: 1.5rem;
   }
 
   .dl-testimonials-subtext {
-    font-size: 13px;
+    font-size: 0.85rem;
   }
 
   .dl-testimonial-card {
     padding: 19px;
-    border-radius: 16px;
+    border-radius: 12px;
   }
 
   .dl-testimonial-card-top {
@@ -417,7 +527,7 @@
   }
 
   .dl-testimonial-card blockquote {
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.65;
   }
 
@@ -428,11 +538,11 @@
   }
 
   .dl-testimonial-person-info strong {
-    font-size: 14px;
+    font-size: 0.9rem;
   }
 
   .dl-testimonial-person-info span {
-    font-size: 12px;
+    font-size: 0.8rem;
   }
 
   .dl-testimonial-arrow {
@@ -452,9 +562,14 @@
 ========================================================== */
 
 @media (max-width: 360px) {
-  .dl-testimonials {
-    padding-left: 10px;
-    padding-right: 10px;
+  .dl-testimonials-header-row {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .dl-testimonial-stage {
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   .dl-testimonial-card {
@@ -462,7 +577,7 @@
   }
 
   .dl-testimonial-card blockquote {
-    font-size: 13.5px;
+    font-size: 0.84rem;
   }
 
   .dl-testimonial-nav-row {
@@ -482,7 +597,44 @@
   .dl-testimonial-card,
   .dl-testimonial-arrow,
   .dl-testimonial-dots button,
-  .dl-share-story-btn {
+  .dl-share-story-btn,
+  .dl-testimonial-filter-row button {
     transition: none;
+    transform: none;
   }
+}
+
+/* ==========================================================
+   SHARE YOUR STORY - FORCE CONSISTENT GOLD HOVER
+========================================================== */
+
+.dl-testimonials .dl-share-story-btn,
+.dl-testimonials .dl-share-story-btn:visited {
+  background: #15803d !important;
+  color: #ffffff !important;
+  border: 1px solid #15803d !important;
+  border-radius: 8px;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease !important;
+}
+
+.dl-testimonials .dl-share-story-btn:hover {
+  background: #d4af37 !important;
+  color: #14532d !important;
+  border: 1px solid #d4af37 !important;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+  transform: translateY(-5px) !important;
+}
+
+.dl-testimonials .dl-share-story-btn:active {
+  transform: translateY(-2px) !important;
+}
+
+.dl-testimonials .dl-share-story-btn:focus-visible {
+  outline: 3px solid rgba(212, 175, 55, 0.45);
+  outline-offset: 3px;
 }

@@ -1,79 +1,486 @@
+
 /* ==========================================================
-   STAFF PAGE HERO & STYLING
+   DREAM LAND COLLEGE - STAFF PAGE
+   MATCHED WITH LIBRARY, GALLERY AND PROGRAMS DESIGN
 ========================================================== */
 
-.dl-staff-hero {
-  background:
-    linear-gradient(
-      120deg,
-      rgba(3, 7, 18, 0.96),
-      rgba(21, 128, 61, 0.84)
-    ),
-    url("https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1800&q=85")
-      center / cover;
+/* ==========================================================
+   ANIMATIONS
+========================================================== */
 
-  color: #ffffff;
-  padding: 2.5rem 0 3.75rem 0;
+@keyframes dlFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
+@keyframes dlLibraryFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dl-fade-in {
+  animation: dlFadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================================
+   PAGE SHELL
+========================================================== */
+
+.dl-page {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #f8fafc;
+}
+
+.dl-staff-hero .dl-shell,
+.dl-staff-directory-section .dl-shell {
+  width: min(1200px, calc(100% - 40px));
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   STAFF HERO
+========================================================== */
+
+.dl-page .dl-staff-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-height: 390px;
+  padding: 75px 0 70px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  background: linear-gradient(
+    120deg,
+    rgba(3, 7, 18, 0.97),
+    rgba(15, 55, 34, 0.96),
+    rgba(21, 128, 61, 0.90)
+  ) !important;
+  color: #ffffff !important;
+}
+
+.dl-staff-hero::before,
+.dl-staff-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.dl-staff-hero::before {
+  width: 380px;
+  height: 380px;
+  right: -100px;
+  top: -180px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 0 0 35px rgba(255, 255, 255, 0.025),
+    0 0 0 75px rgba(255, 255, 255, 0.02);
+}
+
+.dl-staff-hero::after {
+  width: 250px;
+  height: 250px;
+  left: -100px;
+  bottom: -160px;
+  background: rgba(34, 197, 94, 0.13);
+  filter: blur(5px);
+}
+
+.dl-staff-hero .dl-shell {
+  position: relative;
+  z-index: 2;
+}
+
+/* ==========================================================
+   HERO BADGES
+========================================================== */
+
+.dl-staff-hero .dl-hero-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.dl-staff-hero .dl-page-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  padding: 9px 17px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+/* ==========================================================
+   BOOKMARKED ADVISORS PILL
+========================================================== */
+
+.dl-hero-saved-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(134, 239, 172, 0.4);
+  color: #86efac;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 50px;
+  backdrop-filter: blur(5px);
+  animation: dlFadeInUp 0.3s ease;
+}
+
+/* ==========================================================
+   HERO TITLE AND DESCRIPTION
+========================================================== */
+
+.dl-staff-hero h1 {
+  max-width: 850px;
+  margin: 0 0 20px;
+  color: #ffffff !important;
+  font-size: clamp(36px, 5vw, 57px);
+  font-weight: 800;
+  line-height: 1.13;
+  letter-spacing: -1.7px;
+  overflow-wrap: anywhere;
+}
+
+.dl-staff-hero .dl-shell > p {
+  max-width: 690px;
+  margin: 0;
+  color: #e2e8f0 !important;
+  font-size: 16px;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   HERO QUICK STATS
+========================================================== */
+
+.dl-staff-hero .dl-hero-stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 25px;
+}
+
+.dl-staff-hero .dl-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 205px;
+  padding: 15px 19px;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.dl-staff-hero .dl-stat-pill:hover {
+  transform: translateY(-4px);
+  border-color: #d4af37;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dl-staff-hero .dl-stat-pill > svg {
+  flex-shrink: 0;
+  color: #86efac;
+}
+
+.dl-staff-hero .dl-stat-pill div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dl-staff-hero .dl-stat-pill strong {
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.dl-staff-hero .dl-stat-pill span {
+  margin-top: 4px;
+  color: #d1fae5 !important;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ==========================================================
+   STAFF DIRECTORY SECTION
+========================================================== */
 
 .dl-staff-directory-section {
-  padding: 70px 0 90px;
-  background: #ffffff;
+  padding: 65px 0 85px;
+  background: #f8fafc !important;
 }
+
+/* ==========================================================
+   SECTION HEADING
+========================================================== */
+
+.dl-section-heading {
+  max-width: 650px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+
+.dl-section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 6px 12px;
+  border-radius: 50px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.dl-section-heading h2 {
+  margin: 0 0 10px;
+  color: #0f172a;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.dl-section-heading p {
+  margin: 0;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   DEPARTMENT FILTER TABS
+========================================================== */
+
+.dl-staff-directory-section .dl-lib-tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+
+.dl-staff-directory-section .dl-lib-tab {
+  min-height: 43px;
+  padding: 10px 19px;
+  border: 1px solid #dbe4e9 !important;
+  border-radius: 9px !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dl-staff-directory-section .dl-lib-tab:hover {
+  border-color: #15803d !important;
+  color: #15803d !important;
+  background: #f0fdf4 !important;
+  transform: translateY(-2px);
+}
+
+.dl-staff-directory-section .dl-lib-tab.active {
+  background: #15803d !important;
+  border-color: #15803d !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 14px rgba(21, 128, 61, 0.20);
+}
+
+/* ==========================================================
+   STAFF SEARCH BAR
+========================================================== */
+
+.dl-staff-directory-section .dl-lib-search {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: min(100%, 680px);
+  min-height: 45px;
+  margin: 0 auto 40px;
+  padding: 0 14px;
+  border: 1px solid #dce5eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #64748b;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.dl-staff-directory-section .dl-lib-search:focus-within {
+  border-color: #15803d;
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.10);
+}
+
+.dl-staff-directory-section .dl-lib-search > svg {
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.dl-staff-directory-section .dl-lib-search input {
+  width: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 13px;
+}
+
+.dl-staff-directory-section .dl-lib-search input::placeholder {
+  color: #94a3b8;
+}
+
+.dl-staff-directory-section .dl-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 7px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dl-staff-directory-section .dl-clear-btn:hover {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* ==========================================================
+   STAFF GRID
+========================================================== */
 
 .dl-staff-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  gap: 25px;
 }
 
+/* ==========================================================
+   STAFF CARDS - GALLERY GOLD HOVER
+========================================================== */
+
 .dl-staff-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 0;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 15px;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    outline-color 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease;
   animation: dlFadeInUp 0.4s ease;
 }
 
-.dl-staff-card:hover {
-  transform: translateY(-6px);
-  border-color: #22c55e;
-  box-shadow: 0 20px 35px rgba(21, 128, 61, 0.1);
+.dl-staff-card:hover,
+.dl-staff-card:focus-within {
+  transform: translateY(-5px);
+  border-color: #d4af37 !important;
+  outline: 1px solid #d4af37;
   background: #ffffff;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.10);
 }
 
+/* ==========================================================
+   STAFF IMAGE
+========================================================== */
+
 .dl-staff-img-box {
-  height: 240px;
   position: relative;
+  height: 240px;
+  overflow: hidden;
   background: #e2e8f0;
 }
 
 .dl-staff-img-box img {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 0.6s ease;
 }
 
 .dl-staff-card:hover .dl-staff-img-box img {
-  transform: scale(1.04);
+  transform: scale(1.07);
 }
+
+/* ==========================================================
+   STAFF DEPARTMENT BADGE
+========================================================== */
 
 .dl-staff-dept-badge {
   position: absolute;
   top: 12px;
   left: 12px;
-  background: rgba(3, 7, 18, 0.85);
+  max-width: calc(100% - 65px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(3, 7, 18, 0.88);
   color: #86efac;
   font-size: 11px;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 6px;
-  backdrop-filter: blur(4px);
+  padding: 5px 11px;
+  border-radius: 50px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(134, 239, 172, 0.2);
 }
+
+/* ==========================================================
+   STAFF BOOKMARK
+========================================================== */
 
 .dl-staff-bookmark {
   position: absolute;
@@ -82,43 +489,82 @@
   z-index: 2;
 }
 
+.dl-bookmark-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dl-bookmark-btn:hover {
+  border-color: #d4af37;
+  background: #fffbeb;
+  color: #15803d;
+  transform: translateY(-2px);
+}
+
+.dl-bookmark-btn.saved {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #15803d;
+}
+
+/* ==========================================================
+   STAFF INFORMATION
+========================================================== */
+
 .dl-staff-body {
-  padding: 24px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  padding: 24px;
 }
 
 .dl-staff-body h3 {
+  margin: 0 0 5px;
+  color: #0f172a;
   font-size: 18px;
   font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 4px;
+  line-height: 1.4;
 }
 
 .dl-staff-title {
+  margin: 0 0 13px;
+  color: #15803d;
   font-size: 13px;
   font-weight: 700;
-  color: #16a34a;
-  margin-bottom: 12px;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .dl-staff-office,
 .dl-staff-hours {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0 0 8px;
   color: #64748b;
-  margin-bottom: 6px;
+  font-size: 12.5px;
+  line-height: 1.55;
 }
 
 .dl-staff-office svg,
 .dl-staff-hours svg {
-  color: #15803d;
   flex-shrink: 0;
+  margin-top: 2px;
+  color: #15803d;
 }
+
+/* ==========================================================
+   STAFF ACTION BUTTONS
+========================================================== */
 
 .dl-staff-actions {
   display: grid;
@@ -129,69 +575,559 @@
   border-top: 1px solid #e2e8f0;
 }
 
-.dl-modal-subtext {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #16a34a;
-  margin-bottom: 14px;
+.dl-staff-actions .dl-btn {
+  min-width: 0;
+  min-height: 38px;
+  text-align: center;
+  line-height: 1.4;
 }
 
+/* ==========================================================
+   BUTTONS
+========================================================== */
+
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dl-btn-sm {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.dl-btn-primary {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.dl-btn-primary:hover:not(:disabled) {
+  background: #166534;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(21, 128, 61, 0.20);
+}
+
+.dl-btn-outline {
+  background: #ffffff;
+  border: 1px solid #dbe4e9;
+  color: #475569;
+}
+
+.dl-btn-outline:hover:not(:disabled) {
+  background: #f0fdf4;
+  border-color: #15803d;
+  color: #15803d;
+  transform: translateY(-2px);
+}
+
+.dl-btn-block {
+  width: 100%;
+}
+
+.dl-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* ==========================================================
-   RESPONSIVE BREAKPOINTS
+   EMPTY STATE
+========================================================== */
+
+.dl-staff-directory-section .dl-lib-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 300px;
+  padding: 45px 20px;
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 15px;
+  color: #64748b;
+  text-align: center;
+}
+
+.dl-staff-directory-section .dl-lib-empty > svg {
+  margin-bottom: 6px;
+  color: #15803d;
+}
+
+.dl-staff-directory-section .dl-lib-empty h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.dl-staff-directory-section .dl-lib-empty p {
+  max-width: 500px;
+  margin: 0 0 8px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   MODAL OVERLAY
+========================================================== */
+
+.dl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(3, 7, 18, 0.75);
+  backdrop-filter: blur(10px);
+  animation: dlLibraryFade 0.25s ease;
+}
+
+/* ==========================================================
+   MODAL CARD
+========================================================== */
+
+.dl-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 30px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+}
+
+.dl-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 3;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dl-modal-close:hover:not(:disabled) {
+  border-color: #d4af37;
+  background: #fffbeb;
+  color: #15803d;
+  transform: rotate(90deg);
+}
+
+.dl-modal-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==========================================================
+   MODAL CONTENT
+========================================================== */
+
+.dl-modal-content-box {
+  width: 100%;
+  min-width: 0;
+}
+
+.dl-modal-content-box > .dl-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 5px 11px;
+  border: 1px solid #bbf7d0;
+  border-radius: 50px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.dl-modal-content-box h2 {
+  margin: 0 40px 8px 0;
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.dl-modal-subtext {
+  margin: 0 0 14px;
+  color: #15803d;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.dl-modal-text {
+  margin: 0 0 20px;
+  color: #64748b;
+  font-size: 13.5px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   STAFF BIO INFORMATION
+========================================================== */
+
+.dl-branch-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.dl-branch-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.dl-branch-info-row svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #15803d;
+}
+
+.dl-branch-info-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   RESEARCH INTERESTS
+========================================================== */
+
+.dl-branch-amenities-box {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.dl-branch-amenities-box strong {
+  display: block;
+  margin-bottom: 12px;
+  color: #475569;
+  font-size: 12.5px;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.dl-branch-amenities-box ul {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dl-branch-amenities-box li {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: #334155;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.dl-branch-amenities-box li svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #15803d;
+}
+
+.dl-text-green {
+  color: #15803d !important;
+}
+
+/* ==========================================================
+   CONSULTATION FORM
+========================================================== */
+
+.dl-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dl-modal-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dl-modal-form input,
+.dl-modal-form textarea,
+.dl-modal-form select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #dce5eb;
+  border-radius: 10px;
+  outline: none;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 13.5px;
+  transition: all 0.25s ease;
+}
+
+.dl-modal-form input {
+  min-height: 43px;
+}
+
+.dl-modal-form textarea {
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.dl-modal-form input:focus,
+.dl-modal-form textarea:focus,
+.dl-modal-form select:focus {
+  border-color: #15803d;
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.10);
+}
+
+.dl-modal-form input::placeholder,
+.dl-modal-form textarea::placeholder {
+  color: #94a3b8;
+}
+
+.dl-modal-form button[type="submit"] {
+  width: 100%;
+  min-height: 45px;
+  margin-top: 5px;
+}
+
+/* ==========================================================
+   CONSULTATION ERROR
+========================================================== */
+
+.dl-modal-form [role="alert"] {
+  margin-bottom: 15px;
+  padding: 10px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ==========================================================
+   CONSULTATION SUCCESS
+========================================================== */
+
+.dl-modal-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 25px 10px;
+  text-align: center;
+}
+
+.dl-success-icon {
+  margin-bottom: 16px;
+  color: #15803d;
+}
+
+.dl-modal-success h3 {
+  margin: 0 0 10px;
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.dl-modal-success p {
+  max-width: 390px;
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   RESPONSIVE DESIGN
 ========================================================== */
 
 @media (max-width: 1100px) {
   .dl-staff-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
   }
 }
 
 @media (max-width: 900px) {
   .dl-staff-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dl-staff-card {
-    max-width: 620px;
-    width: 100%;
-    margin: 0 auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+/* ==========================================================
+   TABLET
+========================================================== */
+
 @media (max-width: 700px) {
-  .dl-staff-hero {
-    padding: 2.5rem 0 3rem;
+  .dl-page .dl-staff-hero {
+    min-height: auto;
+    padding: 65px 0 60px;
+  }
+
+  .dl-staff-hero .dl-shell,
+  .dl-staff-directory-section .dl-shell {
+    width: calc(100% - 32px);
+  }
+
+  .dl-staff-hero h1 {
+    font-size: clamp(32px, 8vw, 43px);
+  }
+
+  .dl-staff-hero .dl-shell > p {
+    font-size: 14px;
+    line-height: 1.7;
   }
 
   .dl-staff-directory-section {
-    padding: 55px 0 70px;
+    padding: 50px 0 65px;
+  }
+
+  .dl-section-heading {
+    margin-bottom: 32px;
   }
 
   .dl-staff-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px;
+  }
+
+  .dl-staff-img-box {
+    height: 210px;
+  }
+
+  .dl-staff-body {
+    padding: 18px;
+  }
+
+  .dl-staff-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .dl-staff-directory-section .dl-lib-tabs {
+    gap: 8px;
+  }
+
+  .dl-staff-directory-section .dl-lib-tab {
+    padding: 9px 13px;
+    font-size: 12px;
+  }
+
+  .dl-staff-directory-section .dl-lib-search {
+    margin-bottom: 30px;
+  }
+}
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width: 540px) {
+  .dl-staff-grid {
+    grid-template-columns: 1fr;
+    max-width: 430px;
+    margin: 0 auto;
+  }
+
+  .dl-staff-card {
+    width: 100%;
   }
 
   .dl-staff-img-box {
     height: 230px;
   }
 
-  .dl-staff-body {
-    padding: 20px;
-  }
-
   .dl-staff-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 }
 
 @media (max-width: 480px) {
-  .dl-staff-hero {
-    padding: 2.2rem 0 2.7rem;
+  .dl-staff-hero .dl-shell,
+  .dl-staff-directory-section .dl-shell {
+    width: calc(100% - 32px);
+  }
+
+  .dl-staff-hero h1 {
+    font-size: clamp(29px, 8vw, 36px);
+    letter-spacing: -1px;
+  }
+
+  .dl-staff-hero .dl-shell > p {
+    font-size: 14px;
+  }
+
+  .dl-staff-hero .dl-stat-pill {
+    width: 100%;
+    min-width: 0;
   }
 
   .dl-staff-directory-section {
-    padding: 48px 0 60px;
+    padding: 45px 0 55px;
+  }
+
+  .dl-section-heading h2 {
+    font-size: 25px;
+  }
+
+  .dl-section-heading p {
+    font-size: 14px;
   }
 
   .dl-staff-img-box {
@@ -216,17 +1152,56 @@
   }
 
   .dl-staff-actions {
-    gap: 8px;
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .dl-staff-directory-section .dl-lib-tabs {
+    justify-content: flex-start;
+  }
+
+  .dl-staff-directory-section .dl-lib-tab {
+    padding: 8px 11px;
+    font-size: 11.5px;
+  }
+
+  .dl-staff-directory-section .dl-lib-search {
+    min-height: 44px;
+  }
+
+  .dl-modal-overlay {
+    padding: 12px;
+  }
+
+  .dl-modal-card {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    padding: 24px 18px;
+    border-radius: 15px;
+  }
+
+  .dl-modal-content-box h2 {
+    font-size: 20px;
+  }
+
+  .dl-branch-amenities-box ul {
+    grid-template-columns: 1fr;
+  }
+
+  .dl-modal-form input,
+  .dl-modal-form textarea,
+  .dl-modal-form select {
+    font-size: 16px;
   }
 }
 
 @media (max-width: 380px) {
-  .dl-staff-hero {
-    padding: 2rem 0 2.4rem;
+  .dl-staff-hero h1 {
+    font-size: 28px;
   }
 
-  .dl-staff-directory-section {
-    padding: 42px 0 52px;
+  .dl-section-heading h2 {
+    font-size: 23px;
   }
 
   .dl-staff-img-box {
@@ -236,8 +1211,15 @@
   .dl-staff-body {
     padding: 16px;
   }
-}
 
+  .dl-modal-card {
+    padding: 22px 16px;
+  }
+
+  .dl-modal-content-box h2 {
+    font-size: 19px;
+  }
+}
 
 /* ==========================================================
    TOUCH DEVICES
@@ -246,8 +1228,110 @@
 @media (hover: none) and (pointer: coarse) {
   .dl-staff-card:hover {
     transform: none;
+    outline-color: transparent;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+  }
+
+  .dl-staff-card:hover .dl-staff-img-box img {
+    transform: none;
+  }
+
+  .dl-staff-actions .dl-btn-outline {
+    background: #f8fafc;
     border-color: #e2e8f0;
-    box-shadow: none;
+    color: #334155;
+  }
+}
+
+/* ==========================================================
+   FINAL FIX: PAGE ANIMATION AND MODAL POSITION
+========================================================== */
+
+/* Remove the transform from the animated page wrapper.
+   This prevents fixed modal overlays from being trapped
+   inside the page instead of the browser viewport. */
+.dl-page.dl-fade-in {
+  animation: dlLibraryFade 0.5s ease both !important;
+  transform: none !important;
+}
+
+/* Center all staff modals in the viewport */
+.dl-modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 999999 !important;
+
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  box-sizing: border-box;
+  padding: 20px;
+
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  background: rgba(3, 7, 18, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Keep modal cards centered and within the screen */
+.dl-modal-card {
+  position: relative !important;
+
+  width: 100%;
+  max-width: 520px;
+
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+
+  margin: auto !important;
+  flex-shrink: 0;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  padding: 30px;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+}
+
+/* Keep close button accessible */
+.dl-modal-close {
+  position: absolute !important;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+}
+
+/* ==========================================================
+   REDUCED MOTION
+========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-staff-card,
+  .dl-staff-card *,
+  .dl-staff-hero .dl-stat-pill,
+  .dl-modal-overlay,
+  .dl-fade-in {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .dl-staff-card:hover,
+  .dl-staff-hero .dl-stat-pill:hover {
+    transform: none;
   }
 
   .dl-staff-card:hover .dl-staff-img-box img {
@@ -255,22 +1339,19 @@
   }
 }
 
-
 /* ==========================================================
-   REDUCED MOTION
+   FINAL MOBILE MODAL POSITIONING
 ========================================================== */
 
-@media (prefers-reduced-motion: reduce) {
-  .dl-staff-card {
-    animation: none;
-    transition: none;
+@media (max-width: 480px) {
+  .dl-modal-overlay {
+    padding: 12px;
   }
 
-  .dl-staff-card:hover {
-    transform: none;
-  }
-
-  .dl-staff-card:hover .dl-staff-img-box img {
-    transform: none;
+  .dl-modal-card {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    padding: 24px 18px;
   }
 }

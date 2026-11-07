@@ -142,7 +142,7 @@ function Admissions() {
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
               <span className="dl-page-kicker">
-                <Sparkles size={14} />
+               
                 <span>Admissions 2026</span>
               </span>
             </div>

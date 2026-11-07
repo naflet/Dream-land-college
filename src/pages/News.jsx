@@ -1,5 +1,5 @@
-
 import React, { useMemo, useState, useEffect, useCallback } from "react";
+
 import {
   CalendarDays,
   ArrowRight,
@@ -13,7 +13,7 @@ import {
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import publicApi from "../services/publicApi";
+import supabase from "../config/supabase";
 import "../styles/News.css";
 
 const categories = [
@@ -55,18 +55,23 @@ function News() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Fetch published news directly from Supabase.
   const fetchNews = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
 
-      const result = await publicApi.get("/news/published");
+      const { data, error: supabaseError } = await supabase
+        .from("news")
+        .select("*")
+        .eq("status", "published")
+        .order("published_at", { ascending: false });
 
-      if (!result?.success) {
-        throw new Error("Unable to retrieve news articles.");
+      if (supabaseError) {
+        throw supabaseError;
       }
 
-      setNewsItems(Array.isArray(result.news) ? result.news : []);
+      setNewsItems(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Public news loading error:", err);
       setError(err.message || "Failed to load news articles.");
@@ -95,7 +100,7 @@ function News() {
     });
   }, [newsItems, activeCategory, searchQuery]);
 
-  // Close modal with Escape key
+  // Close modal with Escape key.
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -120,7 +125,7 @@ function News() {
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
               <span className="dl-page-kicker">
-                <Sparkles size={14} /> News & Events
+                 News & Events
               </span>
             </div>
 
@@ -139,7 +144,9 @@ function News() {
                 <Bell size={18} />
                 <div>
                   <strong>
-                    {loading ? "Loading..." : `${newsItems.length} Active Posts`}
+                    {loading
+                      ? "Loading..."
+                      : `${newsItems.length} Active Posts`}
                   </strong>
                   <span>Announcements & Events</span>
                 </div>

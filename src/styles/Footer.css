@@ -1,10 +1,16 @@
+
 /* ==========================================================
-   NEXT-LEVEL FOOTER STYLING
-   DREAM LAND COLLEGE BRAND COLORS
-   ========================================================== */
+   DREAM LAND COLLEGE - FOOTER
+   NAVY, GREEN & GOLD BRAND COLORS
+========================================================== */
 
 .dl-footer {
-  background-color: rgba(21, 128, 61, 0.84);
+  background: linear-gradient(
+    120deg,
+    #0f172a 0%,
+    #123b2a 55%,
+    #15803d 100%
+  );
   color: #ffffff;
   font-family: inherit;
   position: relative;
@@ -16,25 +22,41 @@
   box-sizing: border-box;
 }
 
-/* College Green Glow Line at the Top */
+/* ==========================================================
+   COLLEGE GREEN GLOW LINE
+========================================================== */
+
 .dl-footer-glow-bar {
   height: 3px;
   width: 100%;
-  background: linear-gradient(90deg, #166534, #4ade80, #166534);
-  opacity: 0.9;
+  background: linear-gradient(
+    90deg,
+    #166534,
+    #22c55e,
+    #d4af37,
+    #22c55e,
+    #166534
+  );
+  opacity: 1;
 }
 
-/* Main Grid Layout */
+/* ==========================================================
+   MAIN GRID LAYOUT
+========================================================== */
+
 .dl-footer-main {
   display: grid;
   grid-template-columns: 1.4fr 1fr 1fr 1.3fr;
   gap: 40px;
-  padding: 70px 20px 50px 20px;
+  padding: 70px 20px 50px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* Brand Section */
+/* ==========================================================
+   BRAND SECTION
+========================================================== */
+
 .dl-footer-brand {
   display: flex;
   flex-direction: column;
@@ -59,11 +81,14 @@
 .dl-footer-description {
   font-size: 0.92rem;
   line-height: 1.6;
-  color: #f0fdf4;
+  color: #e2e8f0;
   margin: 0;
 }
 
-/* Accreditations Badges */
+/* ==========================================================
+   ACCREDITATIONS BADGES
+========================================================== */
+
 .dl-footer-badges {
   display: flex;
   flex-wrap: wrap;
@@ -75,15 +100,18 @@
   align-items: center;
   gap: 6px;
   font-size: 0.75rem;
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: rgba(34, 197, 94, 0.12);
+  color: #dcfce7;
   padding: 4px 10px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(134, 239, 172, 0.3);
   font-weight: 600;
 }
 
-/* Social Icons */
+/* ==========================================================
+   SOCIAL ICONS
+========================================================== */
+
 .dl-footer-socials {
   display: flex;
   gap: 12px;
@@ -94,7 +122,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
@@ -106,11 +134,15 @@
 .dl-footer-social:hover {
   background: #ffffff;
   color: #15803d;
-  border-color: #ffffff;
+  border-color: #d4af37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
   transform: translateY(-3px);
 }
 
-/* Column Headings */
+/* ==========================================================
+   COLUMN HEADINGS
+========================================================== */
+
 .dl-footer-column h3 {
   font-size: 1.05rem;
   font-weight: 700;
@@ -121,17 +153,20 @@
 }
 
 .dl-footer-column h3::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   bottom: -6px;
-  width: 24px;
+  width: 30px;
   height: 2px;
-  background-color: #bbf7d0;
+  background: #d4af37;
   border-radius: 2px;
 }
 
-/* Links List */
+/* ==========================================================
+   LINKS LIST
+========================================================== */
+
 .dl-footer-links-list {
   list-style: none;
   padding: 0;
@@ -142,19 +177,22 @@
 }
 
 .dl-footer-links-list li a {
-  color: #f0fdf4;
+  color: #e2e8f0;
   text-decoration: none;
   font-size: 0.92rem;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   display: inline-block;
 }
 
 .dl-footer-links-list li a:hover {
-  color: #ffffff;
+  color: #facc15;
   transform: translateX(4px);
 }
 
-/* Contact Registrar Section */
+/* ==========================================================
+   CONTACT REGISTRAR SECTION
+========================================================== */
+
 .dl-footer-contact-item {
   display: flex;
   align-items: flex-start;
@@ -166,23 +204,30 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: rgba(34, 197, 94, 0.14);
+  color: #86efac;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   margin-top: 2px;
+  transition: all 0.25s ease;
+}
+
+.dl-footer-contact-item:hover .dl-footer-contact-icon {
+  background: #d4af37;
+  color: #0f172a;
 }
 
 .dl-footer-contact-text {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .dl-contact-label {
   font-size: 0.75rem;
-  color: #dcfce7;
+  color: #bbf7d0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 2px;
@@ -195,17 +240,21 @@
   text-decoration: none;
   margin: 0;
   transition: color 0.2s ease;
+  overflow-wrap: anywhere;
 }
 
 .dl-footer-contact-text a:hover {
-  color: #bbf7d0;
+  color: #facc15;
 }
 
-/* Bottom Bar */
+/* ==========================================================
+   BOTTOM BAR
+========================================================== */
+
 .dl-footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  background-color: rgba(0, 0, 0, 0.12);
-  padding: 20px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  background-color: rgba(3, 7, 18, 0.38);
+  padding: 20px;
 }
 
 .dl-footer-bottom-inner {
@@ -220,7 +269,7 @@
 
 .dl-footer-bottom-inner p {
   font-size: 0.85rem;
-  color: #f0fdf4;
+  color: #cbd5e1;
   margin: 0;
 }
 
@@ -231,15 +280,19 @@
 }
 
 .dl-footer-bottom-links a {
-  color: #f0fdf4;
+  color: #cbd5e1;
   text-decoration: none;
   font-size: 0.85rem;
   transition: color 0.2s ease;
 }
 
 .dl-footer-bottom-links a:hover {
-  color: #ffffff;
+  color: #facc15;
 }
+
+/* ==========================================================
+   APPLY BUTTON
+========================================================== */
 
 .dl-footer-apply-btn {
   display: inline-flex !important;
@@ -250,17 +303,21 @@
   padding: 6px 14px;
   border-radius: 6px;
   font-weight: 700;
-  transition: all 0.2s ease !important;
+  transition: all 0.25s ease !important;
+  border: 1px solid transparent;
 }
 
 .dl-footer-apply-btn:hover {
   background: #dcfce7 !important;
+  color: #14532d !important;
+  border-color: #d4af37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18);
   transform: translateY(-2px);
 }
 
 /* ==========================================================
    RESPONSIVE MEDIA QUERIES
-   ========================================================== */
+========================================================== */
 
 @media (max-width: 1024px) {
   .dl-footer-main {
@@ -284,5 +341,37 @@
 
   .dl-footer-bottom-links {
     justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+/* ==========================================================
+   TOUCH DEVICES
+========================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  .dl-footer-social:hover,
+  .dl-footer-apply-btn:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .dl-footer-links-list li a:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================================
+   REDUCED MOTION
+========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-footer-social,
+  .dl-footer-links-list li a,
+  .dl-footer-contact-icon,
+  .dl-footer-contact-text a,
+  .dl-footer-bottom-links a,
+  .dl-footer-apply-btn {
+    transition: none;
   }
 }

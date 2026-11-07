@@ -327,9 +327,9 @@
 }
 
 .dl-program-info-card:hover {
-  transform: translateY(-4px);
-  border-color: #15803d;
-  box-shadow: 0 12px 30px rgba(21, 128, 61, 0.1);
+  border-color: #d4af37;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
 }
 
 .dl-program-info-icon {
@@ -486,9 +486,9 @@
 }
 
 .dl-program-feature-card:hover {
-  transform: translateY(-4px);
-  border-color: #15803d;
-  box-shadow: 0 12px 30px rgba(21, 128, 61, 0.1);
+  border-color: #d4af37;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
 }
 
 .dl-program-feature-card::after {
@@ -573,14 +573,14 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   animation: dlSlideIn 0.45s ease both;
   animation-delay: calc(var(--item-index, 0) * 45ms);
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
 }
 
 .dl-skill-item:hover {
-  transform: translateX(4px);
-  border-color: #15803d;
+  border-color: #d4af37;
   background: #ffffff;
-  box-shadow: 0 8px 22px rgba(21, 128, 61, 0.08);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
 }
 
 .dl-skill-item > span {
@@ -625,13 +625,13 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   animation: dlFeatureReveal 0.5s ease both;
   animation-delay: calc(var(--item-index, 0) * 50ms);
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
 }
 
 .dl-career-card:hover {
-  transform: translateY(-3px);
-  border-color: #15803d;
-  box-shadow: 0 10px 25px rgba(21, 128, 61, 0.08);
+  border-color: #d4af37;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
 }
 
 .dl-career-card > div {
@@ -761,12 +761,14 @@
   border: 1px solid #e2e8f0;
   border-radius: 15px;
   background: #f8fafc;
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
 }
 
 .dl-sidebar-payment:hover {
-  border-color: #86efac;
+  border-color: #d4af37;
   background: #f0fdf4;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
 }
 
 .dl-sidebar-payment-icon {

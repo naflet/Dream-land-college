@@ -1,5 +1,6 @@
 /* ==========================================================
-   ACCREDITATION SECTION STYLES
+   DREAM LAND COLLEGE - ACCREDITATION SECTION
+   MATCHED WITH HOME PAGE BRAND DESIGN
 ========================================================== */
 
 .dl-accreditation {
@@ -41,7 +42,7 @@
 }
 
 .dl-accreditation-heading h2 span {
-  color: #15803d;
+  color: rgba(21, 128, 61, 0.84);
 }
 
 .dl-accreditation-heading p {
@@ -74,6 +75,13 @@
   display: flex;
   gap: 20px;
   align-items: flex-start;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.dl-accreditation-status:hover {
+  transform: translateY(-5px);
+  border-color: #d4af37;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.09);
 }
 
 .dl-accreditation-icon {
@@ -81,13 +89,20 @@
   height: 52px;
   min-width: 52px;
   border-radius: 14px;
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  color: #15803d;
+  background: rgba(21, 128, 61, 0.09);
+  border: 1px solid rgba(21, 128, 61, 0.18);
+  color: rgba(21, 128, 61, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.dl-accreditation-status:hover .dl-accreditation-icon {
+  background: #d4af37;
+  border-color: #d4af37;
+  color: #ffffff;
 }
 
 .dl-accreditation-status > div {
@@ -98,7 +113,7 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: #15803d;
+  color: rgba(21, 128, 61, 0.9);
   display: block;
   margin-bottom: 4px;
 }
@@ -129,13 +144,20 @@
 .dl-accreditation-tags span {
   background: #ffffff;
   color: #334155;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #e2e8f0;
   padding: 5px 12px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: normal;
   white-space: normal;
+  transition: all 0.25s ease;
+}
+
+.dl-accreditation-tags span:hover {
+  background: #d4af37;
+  border-color: #d4af37;
+  color: #ffffff;
 }
 
 /* ==========================================================
@@ -153,7 +175,7 @@
   font-size: 11.5px;
   font-weight: 800;
   letter-spacing: 1.2px;
-  color: #15803d;
+  color: rgba(21, 128, 61, 0.9);
   display: block;
   margin-bottom: 6px;
 }
@@ -190,6 +212,14 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.045);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.dl-accreditation-document:hover {
+  transform: translateY(-6px);
+  border-color: #d4af37;
+  box-shadow: 0 18px 35px rgba(15, 23, 42, 0.11);
 }
 
 /* ==========================================================
@@ -213,12 +243,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: transform 0.5s ease;
 }
 
 .dl-accreditation-document:hover
 .dl-accreditation-image-button img {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
 .dl-accreditation-number {
@@ -232,12 +262,13 @@
   padding: 6px 10px;
   border-radius: 10px;
   backdrop-filter: blur(4px);
+  border: 1px solid rgba(212, 175, 55, 0.55);
 }
 
 .dl-accreditation-image-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(15, 23, 42, 0.68);
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -249,6 +280,10 @@
   opacity: 0;
   transition: opacity 0.3s ease;
   backdrop-filter: blur(2px);
+}
+
+.dl-accreditation-image-overlay svg {
+  color: #d4af37;
 }
 
 .dl-accreditation-image-button:hover
@@ -271,7 +306,7 @@
 .dl-accreditation-document-body > span {
   font-size: 12px;
   font-weight: 700;
-  color: #15803d;
+  color: rgba(21, 128, 61, 0.9);
   margin-bottom: 6px;
 }
 
@@ -282,6 +317,11 @@
   margin: 0 0 6px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+  transition: color 0.25s ease;
+}
+
+.dl-accreditation-document:hover .dl-accreditation-document-body h3 {
+  color: rgba(21, 128, 61, 0.95);
 }
 
 .dl-accreditation-document-body strong {
@@ -302,12 +342,13 @@
   max-width: 100%;
   font-size: 13.5px;
   font-weight: 700;
-  color: #15803d;
+  color: rgba(21, 128, 61, 0.95);
   text-decoration: none;
-  transition: gap 0.2s ease;
+  transition: color 0.25s ease, gap 0.25s ease;
 }
 
 .dl-accreditation-document-body a:hover {
+  color: #b89525;
   gap: 12px;
 }
 
@@ -330,6 +371,12 @@
   border: 1px solid #e2e8f0;
   border-radius: 20px;
   padding: 28px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dl-accreditation-info:hover {
+  border-color: rgba(212, 175, 55, 0.75);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
 }
 
 .dl-accreditation-info-title {
@@ -338,6 +385,10 @@
   gap: 10px;
   margin-bottom: 20px;
   color: #0f172a;
+}
+
+.dl-accreditation-info-title svg {
+  color: rgba(21, 128, 61, 0.9);
 }
 
 .dl-accreditation-info-title h3 {
@@ -366,6 +417,12 @@
   line-height: 1.5;
 }
 
+.dl-accreditation-info ul li svg {
+  color: rgba(21, 128, 61, 0.9);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 .dl-accreditation-info ol li {
   display: flex;
   align-items: flex-start;
@@ -374,7 +431,7 @@
 }
 
 .dl-accreditation-info ol span {
-  background: #15803d;
+  background: rgba(21, 128, 61, 0.9);
   color: #ffffff;
   font-size: 11.5px;
   font-weight: 800;
@@ -386,6 +443,11 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: background 0.25s ease;
+}
+
+.dl-accreditation-info ol li:hover span {
+  background: #d4af37;
 }
 
 .dl-accreditation-info ol p {
@@ -428,6 +490,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 175, 55, 0.35);
 }
 
 .dl-accreditation-modal-close {
@@ -450,9 +513,9 @@
 }
 
 .dl-accreditation-modal-close:hover {
-  background: #ef4444;
+  background: #d4af37;
   color: #ffffff;
-  border-color: #ef4444;
+  border-color: #d4af37;
 }
 
 .dl-accreditation-modal-header {
@@ -464,7 +527,7 @@
 .dl-accreditation-modal-header span {
   font-size: 11.5px;
   font-weight: 700;
-  color: #15803d;
+  color: rgba(21, 128, 61, 0.9);
   display: block;
   margin-bottom: 2px;
 }
@@ -504,7 +567,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #15803d;
+  background: rgba(21, 128, 61, 0.9);
   color: #ffffff;
   padding: 10px 18px;
   border-radius: 12px;
@@ -512,11 +575,12 @@
   font-weight: 700;
   text-decoration: none;
   align-self: flex-start;
-  transition: background 0.2s;
+  transition: background 0.25s ease, transform 0.25s ease;
 }
 
 .dl-accreditation-modal-link:hover {
-  background: #166534;
+  background: #b89525;
+  transform: translateY(-2px);
 }
 
 /* ==========================================================

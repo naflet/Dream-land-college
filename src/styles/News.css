@@ -1,28 +1,235 @@
+
 /* ==========================================================
-   NEWS & EVENTS HERO SECTION
+   DREAM LAND COLLEGE - NEWS & EVENTS PAGE
+   MATCHED WITH LIBRARY, GALLERY AND PROGRAMS DESIGN
 ========================================================== */
-.dl-news-hero {
-  background:
-    linear-gradient(
-      120deg,
-      rgba(3, 7, 18, 0.96),
-      rgba(21, 128, 61, 0.84)
-    ),
-    url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=85")
-      center / cover;
-  color: #ffffff;
-  padding: 3.5rem 0 4.5rem 0;
+
+/* ==========================================================
+   ANIMATIONS
+========================================================== */
+
+@keyframes dlNewsFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.dl-news-content {
-  padding: 60px 0 90px 0;
+@keyframes dlNewsFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dl-news-page {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
   background: #f8fafc;
+}
+
+/* ==========================================================
+   PAGE SHELL
+========================================================== */
+
+.dl-news-page .dl-shell,
+.dl-news-hero .dl-shell,
+.dl-news-content .dl-shell {
+  width: min(1200px, calc(100% - 40px));
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   NEWS HERO SECTION
+========================================================== */
+
+.dl-page .dl-news-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-height: 390px;
+  padding: 75px 0 70px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+
+  background: linear-gradient(
+    120deg,
+    rgba(3, 7, 18, 0.97),
+    rgba(15, 55, 34, 0.96),
+    rgba(21, 128, 61, 0.90)
+  ) !important;
+
+  color: #ffffff !important;
+}
+
+.dl-news-hero::before,
+.dl-news-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.dl-news-hero::before {
+  width: 380px;
+  height: 380px;
+  right: -100px;
+  top: -180px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 0 0 35px rgba(255, 255, 255, 0.025),
+    0 0 0 75px rgba(255, 255, 255, 0.02);
+}
+
+.dl-news-hero::after {
+  width: 250px;
+  height: 250px;
+  left: -100px;
+  bottom: -160px;
+  background: rgba(34, 197, 94, 0.13);
+  filter: blur(5px);
+}
+
+.dl-news-hero .dl-shell {
+  position: relative;
+  z-index: 2;
+}
+
+/* ==========================================================
+   HERO BADGE
+========================================================== */
+
+.dl-news-hero .dl-hero-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.dl-news-hero .dl-page-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: fit-content;
+  padding: 9px 17px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+/* ==========================================================
+   HERO TITLE
+========================================================== */
+
+.dl-news-hero h1 {
+  max-width: 850px;
+  margin: 0 0 20px;
+  color: #ffffff !important;
+  font-size: clamp(36px, 5vw, 57px);
+  font-weight: 800;
+  line-height: 1.13;
+  letter-spacing: -1.7px;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   HERO DESCRIPTION
+========================================================== */
+
+.dl-news-hero > .dl-shell > p {
+  max-width: 690px;
+  margin: 0;
+  color: #e2e8f0 !important;
+  font-size: 16px;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   HERO QUICK STATS
+========================================================== */
+
+.dl-news-hero .dl-hero-stats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 25px !important;
+}
+
+.dl-news-hero .dl-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 205px;
+  padding: 15px 19px;
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.dl-news-hero .dl-stat-pill:hover {
+  transform: translateY(-4px);
+  border-color: #d4af37;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dl-news-hero .dl-stat-pill svg {
+  flex-shrink: 0;
+  color: #86efac;
+}
+
+.dl-news-hero .dl-stat-pill div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dl-news-hero .dl-stat-pill strong {
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.dl-news-hero .dl-stat-pill span {
+  margin-top: 4px;
+  color: #d1fae5 !important;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ==========================================================
+   NEWS CONTENT SECTION
+========================================================== */
+
+.dl-news-content {
+  padding: 65px 0 85px;
+  background: #f8fafc !important;
   min-height: 550px;
 }
 
 /* ==========================================================
    CONTROLS ROW
 ========================================================== */
+
 .dl-news-controls-row {
   display: flex;
   justify-content: space-between;
@@ -32,195 +239,686 @@
   margin-bottom: 40px;
 }
 
+/* ==========================================================
+   NEWS FILTER TABS
+   MATCHED WITH LIBRARY TABS
+========================================================== */
+
 .dl-news-filters {
   display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 9px;
   flex-wrap: wrap;
-  gap: 10px;
+}
+
+.dl-news-filters .dl-modality-tab-btn {
+  min-height: 43px;
+  padding: 10px 19px;
+  border: 1px solid #dbe4e9 !important;
+  border-radius: 9px !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dl-news-filters .dl-modality-tab-btn:hover {
+  border-color: #15803d !important;
+  color: #15803d !important;
+  background: #f0fdf4 !important;
+  transform: translateY(-2px);
+}
+
+.dl-news-filters .dl-modality-tab-btn.active {
+  background: #15803d !important;
+  border-color: #15803d !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 14px rgba(21, 128, 61, 0.20);
+}
+
+/* ==========================================================
+   NEWS SEARCH
+   MATCHED WITH LIBRARY SEARCH
+========================================================== */
+
+.dl-gallery-search-box {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: min(100%, 320px);
+  min-height: 45px;
+  padding: 0 14px;
+  border: 1px solid #dce5eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #64748b;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.dl-gallery-search-box:focus-within {
+  border-color: #15803d;
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.10);
+}
+
+.dl-gallery-search-box > svg {
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.dl-gallery-search-box input {
+  width: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 13px;
+}
+
+.dl-gallery-search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.dl-clear-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 7px;
+  background: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dl-clear-search:hover {
+  background: #dcfce7;
+  color: #15803d;
 }
 
 /* ==========================================================
    NEWS CARDS GRID
 ========================================================== */
+
 .dl-news-page-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 28px;
-  max-width: 1150px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 25px;
+  max-width: 1200px;
   margin: 0 auto;
+  animation: dlNewsFade 0.4s ease;
 }
+
+/* ==========================================================
+   NEWS CARDS - SAME LIBRARY GOLD HOVER
+========================================================== */
 
 .dl-news-page-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 15px;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    outline-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-.dl-news-page-card:hover {
-  border-color: #15803d;
-  box-shadow: 0 12px 30px rgba(21, 128, 61, 0.1);
+.dl-news-page-card:hover,
+.dl-news-page-card:focus-within {
+  transform: translateY(-5px);
+  border-color: #d4af37 !important;
+  outline: 1px solid #d4af37;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.10);
 }
+
+/* ==========================================================
+   NEWS IMAGE
+========================================================== */
 
 .dl-news-page-image {
   position: relative;
   height: 200px;
+  overflow: hidden;
+  background: #e2e8f0;
 }
 
 .dl-news-page-image img {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: transform 0.6s ease;
 }
 
 .dl-news-page-card:hover .dl-news-page-image img {
-  transform: scale(1.05);
+  transform: scale(1.07);
 }
+
+/* ==========================================================
+   NEWS CATEGORY BADGE
+========================================================== */
 
 .dl-news-cat-badge {
   position: absolute;
-  top: 14px;
-  left: 14px;
-  background: rgba(15, 23, 42, 0.85);
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  border-radius: 50px;
+  background: rgba(3, 7, 18, 0.85);
+  color: #86efac;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(6px);
-  color: #4ade80;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
 }
 
+/* ==========================================================
+   NEWS CARD BODY
+========================================================== */
+
 .dl-news-page-body {
-  padding: 24px;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  padding: 24px;
 }
+
+/* ==========================================================
+   NEWS META ROW
+========================================================== */
 
 .dl-news-meta-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  font-size: 12.5px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
   color: #64748b;
+  font-size: 12.5px;
   font-weight: 600;
 }
 
 .dl-news-page-date {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 5px;
   color: #15803d;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .dl-news-readtime {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
 }
+
+/* ==========================================================
+   NEWS CARD TITLE
+========================================================== */
 
 .dl-news-page-body h2 {
+  margin: 0 0 10px;
+  color: #0f172a;
   font-size: 18px;
   font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 10px;
   line-height: 1.4;
+  transition: color 0.25s ease;
 }
 
+.dl-news-page-card:hover .dl-news-page-body h2 {
+  color: #15803d;
+}
+
+/* ==========================================================
+   NEWS CARD DESCRIPTION
+========================================================== */
+
 .dl-news-page-body p {
-  font-size: 13.5px;
-  color: #64748b;
-  line-height: 1.6;
-  margin-bottom: 20px;
+  flex-grow: 1;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  flex-grow: 1;
+  margin: 0 0 20px;
+  color: #64748b;
+  font-size: 13.5px;
+  line-height: 1.7;
 }
 
+/* ==========================================================
+   READ FULL ARTICLE BUTTON
+========================================================== */
+
 .dl-news-readmore-btn {
-  background: transparent;
-  border: none;
-  color: #15803d;
-  font-size: 14px;
-  font-weight: 700;
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
   gap: 6px;
-  cursor: pointer;
   padding: 0;
-  transition: gap 0.2s ease;
+  border: none;
+  background: transparent;
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
   text-decoration: none;
+  transition: gap 0.2s ease, color 0.2s ease;
 }
 
 .dl-news-readmore-btn:hover {
   gap: 10px;
+  color: #166534;
 }
 
 /* ==========================================================
-   ARTICLE READER MODAL POPUP
+   LOADING / ERROR / EMPTY STATES
 ========================================================== */
-.dl-article-modal-box {
-  max-width: 650px;
-  width: 100%;
+
+.dl-news-content .dl-gallery-empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 280px;
+  padding: 45px 20px;
   background: #ffffff;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  border: 1px dashed #cbd5e1;
+  border-radius: 15px;
+  color: #64748b;
+  text-align: center;
+  animation: dlNewsFade 0.4s ease;
+}
+
+.dl-news-content .dl-gallery-empty-state > svg {
+  margin-bottom: 6px;
+  color: #15803d;
+}
+
+.dl-news-content .dl-gallery-empty-state h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.dl-news-content .dl-gallery-empty-state p {
+  max-width: 500px;
+  margin: 0 0 8px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   BUTTONS - LIBRARY STYLE
+========================================================== */
+
+.dl-news-content .dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dl-news-content .dl-btn-primary {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.dl-news-content .dl-btn-primary:hover {
+  background: #166534;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(21, 128, 61, 0.20);
+}
+
+/* ==========================================================
+   ARTICLE READER MODAL OVERLAY
+========================================================== */
+
+.dl-gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(3, 7, 18, 0.75);
+  backdrop-filter: blur(10px);
+  animation: dlNewsFade 0.25s ease;
+}
+
+/* ==========================================================
+   MODAL CLOSE BUTTON
+========================================================== */
+
+.dl-lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  z-index: 1002;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dl-lightbox-close:hover {
+  border-color: #d4af37;
+  background: #15803d;
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+/* ==========================================================
+   ARTICLE MODAL BOX
+========================================================== */
+
+.dl-article-modal-box {
+  position: relative;
+  z-index: 1001;
+  width: 100%;
+  max-width: 650px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+  animation: dlNewsFade 0.3s ease;
 }
+
+/* ==========================================================
+   ARTICLE MODAL IMAGE
+========================================================== */
 
 .dl-article-modal-img {
   position: relative;
+  flex-shrink: 0;
   height: 240px;
+  overflow: hidden;
+  background: #e2e8f0;
 }
 
 .dl-article-modal-img img {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
 }
+
+/* ==========================================================
+   ARTICLE MODAL CONTENT
+========================================================== */
 
 .dl-article-modal-content {
   padding: 30px;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .dl-article-modal-content h2 {
+  margin: 0 0 14px;
+  color: #0f172a;
   font-size: 22px;
   font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 14px;
+  line-height: 1.35;
 }
 
 .dl-article-full-text {
-  font-size: 15px;
+  margin: 0 0 24px;
   color: #334155;
+  font-size: 15px;
   line-height: 1.75;
-  margin-bottom: 24px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
+
+/* ==========================================================
+   ARTICLE MODAL ACTIONS
+========================================================== */
 
 .dl-article-modal-actions {
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid #f1f5f9;
+  gap: 12px;
   padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
 }
 
-@media (max-width: 768px) {
+/* ==========================================================
+   RESPONSIVE DESIGN
+========================================================== */
+
+@media (max-width: 1100px) {
+  .dl-news-page-grid {
+    gap: 20px;
+  }
+
+  .dl-news-page-body {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .dl-news-page-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .dl-news-controls-row {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .dl-page .dl-news-hero {
+    min-height: auto;
+    padding: 65px 0 60px;
+  }
+
+  .dl-news-hero .dl-shell,
+  .dl-news-content .dl-shell {
+    width: calc(100% - 32px);
+  }
+
+  .dl-news-hero h1 {
+    font-size: clamp(32px, 8vw, 43px);
+  }
+
+  .dl-news-hero > .dl-shell > p {
+    font-size: 14px;
+  }
+
+  .dl-news-content {
+    padding: 50px 0 65px;
+  }
+
   .dl-news-controls-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .dl-news-filters {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .dl-news-filters .dl-modality-tab-btn {
+    padding: 9px 13px;
+    font-size: 12px;
+  }
+
+  .dl-gallery-search-box {
+    width: 100%;
+  }
+
+  .dl-news-page-grid {
+    gap: 18px;
+  }
+
+  .dl-article-modal-box {
+    max-height: 90vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .dl-news-hero .dl-shell,
+  .dl-news-content .dl-shell {
+    width: calc(100% - 32px);
+  }
+
+  .dl-news-hero h1 {
+    letter-spacing: -1px;
+  }
+
+  .dl-news-hero > .dl-shell > p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .dl-news-hero .dl-stat-pill {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dl-news-content {
+    padding: 40px 0 55px;
+  }
+
+  .dl-news-page-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .dl-news-page-image {
+    height: 210px;
+  }
+
+  .dl-news-page-body {
+    padding: 18px;
+  }
+
+  .dl-news-meta-row {
+    gap: 8px;
+  }
+
+  .dl-article-modal-img {
+    height: 190px;
+  }
+
+  .dl-article-modal-content {
+    padding: 20px;
+  }
+
+  .dl-article-modal-content h2 {
+    font-size: 19px;
+  }
+
+  .dl-article-full-text {
+    font-size: 14px;
+  }
+
+  .dl-gallery-lightbox {
+    padding: 12px;
+  }
+
+  .dl-lightbox-close {
+    top: 10px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dl-news-hero h1 {
+    font-size: 28px;
+  }
+
+  .dl-news-page-image {
+    height: 175px;
+  }
+
+  .dl-news-meta-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dl-news-filters .dl-modality-tab-btn {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
+/* ==========================================================
+   TOUCH DEVICES
+========================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  .dl-news-page-card:hover {
+    transform: none;
+    outline-color: transparent;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+  }
+
+  .dl-news-page-card:hover .dl-news-page-image img {
+    transform: none;
+  }
+}
+
+/* ==========================================================
+   REDUCED MOTION
+========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-news-page *,
+  .dl-news-hero *,
+  .dl-article-modal-box {
+    animation: none !important;
+    transition: none !important;
   }
 }

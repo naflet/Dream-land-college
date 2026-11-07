@@ -96,7 +96,7 @@ function Vacancies() {
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
               <span className="dl-page-kicker">
-                <Sparkles size={14} /> Careers at Dream Land
+                 Careers at Dream Land
               </span>
             </div>
 
