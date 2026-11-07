@@ -1,4 +1,3 @@
-
 import React, {
   useState,
   useEffect,
@@ -21,24 +20,18 @@ import {
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import supabase from "../config/supabase";
 import "../styles/Gallery.css";
-
-/* ==========================================================
-   API CONFIGURATION
-========================================================== */
-
-const API_BASE_URL = (
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV
-    ? `${window.location.protocol}//${window.location.hostname}:5000/api`
-    : "")
-).replace(/\/+$/, "");
 
 /* ==========================================================
    PUBLIC GALLERY CACHE
 ========================================================== */
 
 const GALLERY_CACHE_KEY = "dream_land_public_gallery_cache";
+
+/* ==========================================================
+   CACHE HELPERS
+========================================================== */
 
 const readGalleryCache = () => {
   try {
@@ -57,6 +50,8 @@ const readGalleryCache = () => {
 
 const saveGalleryCache = (galleryItems) => {
   try {
+    if (!Array.isArray(galleryItems)) return;
+
     localStorage.setItem(
       GALLERY_CACHE_KEY,
       JSON.stringify(galleryItems)
@@ -67,70 +62,54 @@ const saveGalleryCache = (galleryItems) => {
 };
 
 /* ==========================================================
-   GALLERY API
+   FRIENDLY ERROR HANDLING
+========================================================== */
+
+const getGalleryErrorMessage = (error) => {
+  if (!error) {
+    return "Unable to load gallery images.";
+  }
+
+  const message = String(error.message || "").toLowerCase();
+
+  if (
+    message.includes("fetch") ||
+    message.includes("network") ||
+    message.includes("connection")
+  ) {
+    return "We couldn't connect to the gallery service. Please check your internet connection.";
+  }
+
+  if (
+    error.code === "401" ||
+    error.code === "403" ||
+    error.code === "PGRST301"
+  ) {
+    return "Gallery access is temporarily unavailable. Please try again later.";
+  }
+
+  return "We couldn't load the gallery right now. Please try again.";
+};
+
+/* ==========================================================
+   DIRECT SUPABASE GALLERY FETCH
 ========================================================== */
 
 const fetchGallery = async () => {
-  if (!API_BASE_URL) {
-    throw new Error("Gallery API is not configured.");
-  }
+  const { data, error } = await supabase
+    .from("gallery_images")
+    .select("*")
+    .eq("is_published", true)
+    .order("display_order", {
+      ascending: true,
+    });
 
-  const controller = new AbortController();
-
-  const timeoutId = setTimeout(() => {
-    controller.abort();
-  }, 15000);
-
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/gallery/active`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-        signal: controller.signal,
-        credentials: "omit",
-      }
-    );
-
-    const contentType =
-      response.headers.get("content-type") || "";
-
-    const result = contentType.includes("application/json")
-      ? await response.json()
-      : null;
-
-    if (!response.ok) {
-      throw new Error(
-        result?.message ||
-          result?.error ||
-          `Gallery request failed (${response.status}).`
-      );
-    }
-
-    if (!result?.success) {
-      throw new Error(
-        result?.message || "Gallery data is unavailable."
-      );
-    }
-
-    return Array.isArray(result.gallery)
-      ? result.gallery
-      : [];
-  } catch (error) {
-    if (error.name === "AbortError") {
-      throw new Error("The gallery request took too long.");
-    }
-
-    if (error instanceof TypeError) {
-      throw new Error("Unable to connect to the gallery server.");
-    }
-
+  if (error) {
+    console.error("Supabase gallery error:", error);
     throw error;
-  } finally {
-    clearTimeout(timeoutId);
   }
+
+  return Array.isArray(data) ? data : [];
 };
 
 /* ==========================================================
@@ -163,6 +142,7 @@ const normalizeGalleryImages = (galleryItems) => {
         url.trim() !== ""
     );
 
+    // Support older records with one image URL.
     if (
       imageUrls.length === 0 &&
       typeof galleryItem.image_url === "string" &&
@@ -242,6 +222,7 @@ function GalleryImage({ image, onClick }) {
 ========================================================== */
 
 function Gallery() {
+  // Load saved gallery data immediately.
   const [galleryItems, setGalleryItems] = useState(
     () => readGalleryCache()
   );
@@ -261,7 +242,7 @@ function Gallery() {
     useState(false);
 
   /* ========================================================
-     LOAD GALLERY
+     LOAD GALLERY FROM SUPABASE
   ======================================================== */
 
   const loadGallery = useCallback(async () => {
@@ -277,18 +258,27 @@ function Gallery() {
           Number(b.display_order || 0)
       );
 
+      // Update the current page.
       setGalleryItems(sortedData);
 
+      // Save the latest successful response.
       saveGalleryCache(sortedData);
+
+      setError("");
     } catch (err) {
       console.error("Gallery loading error:", err);
 
-      setError(
-        err.message || "Unable to load gallery images."
-      );
+      // Recover previously saved gallery data.
+      const cachedItems = readGalleryCache();
 
-      // Keep previously saved images.
-      // Do not clear the gallery when the backend is offline.
+      if (cachedItems.length > 0) {
+        setGalleryItems(cachedItems);
+
+        // Do not show an error over available gallery content.
+        setError("");
+      } else {
+        setError(getGalleryErrorMessage(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -652,7 +642,7 @@ function Gallery() {
 
                 <p>
                   Our gallery is temporarily unavailable.
-                  Please check back soon.
+                  Please check your internet connection and try again.
                 </p>
 
                 <button
@@ -689,7 +679,6 @@ function Gallery() {
             {/* EMPTY FILTER RESULTS */}
 
             {!loading &&
-              !error &&
               hasCachedImages &&
               filteredImages.length === 0 && (
                 <div className="dl-gallery-empty-state dl-fade-in">

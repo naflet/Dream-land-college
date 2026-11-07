@@ -1,4 +1,3 @@
-
 import React, {
   useCallback,
   useEffect,
@@ -24,10 +23,12 @@ import {
   Image as ImageIcon,
   LoaderCircle,
   ImageOff,
+  WifiOff,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import supabase from "../config/supabase";
 import api from "../admin/services/api";
 import "../styles/Library.css";
 
@@ -41,17 +42,8 @@ const LIBRARY_CACHE_KEY = "dream_land_public_library_cache";
    HELPERS
 ========================================================== */
 
-const normalizeResponse = (response) =>
-  response?.data ?? response ?? {};
-
 const normalizeArray = (value) =>
   Array.isArray(value) ? value : [];
-
-/*
-  Read previously saved library information.
-  This allows the page to display content immediately,
-  even when the backend is unavailable.
-*/
 
 const readLibraryCache = () => {
   try {
@@ -86,8 +78,8 @@ const readLibraryCache = () => {
 };
 
 /*
-  Save successful library information.
-  Never overwrite the cache with failed or empty responses.
+  Save only useful successful data.
+  Never replace existing saved content with empty responses.
 */
 
 const saveLibraryCache = (branches, books) => {
@@ -96,6 +88,10 @@ const saveLibraryCache = (branches, books) => {
       !Array.isArray(branches) ||
       !Array.isArray(books)
     ) {
+      return;
+    }
+
+    if (branches.length === 0 && books.length === 0) {
       return;
     }
 
@@ -253,13 +249,21 @@ const normalizeBook = (book, branchMap) => {
   };
 };
 
-/*
-  Never display raw database, Supabase, SQL, or RLS errors
-  to public visitors.
-*/
+/* ==========================================================
+   FRIENDLY ERROR MESSAGES
+========================================================== */
 
 const getFriendlyErrorMessage = (error) => {
-  const status = error?.response?.status;
+  const status = Number(
+    error?.status ||
+    error?.statusCode ||
+    error?.response?.status ||
+    0
+  );
+
+  if (!navigator.onLine) {
+    return "You are offline. Connect to the internet to refresh the library information. Previously saved information may still be available.";
+  }
 
   if (status === 404) {
     return "Library information is temporarily unavailable. Please try again later.";
@@ -284,7 +288,21 @@ const getFriendlyErrorMessage = (error) => {
 };
 
 const getFriendlyReservationError = (error) => {
-  const status = error?.response?.status;
+  const status = Number(
+    error?.status ||
+    error?.statusCode ||
+    error?.response?.status ||
+    0
+  );
+
+  if (
+    !navigator.onLine ||
+    String(error?.message || "")
+      .toLowerCase()
+      .includes("network")
+  ) {
+    return "Connection unavailable. Please check your internet connection and try again.";
+  }
 
   if (status === 409) {
     return "This book may have just been reserved by another student. Please refresh the library catalog and check its availability.";
@@ -363,6 +381,10 @@ function Library() {
 
   const [error, setError] = useState("");
 
+  const [isOffline, setIsOffline] = useState(
+    () => !navigator.onLine
+  );
+
   /* ========================================================
      FILTERS
   ======================================================== */
@@ -403,55 +425,110 @@ function Library() {
   const [savedBooks, setSavedBooks] = useState([]);
 
   /* ========================================================
-     LOAD LIBRARY DATA
-     GET /api/library/active
+     LOAD LIBRARY DIRECTLY FROM SUPABASE
 
-     Online:
-       Fetch latest branches and books.
-       Update page and cache.
+     Tables:
+       library_branches
+       library_books
 
-     Offline:
-       Keep previously saved branches and books.
-       Never clear existing data.
+     Published records:
+       is_published = true
+
+     Ordering:
+       display_order ASC
+
+     The local Express backend is NOT required
+     to display library branches and books.
   ======================================================== */
 
   const loadLibrary = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
+    if (!navigator.onLine) {
+      setIsOffline(true);
 
-      const response = await api.get("/library/active", {
-        timeout: 15000,
-      });
+      const cached = readLibraryCache();
 
-      const result = normalizeResponse(response);
-
-      if (result.success === false) {
-        throw new Error("Library information unavailable.");
+      if (
+        cached.branches.length === 0 &&
+        cached.books.length === 0
+      ) {
+        setError(
+          "You are offline and no saved library information is available. Connect to the internet and try again."
+        );
       }
 
-      const branchData = normalizeArray(result.branches);
-      const bookData = normalizeArray(result.books);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(
+      branches.length === 0 && books.length === 0
+    );
+
+    setError("");
+
+    try {
+      const [
+        branchesResult,
+        booksResult,
+      ] = await Promise.all([
+        supabase
+          .from("library_branches")
+          .select("*")
+          .eq("is_published", true)
+          .order("display_order", {
+            ascending: true,
+          }),
+
+        supabase
+          .from("library_books")
+          .select("*")
+          .eq("is_published", true)
+          .order("display_order", {
+            ascending: true,
+          }),
+      ]);
+
+      if (branchesResult.error) {
+        throw branchesResult.error;
+      }
+
+      if (booksResult.error) {
+        throw booksResult.error;
+      }
+
+      const branchData = normalizeArray(
+        branchesResult.data
+      );
+
+      const bookData = normalizeArray(
+        booksResult.data
+      );
 
       /*
-        Update displayed information.
+        Update the displayed information.
       */
 
       setBranches(branchData);
       setBooks(bookData);
 
       /*
-        Save only successful responses.
+        Save successful information for offline use.
       */
 
       saveLibraryCache(branchData, bookData);
 
       setError("");
+      setIsOffline(false);
     } catch (err) {
-      console.error("Library loading error:", err);
+      console.error(
+        "Library Supabase loading error:",
+        err
+      );
+
+      setIsOffline(!navigator.onLine);
 
       /*
-        Recover cached information.
+        Recover the previously saved information.
       */
 
       const cached = readLibraryCache();
@@ -469,12 +546,14 @@ function Library() {
       );
 
       /*
-        Do not show an error message if cached content exists.
+        Do not replace cached content with an error.
       */
 
       if (
         cached.branches.length === 0 &&
-        cached.books.length === 0
+        cached.books.length === 0 &&
+        branches.length === 0 &&
+        books.length === 0
       ) {
         setError(getFriendlyErrorMessage(err));
       } else {
@@ -483,7 +562,7 @@ function Library() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [branches.length, books.length]);
 
   /* ========================================================
      INITIAL LOAD
@@ -495,19 +574,35 @@ function Library() {
 
   /* ========================================================
      AUTOMATIC RECONNECTION
-
-     Refresh when the browser comes back online.
   ======================================================== */
 
   useEffect(() => {
     const handleOnline = () => {
+      setIsOffline(false);
       loadLibrary();
     };
 
+    const handleOffline = () => {
+      setIsOffline(true);
+
+      const cached = readLibraryCache();
+
+      if (
+        cached.branches.length === 0 &&
+        cached.books.length === 0
+      ) {
+        setError(
+          "You are offline. Connect to the internet to load library information."
+        );
+      }
+    };
+
     window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
       window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, [loadLibrary]);
 
@@ -566,7 +661,11 @@ function Library() {
 
       return matchesBranch && matchesSearch;
     });
-  }, [catalogItems, selectedBranch, searchQuery]);
+  }, [
+    catalogItems,
+    selectedBranch,
+    searchQuery,
+  ]);
 
   /* ========================================================
      BRANCH STATISTICS
@@ -602,13 +701,24 @@ function Library() {
 
   /* ========================================================
      SUBMIT BOOK RESERVATION
+
      POST /api/library/reservations
+
+     Reservation submission still requires the backend.
+     Only library browsing has moved to direct Supabase.
   ======================================================== */
 
   const handleReserveBook = async (e) => {
     e.preventDefault();
 
-    if (!activeBookModal) return;
+    if (!activeBookModal || bookingLoading) return;
+
+    if (!navigator.onLine) {
+      setBookingError(
+        "You are offline. Your reservation has not been submitted. Please reconnect and try again."
+      );
+      return;
+    }
 
     const trimmedStudentId = studentId.trim();
 
@@ -639,15 +749,21 @@ function Library() {
         }
       );
 
-      const result = normalizeResponse(response);
+      const result = response?.data ?? response ?? {};
 
       if (result.success === false) {
-        throw new Error("Reservation could not be submitted.");
+        throw new Error(
+          result.message ||
+            "Reservation could not be submitted."
+        );
       }
 
       setBookingSuccess(true);
     } catch (err) {
-      console.error("Library reservation error:", err);
+      console.error(
+        "Library reservation error:",
+        err
+      );
 
       setBookingError(
         getFriendlyReservationError(err)
@@ -1086,6 +1202,23 @@ function Library() {
               )}
             </div>
 
+            {/* OFFLINE INDICATOR */}
+
+            {isOffline &&
+              (branches.length > 0 || books.length > 0) && (
+                <div
+                  className="dl-staff-offline-indicator"
+                  role="status"
+                >
+                  <WifiOff size={15} />
+
+                  <span>
+                    Showing saved library information. Some
+                    information may not reflect the latest updates.
+                  </span>
+                </div>
+              )}
+
             {/* CATALOG CONTENT */}
 
             {loading &&
@@ -1204,8 +1337,9 @@ function Library() {
               <div className="dl-library-availability-summary">
                 <span>
                   <CheckCircle2 size={15} />
-                  {formatNumber(totalAvailableBooks)} books currently
-                  listed as available
+
+                  {formatNumber(totalAvailableBooks)} books
+                  currently listed as available
                 </span>
               </div>
             )}
@@ -1347,7 +1481,7 @@ function Library() {
                     <button
                       type="submit"
                       className="dl-btn dl-btn-primary dl-btn-block"
-                      disabled={bookingLoading}
+                      disabled={bookingLoading || !navigator.onLine}
                     >
                       {bookingLoading ? (
                         <>
@@ -1355,6 +1489,7 @@ function Library() {
                             size={17}
                             className="dl-library-spinner"
                           />
+
                           Submitting Request...
                         </>
                       ) : (

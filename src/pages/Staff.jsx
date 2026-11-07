@@ -1,4 +1,3 @@
-
 import React, {
   useCallback,
   useEffect,
@@ -29,6 +28,7 @@ import {
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import supabase from "../config/supabase";
 import api from "../admin/services/api";
 import "../styles/Staff.css";
 
@@ -38,32 +38,22 @@ import "../styles/Staff.css";
 
 const STAFF_CACHE_KEY = "dream_land_public_staff_cache";
 
+/* ==========================================================
+   ERROR HELPERS
+========================================================== */
+
 const getErrorStatus = (error) =>
   error?.response?.status ||
   error?.status ||
   error?.statusCode ||
   0;
 
-/* ==========================================================
-   ERROR HELPERS
-========================================================== */
-
-const getStaffErrorMessage = (error) => {
-  const status = getErrorStatus(error);
-
+const getStaffErrorMessage = () => {
   if (!navigator.onLine) {
-    return "You appear to be offline. Check your internet connection and try again.";
+    return "You are offline. Connect to the internet to refresh the staff directory. Previously saved profiles may still be available.";
   }
 
-  if (status === 404) {
-    return "The staff directory is temporarily unavailable.";
-  }
-
-  if (status >= 500) {
-    return "Our server is temporarily unavailable. Please try again shortly.";
-  }
-
-  return "We couldn't load the staff directory. Please try again.";
+  return "We couldn't load the staff directory right now. Please try again.";
 };
 
 const getConsultErrorMessage = (error) => {
@@ -99,35 +89,6 @@ const getConsultErrorMessage = (error) => {
 };
 
 /* ==========================================================
-   RESPONSE HELPERS
-========================================================== */
-
-const normalizeResponse = (response) =>
-  response?.data ?? response ?? {};
-
-const getStaffRecords = (response) => {
-  const result = normalizeResponse(response);
-
-  if (Array.isArray(result)) {
-    return result;
-  }
-
-  if (Array.isArray(result.staff)) {
-    return result.staff;
-  }
-
-  if (Array.isArray(result.data?.staff)) {
-    return result.data.staff;
-  }
-
-  if (Array.isArray(result.data)) {
-    return result.data;
-  }
-
-  return null;
-};
-
-/* ==========================================================
    LOCAL STORAGE CACHE
 ========================================================== */
 
@@ -139,9 +100,7 @@ const readStaffCache = () => {
 
     const parsed = JSON.parse(cached);
 
-    return Array.isArray(parsed)
-      ? parsed
-      : [];
+    return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
     console.warn("Unable to read saved staff directory:", error);
     return [];
@@ -207,11 +166,17 @@ const normalizeStaff = (staff) => ({
     : [],
 
   image:
-    staff.image_url ||
     staff.image ||
+    staff.image_url ||
     staff.image_path ||
     "",
+
+  campus_id: staff.campus_id || null,
 });
+
+/* ==========================================================
+   DATE HELPER
+========================================================== */
 
 const getLocalDate = () => {
   const now = new Date();
@@ -254,6 +219,7 @@ function StaffImage({ src, name }) {
         }}
       >
         <ImageIcon size={36} />
+
         <span style={{ fontSize: "12px" }}>
           Image unavailable
         </span>
@@ -277,7 +243,7 @@ function StaffImage({ src, name }) {
 
 function Staff() {
   const [staffMembers, setStaffMembers] = useState(
-    () => readStaffCache().map(normalizeStaff)
+    () => readStaffCache()
   );
 
   const [staffLoading, setStaffLoading] = useState(
@@ -285,6 +251,7 @@ function Staff() {
   );
 
   const [staffError, setStaffError] = useState("");
+
   const [isOffline, setIsOffline] = useState(
     () => !navigator.onLine
   );
@@ -295,9 +262,12 @@ function Staff() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [activeBioModal, setActiveBioModal] = useState(null);
-  const [activeConsultModal, setActiveConsultModal] = useState(null);
+
+  const [activeConsultModal, setActiveConsultModal] =
+    useState(null);
 
   const [consultSuccess, setConsultSuccess] = useState(false);
+
   const [savedStaff, setSavedStaff] = useState([]);
 
   const [consultForm, setConsultForm] = useState({
@@ -308,26 +278,31 @@ function Staff() {
   });
 
   const [consultLoading, setConsultLoading] = useState(false);
+
   const [consultError, setConsultError] = useState("");
 
   const hasStaff = staffMembers.length > 0;
 
   /* ========================================================
-     LOAD STAFF FROM BACKEND
+     LOAD STAFF DIRECTLY FROM SUPABASE
 
-     GET /api/staff/active
+     Table: staff
 
-     Offline:
-     - Keep cached staff.
-     - Do not clear the directory.
-     - Show a friendly error only if no cache exists.
+     Relationship:
+     campus:campuses(id, name, slug)
+
+     Public records:
+     is_active = true
+
+     IMPORTANT:
+     This does not require the local Express backend.
   ======================================================== */
 
   const fetchStaff = useCallback(async () => {
     if (!navigator.onLine) {
       setIsOffline(true);
 
-      if (!hasStaff) {
+      if (readStaffCache().length === 0) {
         setStaffError(
           "You are currently offline and no saved staff directory is available. Connect to the internet and try again."
         );
@@ -337,37 +312,49 @@ function Staff() {
       return;
     }
 
-    setStaffLoading(!hasStaff);
+    setStaffLoading((previous) =>
+      staffMembers.length === 0 ? true : false
+    );
+
     setStaffError("");
 
     try {
-      const response = await api.get("/staff/active");
+      const { data, error } = await supabase
+        .from("staff")
+        .select(`
+          *,
+          campus:campuses (
+            id,
+            name,
+            slug
+          )
+        `)
+        .eq("is_active", true)
+        .order("full_name", {
+          ascending: true,
+        });
 
-      const result = normalizeResponse(response);
-
-      if (result.success === false) {
-        throw new Error(
-          result.message || "Unable to load staff."
-        );
+      if (error) {
+        throw error;
       }
 
-      const records = getStaffRecords(response);
-
-      if (!Array.isArray(records)) {
+      if (!Array.isArray(data)) {
         throw new Error("Invalid staff directory response.");
       }
 
-      const normalizedStaff = records
+      const normalizedStaff = data
         .map(normalizeStaff)
         .filter((staff) => staff.id);
 
       setStaffMembers(normalizedStaff);
 
+      // Save the latest successful Supabase response.
       saveStaffCache(normalizedStaff);
 
       setStaffError("");
       setIsOffline(false);
 
+      // Remove bookmarks for profiles no longer published.
       setSavedStaff((previous) =>
         previous.filter((id) =>
           normalizedStaff.some(
@@ -376,7 +363,10 @@ function Staff() {
         )
       );
     } catch (error) {
-      console.error("Staff directory loading error:", error);
+      console.error(
+        "Staff directory Supabase loading error:",
+        error
+      );
 
       setIsOffline(
         !navigator.onLine ||
@@ -385,16 +375,23 @@ function Staff() {
           .includes("network")
       );
 
-      // Keep existing staff profiles when the backend fails.
-      if (!hasStaff) {
-        setStaffError(getStaffErrorMessage(error));
-      } else {
+      // Preserve existing profiles if Supabase is unavailable.
+      const cachedStaff = readStaffCache();
+
+      if (cachedStaff.length > 0) {
+        setStaffMembers(cachedStaff);
         setStaffError("");
+      } else {
+        setStaffError(getStaffErrorMessage());
       }
     } finally {
       setStaffLoading(false);
     }
-  }, [hasStaff]);
+  }, [staffMembers.length]);
+
+  /* ========================================================
+     INITIAL LOAD
+======================================================== */
 
   useEffect(() => {
     fetchStaff();
@@ -402,7 +399,7 @@ function Staff() {
 
   /* ========================================================
      AUTOMATIC RECONNECTION
-  ======================================================== */
+======================================================== */
 
   useEffect(() => {
     const handleOnline = () => {
@@ -413,7 +410,7 @@ function Staff() {
     const handleOffline = () => {
       setIsOffline(true);
 
-      if (!hasStaff) {
+      if (readStaffCache().length === 0) {
         setStaffError(
           "You are offline. Connect to the internet to load the staff directory."
         );
@@ -427,11 +424,11 @@ function Staff() {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [fetchStaff, hasStaff]);
+  }, [fetchStaff]);
 
   /* ========================================================
      DEPARTMENT FILTERS
-  ======================================================== */
+======================================================== */
 
   const departments = [
     "Executive Board",
@@ -468,11 +465,15 @@ function Staff() {
 
       return matchesDept && matchesSearch;
     });
-  }, [staffMembers, selectedDepartment, searchQuery]);
+  }, [
+    staffMembers,
+    selectedDepartment,
+    searchQuery,
+  ]);
 
   /* ========================================================
      CONSULTATION MODAL
-  ======================================================== */
+======================================================== */
 
   const openConsultModal = (staff) => {
     setConsultForm({
@@ -500,7 +501,8 @@ function Staff() {
 
      POST /api/consultations/submit
 
-     This action requires a live backend connection.
+     This still uses the Express backend.
+     Loading the staff directory does not.
   ======================================================== */
 
   const handleConsultSubmit = async (e) => {
@@ -523,7 +525,9 @@ function Staff() {
     }
 
     const studentName = consultForm.student_name.trim();
+
     const studentId = consultForm.student_id.trim();
+
     const purpose = consultForm.purpose.trim();
 
     if (studentName.length < 2) {
@@ -533,6 +537,13 @@ function Staff() {
 
     if (!consultForm.preferred_date) {
       setConsultError("Please select your preferred date.");
+      return;
+    }
+
+    if (consultForm.preferred_date < getLocalDate()) {
+      setConsultError(
+        "Please select today or a future date."
+      );
       return;
     }
 
@@ -560,11 +571,12 @@ function Staff() {
         payload
       );
 
-      const result = normalizeResponse(response);
+      const result = response?.data ?? response ?? {};
 
       if (result.success === false) {
         throw new Error(
-          result.message || "Consultation submission failed."
+          result.message ||
+            "Consultation submission failed."
         );
       }
 
@@ -577,7 +589,10 @@ function Staff() {
         purpose: "",
       });
     } catch (error) {
-      console.error("Consultation submission error:", error);
+      console.error(
+        "Consultation submission error:",
+        error
+      );
 
       setConsultError(getConsultErrorMessage(error));
     } finally {
@@ -587,7 +602,7 @@ function Staff() {
 
   /* ========================================================
      BOOKMARKS
-  ======================================================== */
+======================================================== */
 
   const toggleBookmark = (staffId, e) => {
     e.stopPropagation();
@@ -601,7 +616,7 @@ function Staff() {
 
   /* ========================================================
      RENDER
-  ======================================================== */
+======================================================== */
 
   return (
     <div className="dl-page dl-fade-in">
@@ -620,17 +635,20 @@ function Staff() {
               {savedStaff.length > 0 && (
                 <span className="dl-hero-saved-pill">
                   <Bookmark size={13} />
+
                   {savedStaff.length} Bookmarked Advisors
                 </span>
               )}
             </div>
 
-            <h1>Meet Our Distinguished Faculty & Staff</h1>
+            <h1>
+              Meet Our Distinguished Faculty & Staff
+            </h1>
 
             <p>
-              Dedicated educators, experienced researchers, and
-              administrative leaders committed to guiding your
-              academic journey at Dream Land College.
+              Dedicated educators, experienced researchers,
+              and administrative leaders committed to guiding
+              your academic journey at Dream Land College.
             </p>
 
             <div className="dl-hero-stats-grid">
@@ -643,6 +661,7 @@ function Staff() {
                       ? "..."
                       : `${staffMembers.length}+`}
                   </strong>
+
                   <span>Published Staff Profiles</span>
                 </div>
               </div>
@@ -652,6 +671,7 @@ function Staff() {
 
                 <div>
                   <strong>6 Faculties</strong>
+
                   <span>Academic Departments</span>
                 </div>
               </div>
@@ -661,6 +681,7 @@ function Staff() {
 
                 <div>
                   <strong>100%</strong>
+
                   <span>Student Mentorship</span>
                 </div>
               </div>
@@ -694,9 +715,11 @@ function Staff() {
                 role="status"
               >
                 <WifiOff size={15} />
+
                 <span>
-                  Showing saved staff profiles. Some information
-                  may not reflect the latest updates.
+                  Showing saved staff profiles. Some
+                  information may not reflect the latest
+                  updates.
                 </span>
               </div>
             )}
@@ -707,7 +730,9 @@ function Staff() {
               <button
                 type="button"
                 className={`dl-lib-tab ${
-                  selectedDepartment === "all" ? "active" : ""
+                  selectedDepartment === "all"
+                    ? "active"
+                    : ""
                 }`}
                 onClick={() => setSelectedDepartment("all")}
               >
@@ -719,7 +744,9 @@ function Staff() {
                   key={department}
                   type="button"
                   className={`dl-lib-tab ${
-                    selectedDepartment === department ? "active" : ""
+                    selectedDepartment === department
+                      ? "active"
+                      : ""
                   }`}
                   onClick={() =>
                     setSelectedDepartment(department)
@@ -779,7 +806,7 @@ function Staff() {
               </div>
             )}
 
-            {/* ERROR STATE - ONLY WHEN NO CACHE EXISTS */}
+            {/* ERROR STATE */}
 
             {!staffLoading && staffError && !hasStaff && (
               <div
@@ -817,8 +844,8 @@ function Staff() {
                   <h3>No Staff Profiles Available</h3>
 
                   <p>
-                    There are currently no published staff profiles.
-                    Please check again later.
+                    There are currently no published staff
+                    profiles. Please check again later.
                   </p>
 
                   <button
@@ -838,7 +865,9 @@ function Staff() {
               <div className="dl-staff-grid">
                 {filteredStaff.length > 0 ? (
                   filteredStaff.map((staff) => {
-                    const isSaved = savedStaff.includes(staff.id);
+                    const isSaved = savedStaff.includes(
+                      staff.id
+                    );
 
                     return (
                       <div
@@ -877,7 +906,9 @@ function Staff() {
                             <Bookmark
                               size={15}
                               fill={
-                                isSaved ? "currentColor" : "none"
+                                isSaved
+                                  ? "currentColor"
+                                  : "none"
                               }
                             />
                           </button>
@@ -1029,15 +1060,17 @@ function Staff() {
                   </strong>
 
                   <ul>
-                    {activeBioModal.research.map((item, idx) => (
-                      <li key={`${item}-${idx}`}>
-                        <CheckCircle2
-                          size={13}
-                          className="dl-text-green"
-                        />
-                        {item}
-                      </li>
-                    ))}
+                    {activeBioModal.research.map(
+                      (item, idx) => (
+                        <li key={`${item}-${idx}`}>
+                          <CheckCircle2
+                            size={13}
+                            className="dl-text-green"
+                          />
+                          {item}
+                        </li>
+                      )
+                    )}
                   </ul>
                 </div>
               )}
@@ -1096,8 +1129,8 @@ function Staff() {
 
                 <p>
                   Your meeting request has been successfully
-                  submitted. You will receive further information
-                  about your consultation.
+                  submitted. You will receive further
+                  information about your consultation.
                 </p>
 
                 <button
@@ -1132,8 +1165,9 @@ function Staff() {
                     role="status"
                   >
                     <WifiOff size={16} />
-                    You are offline. Reconnect before submitting
-                    your consultation request.
+
+                    You are offline. Reconnect before
+                    submitting your consultation request.
                   </div>
                 )}
 
@@ -1228,6 +1262,7 @@ function Staff() {
                       role="alert"
                     >
                       <AlertCircle size={17} />
+
                       <span>{consultError}</span>
                     </div>
                   )}
@@ -1235,7 +1270,9 @@ function Staff() {
                   <button
                     type="submit"
                     className="dl-btn dl-btn-primary dl-btn-block"
-                    disabled={consultLoading || !navigator.onLine}
+                    disabled={
+                      consultLoading || !navigator.onLine
+                    }
                   >
                     {consultLoading ? (
                       <>
@@ -1243,11 +1280,13 @@ function Staff() {
                           size={16}
                           className="dl-loading-spinner"
                         />
+
                         Submitting Request...
                       </>
                     ) : (
                       <>
                         <Calendar size={15} />
+
                         Submit Consultation Request
                       </>
                     )}
