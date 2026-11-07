@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   Search,
@@ -12,7 +12,6 @@ import {
   Loader2,
   MessageSquare,
   Clock,
-  UserRound,
   CalendarDays,
   Tag,
   X,
@@ -21,15 +20,18 @@ import {
   Quote,
 } from "lucide-react";
 
-import api, { getStoredAdmin } from "../services/api";
+import { useAuth } from "../AuthContext";
+import api from "../services/api";
 import "../styles/admin-testimonials.css";
 
 const AdminTestimonials = () => {
-  const admin = getStoredAdmin();
+  const { admin } = useAuth();
   const role = admin?.role;
 
+  // Super Admin and Admin have identical management permissions.
+  // Editors can view testimonials but cannot modify them.
   const canManage = ["super_admin", "admin"].includes(role);
-  const canDelete = role === "super_admin";
+  const canDelete = ["super_admin", "admin"].includes(role);
 
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ const AdminTestimonials = () => {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  const loadTestimonials = async (showLoader = true) => {
+  const loadTestimonials = useCallback(async (showLoader = true) => {
     try {
       if (showLoader) {
         setLoading(true);
@@ -69,11 +71,11 @@ const AdminTestimonials = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadTestimonials();
-  }, []);
+  }, [loadTestimonials]);
 
   const stats = useMemo(() => {
     return {
@@ -168,7 +170,7 @@ const AdminTestimonials = () => {
   };
 
   const handleStatusUpdate = async (testimonial, newStatus) => {
-    if (!canManage || updatingId) return;
+    if (!canManage || updatingId || deletingId) return;
 
     if (testimonial.status === newStatus) return;
 
@@ -198,7 +200,9 @@ const AdminTestimonials = () => {
       );
 
       if (!response?.success) {
-        throw new Error("Unable to update testimonial status.");
+        throw new Error(
+          response?.message || "Unable to update testimonial status."
+        );
       }
 
       const updatedTestimonial = response.testimonial;
@@ -237,7 +241,7 @@ const AdminTestimonials = () => {
   };
 
   const handleDelete = async (testimonial) => {
-    if (!canDelete || deletingId) return;
+    if (!canDelete || deletingId || updatingId) return;
 
     const confirmed = window.confirm(
       `Delete the testimonial submitted by "${testimonial.author_name}"? This action cannot be undone.`
@@ -696,7 +700,7 @@ const AdminTestimonials = () => {
                       "approved"
                     )
                   }
-                  disabled={Boolean(updatingId)}
+                  disabled={Boolean(updatingId) || Boolean(deletingId)}
                 >
                   <ThumbsUp size={16} />
                   Approve
@@ -713,7 +717,7 @@ const AdminTestimonials = () => {
                       "rejected"
                     )
                   }
-                  disabled={Boolean(updatingId)}
+                  disabled={Boolean(updatingId) || Boolean(deletingId)}
                 >
                   <ThumbsDown size={16} />
                   Reject
@@ -730,7 +734,7 @@ const AdminTestimonials = () => {
                       "pending"
                     )
                   }
-                  disabled={Boolean(updatingId)}
+                  disabled={Boolean(updatingId) || Boolean(deletingId)}
                 >
                   <Clock size={16} />
                   Return to Pending
@@ -742,7 +746,7 @@ const AdminTestimonials = () => {
                   type="button"
                   className="at-modal-delete"
                   onClick={() => handleDelete(selectedTestimonial)}
-                  disabled={Boolean(deletingId)}
+                  disabled={Boolean(deletingId) || Boolean(updatingId)}
                 >
                   <Trash2 size={16} />
                   Delete

@@ -1,5 +1,6 @@
 
 import React, { useEffect } from "react";
+
 import {
   BrowserRouter,
   Routes,
@@ -8,9 +9,9 @@ import {
   Navigate,
 } from "react-router-dom";
 
-/* ==========================================================
-   PUBLIC WEBSITE PAGES
-========================================================== */
+// ==========================================================
+// PUBLIC WEBSITE PAGES
+// ==========================================================
 
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -26,17 +27,17 @@ import News from "./pages/News";
 import Vacancies from "./pages/Vacancies";
 import Contact from "./pages/Contact";
 
-/* ==========================================================
-   ADMIN AUTHENTICATION AND LAYOUT
-========================================================== */
+// ==========================================================
+// ADMIN AUTHENTICATION AND LAYOUT
+// ==========================================================
 
 import { AuthProvider } from "./admin/AuthContext";
 import ProtectedRoute from "./admin/components/ProtectedRoute";
 import AdminLayout from "./admin/components/AdminLayout";
 
-/* ==========================================================
-   ADMIN PAGES
-========================================================== */
+// ==========================================================
+// ADMIN PAGES
+// ==========================================================
 
 import AdminLogin from "./admin/pages/AdminLogin";
 import AdminDashboard from "./admin/pages/AdminDashboard";
@@ -46,6 +47,8 @@ import AdminStaff from "./admin/pages/AdminStaff";
 import AdminNews from "./admin/pages/AdminNews";
 import AdminAcademicCalendar from "./admin/pages/AdminAcademicCalendar";
 import AdminTestimonials from "./admin/pages/AdminTestimonials";
+import AdminGallery from "./admin/pages/AdminGallery";
+import AdminLibrary from "./admin/pages/AdminLibrary";
 import AdminApplications from "./admin/pages/AdminApplications";
 import AdminConsultations from "./admin/pages/AdminConsultations";
 import AdminContactMessages from "./admin/pages/AdminContactMessages";
@@ -53,15 +56,26 @@ import AdminVacancies from "./admin/pages/AdminVacancies";
 import AdminJobApplications from "./admin/pages/AdminJobApplications";
 import AdminProfile from "./admin/pages/AdminProfile";
 
-/* ==========================================================
-   GLOBAL STYLES
-========================================================== */
+// Super Admin only
+import AdminManagement from "./admin/pages/AdminManagement";
+
+// ==========================================================
+// GLOBAL STYLES
+// ==========================================================
 
 import "./styles/global.css";
 
-/* ==========================================================
-   SCROLL TO TOP ON ROUTE CHANGE
-========================================================== */
+// ==========================================================
+// ROLE CONFIGURATION
+// ==========================================================
+
+const ADMIN_ROLES = ["super_admin", "admin"];
+
+const SUPER_ADMIN_ONLY = ["super_admin"];
+
+// ==========================================================
+// SCROLL TO TOP ON ROUTE CHANGE
+// ==========================================================
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -76,9 +90,9 @@ function ScrollToTop() {
   return null;
 }
 
-/* ==========================================================
-   MAIN APP
-========================================================== */
+// ==========================================================
+// MAIN APP
+// ==========================================================
 
 function App() {
   return (
@@ -88,7 +102,9 @@ function App() {
 
         <Routes>
 
-          {/* PUBLIC WEBSITE ROUTES */}
+          {/* ==================================================
+              PUBLIC WEBSITE ROUTES
+          ================================================== */}
 
           <Route path="/" element={<Home />} />
 
@@ -101,40 +117,88 @@ function App() {
             element={<ProgramDetail />}
           />
 
-          <Route path="/admissions" element={<Admissions />} />
+          <Route
+            path="/admissions"
+            element={<Admissions />}
+          />
 
-          <Route path="/application" element={<Application />} />
+          <Route
+            path="/application"
+            element={<Application />}
+          />
 
-          <Route path="/campuses" element={<Campuses />} />
+          <Route
+            path="/campuses"
+            element={<Campuses />}
+          />
 
-          <Route path="/gallery" element={<Gallery />} />
+          <Route
+            path="/gallery"
+            element={<Gallery />}
+          />
 
-          <Route path="/library" element={<Library />} />
+          <Route
+            path="/library"
+            element={<Library />}
+          />
 
-          <Route path="/staff" element={<Staff />} />
+          <Route
+            path="/staff"
+            element={<Staff />}
+          />
 
-          <Route path="/news" element={<News />} />
+          <Route
+            path="/news"
+            element={<News />}
+          />
 
-          <Route path="/vacancies" element={<Vacancies />} />
+          <Route
+            path="/vacancies"
+            element={<Vacancies />}
+          />
 
-          <Route path="/contact" element={<Contact />} />
+          <Route
+            path="/contact"
+            element={<Contact />}
+          />
 
-          {/* ADMIN LOGIN */}
+          {/* ==================================================
+              ADMIN LOGIN
+          ================================================== */}
 
           <Route
             path="/admin/login"
             element={<AdminLogin />}
           />
 
-          {/* PROTECTED ADMIN ROUTES */}
+          {/* ==================================================
+              PROTECTED ADMIN ROUTES
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
+              Only Super Admin and Admin can enter.
+          ================================================== */}
+
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={ADMIN_ROLES} />
+            }
+          >
+            <Route
+              path="/admin"
+              element={<AdminLayout />}
+            >
+              {/* ==================================================
+                  DASHBOARD
+              ================================================== */}
 
               <Route
                 index
                 element={<AdminDashboard />}
               />
+
+              {/* ==================================================
+                  COLLEGE MANAGEMENT
+                  Super Admin + Admin
+              ================================================== */}
 
               <Route
                 path="campuses"
@@ -150,6 +214,11 @@ function App() {
                 path="staff"
                 element={<AdminStaff />}
               />
+
+              {/* ==================================================
+                  WEBSITE CONTENT
+                  Super Admin + Admin
+              ================================================== */}
 
               <Route
                 path="news"
@@ -167,6 +236,21 @@ function App() {
               />
 
               <Route
+                path="gallery"
+                element={<AdminGallery />}
+              />
+
+              <Route
+                path="library"
+                element={<AdminLibrary />}
+              />
+
+              {/* ==================================================
+                  STUDENT SERVICES
+                  Super Admin + Admin
+              ================================================== */}
+
+              <Route
                 path="applications"
                 element={<AdminApplications />}
               />
@@ -181,6 +265,11 @@ function App() {
                 element={<AdminContactMessages />}
               />
 
+              {/* ==================================================
+                  CAREER MANAGEMENT
+                  Super Admin + Admin
+              ================================================== */}
+
               <Route
                 path="vacancies"
                 element={<AdminVacancies />}
@@ -191,15 +280,43 @@ function App() {
                 element={<AdminJobApplications />}
               />
 
+              {/* ==================================================
+                  PERSONAL ACCOUNT
+                  Both roles can manage their own profile.
+              ================================================== */}
+
               <Route
                 path="profile"
                 element={<AdminProfile />}
               />
 
+              {/* ==================================================
+                  ADMINISTRATOR MANAGEMENT
+
+                  SUPER ADMIN ONLY
+
+                  Admin cannot access this route.
+              ================================================== */}
+
+              <Route
+                element={
+                  <ProtectedRoute
+                    allowedRoles={SUPER_ADMIN_ONLY}
+                  />
+                }
+              >
+                <Route
+                  path="administrators"
+                  element={<AdminManagement />}
+                />
+              </Route>
+
             </Route>
           </Route>
 
-          {/* CATCH-ALL FALLBACK ROUTE */}
+          {/* ==================================================
+              CATCH-ALL FALLBACK
+          ================================================== */}
 
           <Route
             path="*"

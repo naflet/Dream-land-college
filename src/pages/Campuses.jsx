@@ -12,7 +12,9 @@ import {
   CheckCircle2,
   Navigation,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  ImageOff,
+  RefreshCw,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
@@ -26,7 +28,6 @@ const CAMPUS_BUCKET = "campus-images";
 const getCampusImageUrl = (imagePath) => {
   if (!imagePath) return "";
 
-  // Support existing complete image URLs.
   if (
     imagePath.startsWith("https://") ||
     imagePath.startsWith("http://")
@@ -34,7 +35,6 @@ const getCampusImageUrl = (imagePath) => {
     return imagePath;
   }
 
-  // Remove leading slashes to avoid malformed URLs.
   const cleanPath = imagePath.replace(/^\/+/, "");
 
   return `${SUPABASE_URL}/storage/v1/object/public/${CAMPUS_BUCKET}/${cleanPath
@@ -43,99 +43,156 @@ const getCampusImageUrl = (imagePath) => {
     .join("/")}`;
 };
 
+/* ==========================================================
+   CAMPUS IMAGE WITH FALLBACK
+========================================================== */
+
+function CampusImage({ src, alt, className = "" }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [src]);
+
+  return (
+    <div className={`${className} dl-campus-image-wrapper`}>
+      {src && !imageFailed ? (
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          onError={() => {
+            console.error("Campus image failed to load:", src);
+            setImageFailed(true);
+          }}
+        />
+      ) : (
+        <div
+          className="dl-campus-image-fallback"
+          role="img"
+          aria-label={`${alt || "Campus"} image unavailable`}
+        >
+          <ImageOff size={34} />
+          <strong>Unable to Load Image</strong>
+          <span>Campus image is currently unavailable.</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Campuses() {
   const [campusesData, setCampusesData] = useState([]);
   const [activeCampusId, setActiveCampusId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const fetchCampuses = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const { data, error: supabaseError } = await supabase
-        .from("campuses")
-        .select("*");
-
-      if (supabaseError) {
-        throw supabaseError;
-      }
-
-      if (!Array.isArray(data)) {
-        throw new Error("Unable to load campus information.");
-      }
-
-      const formattedCampuses = data.map((campus) => ({
-        ...campus,
-
-        shortName:
-          campus.shortName ||
-          campus.name?.replace(/\s+Campus$/i, "") ||
-          campus.name,
-
-        // Build public Supabase Storage image URL.
-        image: getCampusImageUrl(
-          campus.image_path || campus.image || ""
-        ),
-
-        facilities: Array.isArray(campus.facilities)
-          ? campus.facilities
-          : typeof campus.facilities === "string"
-            ? (() => {
-                try {
-                  const parsed = JSON.parse(campus.facilities);
-                  return Array.isArray(parsed) ? parsed : [];
-                } catch {
-                  return [];
-                }
-              })()
-            : [],
-
-        mapQuery:
-          campus.map_url ||
-          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            campus.address || campus.name
-          )}`
-      }));
-
-      setCampusesData(formattedCampuses);
-
-      if (formattedCampuses.length > 0) {
-        setActiveCampusId((currentId) => {
-          const existingCampus = formattedCampuses.find(
-            (campus) => String(campus.id) === String(currentId)
-          );
-
-          return existingCampus
-            ? existingCampus.id
-            : formattedCampuses[0].id;
-        });
-      } else {
-        setActiveCampusId(null);
-      }
-    } catch (err) {
-      console.error("Error loading campuses:", err);
-
-      setError(
-        err.message ||
-          "Unable to load campus information. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  /* ==========================================================
+     FETCH CAMPUSES
+  ========================================================== */
 
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchCampuses = async () => {
+      try {
+        setLoading(true);
+        setError(false);
+
+        const { data, error: supabaseError } = await supabase
+          .from("campuses")
+          .select("*");
+
+        if (supabaseError) {
+          throw supabaseError;
+        }
+
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid campus data received.");
+        }
+
+        const formattedCampuses = data.map((campus) => ({
+          ...campus,
+
+          shortName:
+            campus.shortName ||
+            campus.name?.replace(/\s+Campus$/i, "") ||
+            campus.name,
+
+          image: getCampusImageUrl(
+            campus.image_path || campus.image || ""
+          ),
+
+          facilities: Array.isArray(campus.facilities)
+            ? campus.facilities
+            : typeof campus.facilities === "string"
+              ? (() => {
+                  try {
+                    const parsed = JSON.parse(campus.facilities);
+                    return Array.isArray(parsed) ? parsed : [];
+                  } catch {
+                    return [];
+                  }
+                })()
+              : [],
+
+          mapQuery:
+            campus.map_url ||
+            `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+              campus.address || campus.name
+            )}`,
+        }));
+
+        if (!isMounted) return;
+
+        setCampusesData(formattedCampuses);
+
+        if (formattedCampuses.length > 0) {
+          setActiveCampusId((currentId) => {
+            const existingCampus = formattedCampuses.find(
+              (campus) => String(campus.id) === String(currentId)
+            );
+
+            return existingCampus
+              ? existingCampus.id
+              : formattedCampuses[0].id;
+          });
+        } else {
+          setActiveCampusId(null);
+        }
+      } catch (err) {
+        console.error("Error loading campuses:", err);
+
+        if (isMounted) {
+          setError(true);
+          setCampusesData([]);
+          setActiveCampusId(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchCampuses();
-  }, []);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [retryCount]);
+
+  /* ==========================================================
+     ACTIVE CAMPUS
+  ========================================================== */
 
   const activeCampus = campusesData.find(
     (campus) => String(campus.id) === String(activeCampusId)
   );
 
   const handleRetry = () => {
-    fetchCampuses();
+    setRetryCount((previous) => previous + 1);
   };
 
   return (
@@ -194,25 +251,58 @@ function Campuses() {
               <h2>Select a Campus to View Details</h2>
             </div>
 
+            {/* LOADING STATE */}
             {loading ? (
-              <div style={{ textAlign: "center", padding: "50px 20px" }}>
-                Loading campus information...
+              <div
+                className="dl-campus-status dl-campus-loading"
+                role="status"
+                aria-live="polite"
+              >
+                <RefreshCw size={30} className="dl-campus-spinner" />
+                <h3>Loading Campuses</h3>
+                <p>
+                  Please wait while we retrieve campus information.
+                </p>
               </div>
             ) : error ? (
-              <div style={{ textAlign: "center", padding: "50px 20px" }}>
-                <p>{error}</p>
+              /* ERROR STATE */
+              <div
+                className="dl-campus-status dl-campus-error"
+                role="alert"
+              >
+                <div className="dl-campus-status-icon">
+                  <RefreshCw size={28} />
+                </div>
+
+                <h3>Unable to Load Campuses</h3>
+
+                <p>
+                  We couldn't retrieve campus information right now.
+                  Please check your connection and try again.
+                </p>
 
                 <button
                   type="button"
-                  className="dl-btn dl-btn-primary"
+                  className="dl-btn dl-btn-primary dl-campus-retry"
                   onClick={handleRetry}
                 >
+                  <RefreshCw size={16} />
                   Try Again
                 </button>
               </div>
             ) : campusesData.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "50px 20px" }}>
-                No campuses are currently available.
+              /* EMPTY STATE */
+              <div className="dl-campus-status dl-campus-empty">
+                <div className="dl-campus-status-icon">
+                  <Building2 size={30} />
+                </div>
+
+                <h3>No Campuses Available</h3>
+
+                <p>
+                  There are currently no campus locations available.
+                  Please check back later.
+                </p>
               </div>
             ) : (
               <>
@@ -249,27 +339,11 @@ function Campuses() {
                       key={activeCampus.id}
                     >
                       <div className="dl-campus-featured-grid">
-                        <div className="dl-campus-featured-img">
-                          {activeCampus.image ? (
-                            <img
-                              src={activeCampus.image}
-                              alt={activeCampus.name}
-                              loading="lazy"
-                              onError={(e) => {
-                                console.error(
-                                  "Campus image failed to load:",
-                                  activeCampus.image
-                                );
-                                e.currentTarget.style.display = "none";
-                              }}
-                            />
-                          ) : null}
-
-                          <span className="dl-campus-badge-overlay">
-                            <MapPin size={14} />{" "}
-                            {activeCampus.shortName} Flagship
-                          </span>
-                        </div>
+                        <CampusImage
+                          src={activeCampus.image}
+                          alt={activeCampus.name}
+                          className="dl-campus-featured-img"
+                        />
 
                         <div className="dl-campus-featured-info">
                           <h2>{activeCampus.name}</h2>
@@ -325,7 +399,7 @@ function Campuses() {
                               fontSize: "14px",
                               fontWeight: "700",
                               color: "#0f172a",
-                              margin: "16px 0 10px 0"
+                              margin: "16px 0 10px 0",
                             }}
                           >
                             Campus Facilities & Infrastructure:
@@ -370,6 +444,11 @@ function Campuses() {
                           </div>
                         </div>
                       </div>
+
+                      <span className="dl-campus-badge-overlay">
+                        <MapPin size={14} />{" "}
+                        {activeCampus.shortName} Flagship
+                      </span>
                     </div>
 
                     {/* ALL CAMPUSES GRID CARDS */}
@@ -392,27 +471,11 @@ function Campuses() {
                           key={campus.id}
                           onClick={() => setActiveCampusId(campus.id)}
                         >
-                          <div className="dl-campus-detail-image">
-                            {campus.image ? (
-                              <img
-                                src={campus.image}
-                                alt={`${campus.name} campus`}
-                                loading="lazy"
-                                onError={(e) => {
-                                  console.error(
-                                    "Campus image failed to load:",
-                                    campus.image
-                                  );
-                                  e.currentTarget.style.display = "none";
-                                }}
-                              />
-                            ) : null}
-
-                            <span>
-                              <MapPin size={14} />
-                              {campus.shortName}
-                            </span>
-                          </div>
+                          <CampusImage
+                            src={campus.image}
+                            alt={`${campus.name} campus`}
+                            className="dl-campus-detail-image"
+                          />
 
                           <div className="dl-campus-detail-body">
                             <h2>{campus.name}</h2>

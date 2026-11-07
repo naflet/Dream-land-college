@@ -1,0 +1,1769 @@
+
+/* ==========================================================
+   DREAM LAND COLLEGE - ADMIN LIBRARY
+   MATCHED WITH ADMIN GALLERY DESIGN
+========================================================== */
+
+.admin-library-page {
+  width: 100%;
+  min-width: 0;
+  padding-bottom: 35px;
+  color: #183b56;
+}
+
+.admin-library-page *,
+.admin-library-page *::before,
+.admin-library-page *::after {
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   ANIMATIONS
+========================================================== */
+
+@keyframes alFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes alSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.al-spin {
+  animation: alSpin 1s linear infinite;
+}
+
+.al-card,
+.al-book-card,
+.al-stat-card,
+.al-reservation-card {
+  animation: alFadeIn 0.35s ease both;
+}
+
+/* ==========================================================
+   PAGE HEADER
+========================================================== */
+
+.admin-library-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 27px;
+}
+
+.al-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #078b83;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  margin-bottom: 9px;
+}
+
+.admin-library-header h1 {
+  margin: 0 0 8px;
+  color: #10243a;
+  font-size: clamp(25px, 3vw, 32px);
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.admin-library-header p {
+  max-width: 650px;
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.al-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ==========================================================
+   BUTTONS
+========================================================== */
+
+.al-btn {
+  min-height: 42px;
+  padding: 0 16px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.al-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.al-btn-primary {
+  color: #fff;
+  background: #078b83;
+  box-shadow: 0 4px 12px rgba(7, 139, 131, 0.15);
+}
+
+.al-btn-primary:hover:not(:disabled) {
+  background: #06766f;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(7, 139, 131, 0.2);
+}
+
+.al-btn-secondary {
+  color: #183b56;
+  background: #fff;
+  border-color: #dce5ec;
+}
+
+.al-btn-secondary:hover:not(:disabled) {
+  background: #f1f7f9;
+  border-color: #b9d7d7;
+}
+
+.al-btn-danger {
+  color: #fff;
+  background: #dc2626;
+}
+
+.al-btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+/* ==========================================================
+   ALERTS
+========================================================== */
+
+.al-alert {
+  width: 100%;
+  min-height: 45px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.al-alert > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.al-alert button {
+  width: 27px;
+  height: 27px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.al-alert-success {
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+}
+
+.al-alert-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+/* ==========================================================
+   STATISTICS
+========================================================== */
+
+.al-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.al-stat-card {
+  min-width: 0;
+  min-height: 112px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e5edf2;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(16, 36, 58, 0.035);
+}
+
+.al-stat-icon {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+}
+
+.al-stat-blue {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.al-stat-teal {
+  color: #078b83;
+  background: #e6f7f5;
+}
+
+.al-stat-green {
+  color: #059669;
+  background: #ecfdf5;
+}
+
+.al-stat-orange {
+  color: #d97706;
+  background: #fffbeb;
+}
+
+.al-stat-card > div:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.al-stat-card span {
+  color: #718096;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.al-stat-card strong {
+  color: #10243a;
+  font-size: 25px;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.al-stat-card small {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* ==========================================================
+   MAIN TABS
+========================================================== */
+
+.al-main-tabs {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  background: #edf3f6;
+  border-radius: 10px;
+}
+
+.al-main-tabs button {
+  min-height: 43px;
+  padding: 0 17px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  color: #64748b;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.al-main-tabs button:hover {
+  color: #078b83;
+}
+
+.al-main-tabs button.active {
+  color: #078b83;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(16, 36, 58, 0.07);
+}
+
+.al-main-tabs button > span {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: inline-grid;
+  place-items: center;
+  color: #64748b;
+  background: #edf3f6;
+  border-radius: 20px;
+  font-size: 10px;
+}
+
+.al-main-tabs button.active > span {
+  color: #078b83;
+  background: #e9f8f6;
+}
+
+.al-main-tabs button > span.al-tab-pending {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+/* ==========================================================
+   TOOLBAR
+========================================================== */
+
+.al-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 23px;
+}
+
+.al-search {
+  width: min(100%, 410px);
+  min-height: 44px;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #8494a5;
+  background: #fff;
+  border: 1px solid #dce5ec;
+  border-radius: 9px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.al-search:focus-within {
+  border-color: #078b83;
+  box-shadow: 0 0 0 3px rgba(7, 139, 131, 0.09);
+}
+
+.al-search input {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  border: 0;
+  outline: 0;
+  color: #183b56;
+  background: transparent;
+  font-size: 13px;
+}
+
+.al-search input::placeholder {
+  color: #9aa9b8;
+}
+
+.al-search button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: #718096;
+  background: transparent;
+  cursor: pointer;
+}
+
+.al-filter-tabs {
+  max-width: 100%;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  color: #8494a5;
+  background: #edf3f6;
+  border-radius: 9px;
+}
+
+.al-filter-tabs > svg {
+  margin: 0 5px;
+  flex-shrink: 0;
+}
+
+.al-filter-tabs button {
+  min-height: 33px;
+  padding: 0 11px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 7px;
+  color: #64748b;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.al-filter-tabs button:hover {
+  color: #078b83;
+}
+
+.al-filter-tabs button.active {
+  color: #078b83;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(16, 36, 58, 0.07);
+}
+
+/* ==========================================================
+   BRANCH GRID
+========================================================== */
+
+.al-grid,
+.al-book-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 21px;
+}
+
+.al-card,
+.al-book-card {
+  min-width: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e3ebf0;
+  border-radius: 13px;
+  box-shadow: 0 3px 13px rgba(16, 36, 58, 0.035);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.al-card:hover,
+.al-book-card:hover {
+  transform: translateY(-3px);
+  border-color: #c6dfdf;
+  box-shadow: 0 10px 26px rgba(16, 36, 58, 0.09);
+}
+
+/* ==========================================================
+   BRANCH COVER
+========================================================== */
+
+.al-card-cover {
+  width: 100%;
+  height: 195px;
+  position: relative;
+  overflow: hidden;
+  background: #edf3f6;
+}
+
+.al-card-cover > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.al-card:hover .al-card-cover > img {
+  transform: scale(1.045);
+}
+
+.al-no-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  color: #94a3b8;
+  background: #f1f5f9;
+  font-size: 12px;
+}
+
+.al-status {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  backdrop-filter: blur(8px);
+}
+
+.al-status.published {
+  color: #047857;
+  background: rgba(236, 253, 245, 0.96);
+}
+
+.al-status.draft {
+  color: #b45309;
+  background: rgba(255, 251, 235, 0.96);
+}
+
+.al-card-count {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  background: rgba(16, 36, 58, 0.78);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+/* ==========================================================
+   BOOK COVER
+========================================================== */
+
+.al-book-cover {
+  height: 155px;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(7, 139, 131, 0.16), transparent 38%),
+    linear-gradient(135deg, #e7f6f4, #eff6ff);
+}
+
+.al-book-cover-icon {
+  width: 75px;
+  height: 90px;
+  display: grid;
+  place-items: center;
+  color: #078b83;
+  background: #fff;
+  border: 1px solid rgba(7, 139, 131, 0.12);
+  border-radius: 8px 12px 12px 8px;
+  box-shadow: 7px 8px 0 rgba(16, 36, 58, 0.08);
+}
+
+.al-book-status {
+  position: absolute;
+  right: 11px;
+  bottom: 11px;
+  padding: 6px 9px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.al-book-status.available {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.al-book-status.reserved {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+.al-book-status.unavailable {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.al-book-published {
+  top: 11px;
+  bottom: auto;
+  left: 11px;
+  right: auto;
+}
+
+/* ==========================================================
+   CARD BODY
+========================================================== */
+
+.al-card-body {
+  padding: 16px;
+}
+
+.al-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.al-category {
+  max-width: 70%;
+  padding: 5px 8px;
+  overflow: hidden;
+  color: #078b83;
+  background: #e9f8f6;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.al-order {
+  color: #8494a5;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.al-card-body h3 {
+  margin: 0 0 10px;
+  color: #10243a;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.al-detail-line {
+  min-width: 0;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #718096;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.al-detail-line svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #078b83;
+}
+
+.al-detail-line span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.al-description {
+  min-height: 38px;
+  margin: 11px 0 13px;
+  color: #718096;
+  font-size: 12px;
+  line-height: 1.65;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.al-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 13px;
+}
+
+.al-amenities span {
+  max-width: 100%;
+  padding: 5px 7px;
+  color: #64748b;
+  background: #f1f5f9;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.al-card-date {
+  padding: 11px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #edf1f4;
+  color: #8494a5;
+  font-size: 11px;
+}
+
+.al-card-date strong {
+  color: #475569;
+  font-size: 11px;
+}
+
+/* ==========================================================
+   CARD ACTIONS
+========================================================== */
+
+.al-card-actions {
+  padding-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  border-top: 1px solid #edf1f4;
+}
+
+.al-action-btn {
+  min-height: 33px;
+  padding: 0 9px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.al-action-edit {
+  color: #078b83;
+  background: #e9f8f6;
+}
+
+.al-action-edit:hover {
+  background: #d5f2ed;
+}
+
+.al-action-publish {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.al-action-publish:hover {
+  background: #d1fae5;
+}
+
+.al-action-unpublish {
+  color: #b45309;
+  background: #fffbeb;
+}
+
+.al-action-unpublish:hover {
+  background: #fef3c7;
+}
+
+.al-action-delete {
+  width: 34px;
+  padding: 0;
+  margin-left: auto;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.al-action-delete:hover {
+  background: #fee2e2;
+}
+
+/* ==========================================================
+   RESERVATION LIST
+========================================================== */
+
+.al-reservation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.al-reservation-card {
+  min-width: 0;
+  padding: 17px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  background: #fff;
+  border: 1px solid #e3ebf0;
+  border-radius: 12px;
+  box-shadow: 0 3px 13px rgba(16, 36, 58, 0.035);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.al-reservation-card:hover {
+  border-color: #c6dfdf;
+  box-shadow: 0 7px 20px rgba(16, 36, 58, 0.07);
+}
+
+.al-reservation-main {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.al-reservation-icon {
+  width: 43px;
+  height: 43px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: #078b83;
+  background: #e9f8f6;
+  border-radius: 10px;
+}
+
+.al-reservation-info {
+  min-width: 0;
+}
+
+.al-reservation-info h3 {
+  margin: 0 0 6px;
+  color: #10243a;
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.al-reservation-info > p {
+  margin: 0 0 8px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.al-reservation-info > p strong {
+  color: #183b56;
+}
+
+.al-reservation-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 15px;
+  color: #8494a5;
+  font-size: 10px;
+}
+
+.al-reservation-details span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.al-reservation-details svg {
+  color: #078b83;
+}
+
+.al-reservation-info .al-admin-note {
+  margin-top: 9px;
+  padding: 8px 10px;
+  color: #64748b;
+  background: #f8fafc;
+  border-left: 3px solid #078b83;
+  border-radius: 4px;
+  line-height: 1.5;
+}
+
+.al-reservation-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.al-reservation-status {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.al-reservation-status.pending {
+  color: #b45309;
+  background: #fffbeb;
+}
+
+.al-reservation-status.approved {
+  color: #047857;
+  background: #ecfdf5;
+}
+
+.al-reservation-status.rejected {
+  color: #b91c1c;
+  background: #fef2f2;
+}
+
+.al-reservation-status.completed {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.al-reservation-status.cancelled {
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+/* ==========================================================
+   LOADING AND EMPTY STATES
+========================================================== */
+
+.al-state {
+  min-height: 280px;
+  padding: 35px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #078b83;
+  text-align: center;
+  background: #fff;
+  border: 1px dashed #d6e2e9;
+  border-radius: 12px;
+}
+
+.al-state-icon {
+  width: 65px;
+  height: 65px;
+  margin-bottom: 13px;
+  display: grid;
+  place-items: center;
+  color: #078b83;
+  background: #e9f8f6;
+  border-radius: 50%;
+}
+
+.al-state h3 {
+  margin: 12px 0 7px;
+  color: #183b56;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.al-state p {
+  max-width: 430px;
+  margin: 0 0 18px;
+  color: #8494a5;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* ==========================================================
+   MODALS
+========================================================== */
+
+.al-modal-backdrop,
+.al-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(9, 25, 42, 0.68);
+  backdrop-filter: blur(5px);
+}
+
+.al-modal {
+  width: min(760px, 100%);
+  max-height: min(92vh, 950px);
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.22);
+  animation: alFadeIn 0.25s ease;
+}
+
+.al-modal-header {
+  padding: 22px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  border-bottom: 1px solid #e8eef2;
+}
+
+.al-modal-kicker {
+  color: #078b83;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.al-modal-header h2 {
+  margin: 6px 0;
+  color: #10243a;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.al-modal-header p {
+  margin: 0;
+  color: #8494a5;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.al-modal-close {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: #64748b;
+  background: #f1f5f9;
+  cursor: pointer;
+}
+
+.al-modal-close:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.al-modal-content {
+  padding: 23px 25px;
+}
+
+/* ==========================================================
+   FORMS
+========================================================== */
+
+.al-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.al-form-full {
+  grid-column: 1 / -1;
+}
+
+.al-form-group {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.al-form-group label {
+  color: #183b56;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.al-form-group label span {
+  color: #dc2626;
+}
+
+.al-form-group input,
+.al-form-group textarea,
+.al-form-group select,
+.al-amenity-input-row input {
+  width: 100%;
+  min-height: 43px;
+  padding: 11px 12px;
+  outline: none;
+  border: 1px solid #dce5ec;
+  border-radius: 8px;
+  color: #183b56;
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  transition: 0.2s ease;
+}
+
+.al-form-group textarea {
+  min-height: 95px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.al-form-group input:focus,
+.al-form-group textarea:focus,
+.al-form-group select:focus,
+.al-amenity-input-row input:focus {
+  border-color: #078b83;
+  box-shadow: 0 0 0 3px rgba(7, 139, 131, 0.09);
+}
+
+.al-form-group input::placeholder,
+.al-form-group textarea::placeholder,
+.al-amenity-input-row input::placeholder {
+  color: #a0adba;
+}
+
+/* ==========================================================
+   SECTION DIVIDERS
+========================================================== */
+
+.al-section-divider {
+  margin: 26px 0 16px;
+  padding-top: 20px;
+  border-top: 1px solid #e8eef2;
+}
+
+.al-section-divider h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #183b56;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.al-section-divider h3 svg {
+  color: #078b83;
+}
+
+/* ==========================================================
+   AMENITY EDITOR
+========================================================== */
+
+.al-amenity-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.al-amenity-input-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.al-amenity-input-row input {
+  min-width: 0;
+}
+
+.al-amenity-input-row .al-btn {
+  flex-shrink: 0;
+}
+
+.al-amenity-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.al-amenity-list > span {
+  padding: 7px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #078b83;
+  background: #e9f8f6;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.al-amenity-list > span button {
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: #078b83;
+  background: transparent;
+  cursor: pointer;
+}
+
+.al-amenity-list > span button:hover {
+  color: #dc2626;
+}
+
+.al-amenity-list > small {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+/* ==========================================================
+   IMAGE UPLOAD
+========================================================== */
+
+.al-upload-dropzone {
+  width: 100%;
+  min-height: 155px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border: 2px dashed #b8d8d7;
+  border-radius: 11px;
+  color: #183b56;
+  background: #f7fcfb;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.al-upload-dropzone:hover {
+  border-color: #078b83;
+  background: #effaf8;
+}
+
+.al-upload-icon {
+  width: 45px;
+  height: 45px;
+  display: grid;
+  place-items: center;
+  color: #078b83;
+  background: #e1f5f1;
+  border-radius: 12px;
+}
+
+.al-upload-dropzone strong {
+  color: #183b56;
+  font-size: 13px;
+}
+
+.al-upload-dropzone span {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.al-upload-dropzone small {
+  color: #94a3b8;
+  font-size: 10px;
+  text-align: center;
+}
+
+.al-branch-image-preview {
+  min-width: 0;
+  margin-top: 13px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5edf2;
+  border-radius: 9px;
+}
+
+.al-branch-image-preview img {
+  width: 70px;
+  height: 60px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.al-branch-image-preview > div {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.al-branch-image-preview strong {
+  overflow: hidden;
+  color: #183b56;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.al-branch-image-preview span {
+  color: #8494a5;
+  font-size: 10px;
+}
+
+.al-branch-image-preview > button {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  color: #dc2626;
+  background: #fef2f2;
+  cursor: pointer;
+}
+
+/* ==========================================================
+   PUBLISH SWITCH
+========================================================== */
+
+.al-publish-option {
+  margin-top: 24px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f6fafb;
+  border: 1px solid #e5edf2;
+  border-radius: 9px;
+}
+
+.al-publish-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: #078b83;
+  background: #e1f5f1;
+  border-radius: 9px;
+}
+
+.al-publish-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.al-publish-text strong {
+  color: #183b56;
+  font-size: 12px;
+}
+
+.al-publish-text span {
+  color: #8494a5;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.al-switch {
+  width: 43px;
+  height: 24px;
+  flex-shrink: 0;
+  position: relative;
+  display: inline-block;
+}
+
+.al-switch input {
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+.al-switch-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.al-switch-slider::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: 0.25s ease;
+}
+
+.al-switch input:checked + .al-switch-slider {
+  background: #078b83;
+}
+
+.al-switch input:checked + .al-switch-slider::before {
+  transform: translateX(19px);
+}
+
+/* ==========================================================
+   RESERVATION MODAL
+========================================================== */
+
+.al-reservation-modal {
+  width: min(580px, 100%);
+}
+
+.al-reservation-summary {
+  margin-bottom: 22px;
+  padding: 15px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+  background: #f6fafb;
+  border: 1px solid #e5edf2;
+  border-radius: 9px;
+}
+
+.al-reservation-summary > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.al-reservation-summary span {
+  color: #8494a5;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.al-reservation-summary strong {
+  color: #183b56;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.al-note-group {
+  margin-top: 17px;
+}
+
+/* ==========================================================
+   MODAL FOOTER
+========================================================== */
+
+.al-modal-footer {
+  padding: 16px 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #e8eef2;
+  background: #fbfdfe;
+}
+
+/* ==========================================================
+   DELETE CONFIRMATION
+========================================================== */
+
+.al-confirm-modal {
+  width: min(430px, 100%);
+  padding: 27px;
+  text-align: center;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.22);
+  animation: alFadeIn 0.25s ease;
+}
+
+.al-confirm-icon {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  color: #dc2626;
+  background: #fef2f2;
+  border-radius: 50%;
+}
+
+.al-confirm-modal h2 {
+  margin: 0 0 10px;
+  color: #10243a;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.al-confirm-modal p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.al-confirm-modal p strong {
+  color: #183b56;
+}
+
+.al-confirm-actions {
+  margin-top: 23px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ==========================================================
+   RESPONSIVE DESIGN
+========================================================== */
+
+@media (max-width: 1100px) {
+  .al-grid,
+  .al-book-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .al-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-library-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 17px;
+  }
+
+  .al-header-actions {
+    width: 100%;
+  }
+
+  .al-header-actions .al-btn {
+    flex: 1;
+  }
+
+  .al-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .al-search {
+    width: 100%;
+  }
+
+  .al-filter-tabs {
+    width: 100%;
+  }
+
+  .al-filter-tabs button {
+    flex: 1;
+  }
+
+  .al-grid,
+  .al-book-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+  }
+
+  .al-card-cover {
+    height: 165px;
+  }
+
+  .al-card-body {
+    padding: 12px;
+  }
+
+  .al-card-body h3 {
+    font-size: 14px;
+  }
+
+  .al-card-actions {
+    gap: 5px;
+  }
+
+  .al-action-btn {
+    padding: 0 7px;
+    font-size: 9px;
+  }
+
+  .al-reservation-card {
+    align-items: flex-start;
+  }
+
+  .al-reservation-actions {
+    align-items: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-library-header h1 {
+    font-size: 25px;
+  }
+
+  .al-stats-grid {
+    gap: 9px;
+  }
+
+  .al-stat-card {
+    min-height: 91px;
+    padding: 11px;
+    gap: 9px;
+  }
+
+  .al-stat-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .al-stat-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .al-stat-card span {
+    font-size: 10px;
+  }
+
+  .al-stat-card strong {
+    font-size: 20px;
+  }
+
+  .al-stat-card small {
+    font-size: 9px;
+  }
+
+  .al-main-tabs {
+    gap: 4px;
+  }
+
+  .al-main-tabs button {
+    padding: 0 10px;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .al-main-tabs button > span {
+    min-width: 19px;
+    height: 19px;
+    font-size: 9px;
+  }
+
+  .al-grid,
+  .al-book-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .al-card-cover {
+    height: 205px;
+  }
+
+  .al-book-cover {
+    height: 165px;
+  }
+
+  .al-reservation-card {
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .al-reservation-actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #edf1f4;
+  }
+
+  .al-modal-backdrop,
+  .al-confirm-backdrop {
+    padding: 10px;
+  }
+
+  .al-modal {
+    max-height: 94vh;
+    border-radius: 11px;
+  }
+
+  .al-modal-header,
+  .al-modal-content {
+    padding: 17px;
+  }
+
+  .al-modal-header h2 {
+    font-size: 18px;
+  }
+
+  .al-form-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .al-form-full {
+    grid-column: auto;
+  }
+
+  .al-modal-footer {
+    padding: 13px 17px;
+  }
+
+  .al-modal-footer .al-btn {
+    flex: 1;
+    padding: 0 9px;
+    font-size: 11px;
+  }
+
+  .al-publish-option {
+    gap: 8px;
+    padding: 11px;
+  }
+
+  .al-publish-text span {
+    font-size: 9px;
+  }
+
+  .al-reservation-summary {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .al-confirm-modal {
+    padding: 22px 17px;
+  }
+
+  .al-confirm-actions .al-btn {
+    flex: 1;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .al-amenity-input-row {
+    align-items: stretch;
+  }
+
+  .al-amenity-input-row .al-btn {
+    padding: 0 10px;
+  }
+}
+
+/* ==========================================================
+   ACCESSIBILITY
+========================================================== */
+
+.al-btn:focus-visible,
+.al-action-btn:focus-visible,
+.al-main-tabs button:focus-visible,
+.al-filter-tabs button:focus-visible,
+.al-upload-dropzone:focus-visible,
+.al-modal-close:focus-visible {
+  outline: 3px solid rgba(7, 139, 131, 0.3);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-library-page *,
+  .admin-library-page *::before,
+  .admin-library-page *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

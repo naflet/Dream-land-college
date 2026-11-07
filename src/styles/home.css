@@ -1914,3 +1914,114 @@
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
   transform: translateY(-5px);
 }
+
+/* ==========================================================
+   PROFESSIONAL HOME PAGE LOADING AND ERROR STATES
+========================================================== */
+
+.dl-calendar-status,
+.dl-news-status {
+  width: 100%;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  border-radius: 14px;
+  background: #f3f7fa;
+  color: #64748b;
+  grid-column: 1 / -1;
+}
+
+.dl-calendar-status h3,
+.dl-news-status h3 {
+  margin: 0;
+  color: #183b56;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.dl-calendar-status p,
+.dl-news-status p {
+  margin: 0;
+  max-width: 480px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.dl-home-error-state > svg {
+  color: #d97706;
+}
+
+.dl-home-error-state .dl-btn {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dl-home-loading-icon {
+  color: #078b83;
+  animation: dlHomeSpin 1.2s linear infinite;
+}
+
+@keyframes dlHomeSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================
+   HOME PAGE IMAGE FALLBACK
+========================================================== */
+
+.dl-home-image-fallback {
+  width: 100%;
+  min-height: 180px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+  background: #f3f7fa;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+.dl-home-image-fallback strong {
+  color: #183b56;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dl-home-image-fallback span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.dl-campus-card > .dl-home-image-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.dl-program-image .dl-home-image-fallback,
+.dl-news-image .dl-home-image-fallback {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+}
+
+.dl-modal-img.dl-home-image-fallback {
+  height: auto;
+  min-height: 180px;
+  border-radius: 10px;
+}

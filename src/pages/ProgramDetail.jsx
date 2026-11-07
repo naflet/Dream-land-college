@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 import { Link, useParams } from "react-router-dom";
 
@@ -16,6 +16,10 @@ import {
   Sparkles,
   Target,
   Layers,
+  RefreshCw,
+  AlertCircle,
+  LoaderCircle,
+  Image as ImageIcon,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
@@ -24,12 +28,140 @@ import supabase from "../config/supabase";
 
 import "../styles/ProgramDetail.css";
 
+/* ==========================================================
+   ERROR MESSAGE HELPER
+========================================================== */
+
+const getProgramErrorMessage = (error) => {
+  if (
+    error?.message?.toLowerCase().includes("fetch") ||
+    error?.message?.toLowerCase().includes("network")
+  ) {
+    return "Unable to connect to the server. Please check your internet connection and try again.";
+  }
+
+  return "We couldn't load this program's information. Please try again.";
+};
+
+/* ==========================================================
+   PROGRAM IMAGE
+========================================================== */
+
+function ProgramImage({ src, alt }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [src]);
+
+  if (!src || imageFailed) {
+    return (
+      <div className="dl-program-image-placeholder">
+        <ImageIcon size={46} />
+        <span>Program image unavailable</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt || "Program"}
+      onError={() => setImageFailed(true)}
+    />
+  );
+}
+
+/* ==========================================================
+   PROGRAM DETAIL
+========================================================== */
+
 function ProgramDetail() {
   const { programId } = useParams();
 
   const [program, setProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notFound, setNotFound] = useState(false);
+
+  /* ========================================================
+     FETCH PROGRAM AND CONNECTED CAMPUSES
+  ======================================================== */
+
+  const fetchProgram = useCallback(
+    async (isMounted = () => true) => {
+      try {
+        setLoading(true);
+        setError("");
+        setNotFound(false);
+
+        if (!programId) {
+          setNotFound(true);
+          return;
+        }
+
+        // Fetch active program.
+        const {
+          data: programData,
+          error: programError,
+        } = await supabase
+          .from("programs")
+          .select("*")
+          .eq("slug", programId)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (programError) {
+          throw programError;
+        }
+
+        if (!programData) {
+          if (isMounted()) {
+            setNotFound(true);
+            setProgram(null);
+          }
+
+          return;
+        }
+
+        // Fetch connected campuses.
+        const {
+          data: campusData,
+          error: campusError,
+        } = await supabase
+          .from("program_campuses")
+          .select("program_id, campus:campuses(id, name, slug)")
+          .eq("program_id", programData.id);
+
+        if (campusError) {
+          throw campusError;
+        }
+
+        if (isMounted()) {
+          setProgram({
+            ...programData,
+            campuses: campusData || [],
+          });
+        }
+      } catch (err) {
+        console.error("Program loading error:", err);
+
+        if (isMounted()) {
+          setProgram(null);
+          setError(getProgramErrorMessage(err));
+        }
+      } finally {
+        if (isMounted()) {
+          setLoading(false);
+        }
+      }
+    },
+    [programId]
+  );
+
+  /* ========================================================
+     INITIAL LOAD AND RETRY
+  ======================================================== */
 
   useEffect(() => {
     window.scrollTo({
@@ -38,75 +170,19 @@ function ProgramDetail() {
       behavior: "smooth",
     });
 
-    let isMounted = true;
+    let mounted = true;
 
-    const fetchProgram = async () => {
-      try {
-        setLoading(true);
-        setError("");
-
-        if (!programId) {
-          throw new Error("Program information could not be found.");
-        }
-
-        // Fetch program directly from Supabase.
-        const { data: programData, error: programError } =
-          await supabase
-            .from("programs")
-            .select("*")
-            .eq("slug", programId)
-            .eq("is_active", true)
-            .maybeSingle();
-
-        if (programError) {
-          throw programError;
-        }
-
-        if (!programData) {
-          throw new Error("Program information could not be found.");
-        }
-
-        // Fetch campuses connected to this program.
-        const { data: campusData, error: campusError } =
-          await supabase
-            .from("program_campuses")
-            .select("program_id, campus:campuses(id, name, slug)")
-            .eq("program_id", programData.id);
-
-        if (campusError) {
-          throw campusError;
-        }
-
-        if (isMounted) {
-          setProgram({
-            ...programData,
-            campuses: campusData || [],
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching program:", err);
-
-        if (isMounted) {
-          setProgram(null);
-          setError(
-            err.message || "Unable to load program information."
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchProgram();
+    fetchProgram(() => mounted);
 
     return () => {
-      isMounted = false;
+      mounted = false;
     };
-  }, [programId]);
+  }, [fetchProgram]);
 
-  // Loading state
+  /* ========================================================
+     LOADING STATE
+  ======================================================== */
+
   if (loading) {
     return (
       <div className="dl-page dl-fade-in">
@@ -114,15 +190,23 @@ function ProgramDetail() {
 
         <main className="dl-program-not-found">
           <div className="dl-shell">
-            <span className="dl-section-label">
-              Dream Land College
-            </span>
+            <div className="dl-program-system-state">
+              <LoaderCircle
+                size={42}
+                className="dl-program-spinner"
+              />
 
-            <h1>Loading Program...</h1>
+              <span className="dl-section-label">
+                Dream Land College
+              </span>
 
-            <p>
-              Please wait while we load the program information.
-            </p>
+              <h1>Loading Program Information</h1>
+
+              <p>
+                Please wait while we retrieve the program details
+                and available campus information.
+              </p>
+            </div>
           </div>
         </main>
 
@@ -131,36 +215,50 @@ function ProgramDetail() {
     );
   }
 
-  // Error or program not found
-  if (!program) {
+  /* ========================================================
+     ERROR STATE
+  ======================================================== */
+
+  if (error && !program) {
     return (
       <div className="dl-page dl-fade-in">
         <Navbar />
 
         <main className="dl-program-not-found">
           <div className="dl-shell">
-            <span className="dl-section-label">
-              Dream Land College
-            </span>
+            <div className="dl-program-system-state dl-program-error-state">
+              <div className="dl-program-state-icon">
+                <AlertCircle size={38} />
+              </div>
 
-            <h1>
-              {error
-                ? "Unable to Load Program"
-                : "Program not found"}
-            </h1>
+              <span className="dl-section-label">
+                Dream Land College
+              </span>
 
-            <p>
-              {error ||
-                "The program you are looking for could not be found or might have been removed."}
-            </p>
+              <h1>Unable to Load Program</h1>
 
-            <Link
-              to="/programs"
-              className="dl-btn dl-btn-primary"
-            >
-              <ArrowLeft size={17} />
-              Back to Programs
-            </Link>
+              <p>{error}</p>
+
+              <div className="dl-program-state-actions">
+                <button
+                  type="button"
+                  className="dl-btn dl-btn-primary"
+                  onClick={() => fetchProgram()}
+                  disabled={loading}
+                >
+                  <RefreshCw size={16} />
+                  Try Again
+                </button>
+
+                <Link
+                  to="/programs"
+                  className="dl-btn dl-btn-outline"
+                >
+                  <ArrowLeft size={17} />
+                  Back to Programs
+                </Link>
+              </div>
+            </div>
           </div>
         </main>
 
@@ -169,7 +267,55 @@ function ProgramDetail() {
     );
   }
 
-  // Normalize program fields
+  /* ========================================================
+     PROGRAM NOT FOUND
+  ======================================================== */
+
+  if (!program && notFound) {
+    return (
+      <div className="dl-page dl-fade-in">
+        <Navbar />
+
+        <main className="dl-program-not-found">
+          <div className="dl-shell">
+            <div className="dl-program-system-state dl-program-not-found-state">
+              <div className="dl-program-state-icon">
+                <BookOpen size={38} />
+              </div>
+
+              <span className="dl-section-label">
+                Dream Land College
+              </span>
+
+              <h1>Program Not Found</h1>
+
+              <p>
+                The program you are looking for could not be found
+                or is no longer available.
+              </p>
+
+              <Link
+                to="/programs"
+                className="dl-btn dl-btn-primary"
+              >
+                <ArrowLeft size={17} />
+                Back to Programs
+              </Link>
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!program) return null;
+
+  /* ========================================================
+     NORMALIZE PROGRAM FIELDS
+  ======================================================== */
+
   const modes = Array.isArray(program.modes)
     ? program.modes
     : [];
@@ -203,6 +349,10 @@ function ProgramDetail() {
 
   const currentLevel = program.level || "Not specified";
 
+  /* ========================================================
+     MAIN PAGE
+  ======================================================== */
+
   return (
     <div className="dl-page dl-program-detail-page dl-fade-in">
       <Navbar />
@@ -211,13 +361,12 @@ function ProgramDetail() {
         {/* =====================================================
             HERO SECTION
         ===================================================== */}
+
         <section className="dl-program-detail-hero">
-          {program.image && (
-            <img
-              src={program.image}
-              alt={program.title}
-            />
-          )}
+          <ProgramImage
+            src={program.image}
+            alt={program.title}
+          />
 
           <div className="dl-program-detail-overlay" />
 
@@ -253,6 +402,7 @@ function ProgramDetail() {
         {/* =====================================================
             QUICK STATS CARDS
         ===================================================== */}
+
         <section className="dl-program-quick-info">
           <div className="dl-shell">
             <div className="dl-program-info-cards">
@@ -324,14 +474,17 @@ function ProgramDetail() {
         {/* =====================================================
             MAIN DETAILS GRID
         ===================================================== */}
+
         <section className="dl-program-detail-content">
           <div className="dl-shell">
             <div className="dl-program-detail-grid">
 
               {/* LEFT COLUMN */}
+
               <div className="dl-program-main-column">
 
                 {/* OVERVIEW */}
+
                 <section className="dl-program-content-section dl-program-overview">
                   <span className="dl-section-label">
                     Program Overview
@@ -349,6 +502,7 @@ function ProgramDetail() {
                 </section>
 
                 {/* WHAT YOU LEARN */}
+
                 {whatYouLearn.length > 0 && (
                   <section className="dl-program-content-section">
                     <div className="dl-content-heading">
@@ -388,6 +542,7 @@ function ProgramDetail() {
                 )}
 
                 {/* SKILLS */}
+
                 {skills.length > 0 && (
                   <section className="dl-program-content-section dl-skills-section">
                     <div className="dl-content-heading">
@@ -423,6 +578,7 @@ function ProgramDetail() {
                 )}
 
                 {/* CAREER PATHS */}
+
                 {careerPaths.length > 0 && (
                   <section className="dl-program-content-section">
                     <div className="dl-content-heading">
@@ -458,6 +614,7 @@ function ProgramDetail() {
                 )}
 
                 {/* STUDY MODES */}
+
                 {modes.length > 0 && (
                   <section className="dl-program-content-section">
                     <span className="dl-section-label">
@@ -484,6 +641,7 @@ function ProgramDetail() {
               </div>
 
               {/* RIGHT SIDEBAR */}
+
               <aside className="dl-program-detail-sidebar">
                 <div className="dl-sidebar-inner">
                   <span className="dl-sidebar-kicker">

@@ -12,13 +12,15 @@ import {
   AlertCircle,
   LoaderCircle,
   Shield,
-  CalendarDays,
 } from "lucide-react";
 
 import { useAuth } from "../AuthContext";
 import api from "../services/api";
 
 import "../styles/admin-profile.css";
+
+const MIN_PASSWORD_LENGTH = 12;
+const MAX_PASSWORD_LENGTH = 128;
 
 export default function AdminProfile() {
   const { admin, updateAdmin } = useAuth();
@@ -44,15 +46,17 @@ export default function AdminProfile() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Load authenticated administrator information.
   useEffect(() => {
-    if (admin) {
-      setProfile({
-        full_name: admin.full_name || "",
-        email: admin.email || "",
-      });
-    }
+    if (!admin) return;
+
+    setProfile({
+      full_name: admin.full_name || "",
+      email: admin.email || "",
+    });
   }, [admin]);
 
+  // Handle profile inputs.
   const handleProfileChange = (event) => {
     const { name, value } = event.target;
 
@@ -60,8 +64,11 @@ export default function AdminProfile() {
       ...previous,
       [name]: value,
     }));
+
+    setProfileMessage(null);
   };
 
+  // Handle password inputs.
   const handlePasswordChange = (event) => {
     const { name, value } = event.target;
 
@@ -69,17 +76,50 @@ export default function AdminProfile() {
       ...previous,
       [name]: value,
     }));
+
+    setPasswordMessage(null);
   };
 
+  // Extract a useful API error message.
+  const getErrorMessage = (error, fallback) => {
+    return (
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      error?.data?.message ||
+      error?.message ||
+      fallback
+    );
+  };
+
+  // Update administrator profile.
   const handleProfileSubmit = async (event) => {
     event.preventDefault();
 
     setProfileMessage(null);
 
-    if (!profile.full_name.trim() || !profile.email.trim()) {
+    const fullName = profile.full_name.trim();
+    const email = profile.email.trim().toLowerCase();
+
+    if (!fullName || !email) {
       setProfileMessage({
         type: "error",
         text: "Please complete all profile fields.",
+      });
+      return;
+    }
+
+    if (fullName.length < 2 || fullName.length > 200) {
+      setProfileMessage({
+        type: "error",
+        text: "Your full name must contain between 2 and 200 characters.",
+      });
+      return;
+    }
+
+    if (email.length > 254) {
+      setProfileMessage({
+        type: "error",
+        text: "Email address is too long.",
       });
       return;
     }
@@ -88,40 +128,53 @@ export default function AdminProfile() {
       setProfileLoading(true);
 
       const response = await api.patch("/auth/profile", {
-        full_name: profile.full_name.trim(),
-        email: profile.email.trim(),
+        full_name: fullName,
+        email,
       });
 
       if (response?.success && response?.admin) {
         updateAdmin(response.admin);
+
+        setProfile({
+          full_name: response.admin.full_name || fullName,
+          email: response.admin.email || email,
+        });
 
         setProfileMessage({
           type: "success",
           text: response.message || "Profile updated successfully.",
         });
       } else {
-        throw new Error(response?.message || "Unable to update profile.");
+        throw new Error(
+          response?.message || "Unable to update your profile."
+        );
       }
     } catch (error) {
       setProfileMessage({
         type: "error",
-        text: error.message || "Unable to update your profile.",
+        text: getErrorMessage(
+          error,
+          "Unable to update your profile. Please try again."
+        ),
       });
     } finally {
       setProfileLoading(false);
     }
   };
 
+  // Change administrator password.
   const handlePasswordSubmit = async (event) => {
     event.preventDefault();
 
     setPasswordMessage(null);
 
-    if (
-      !passwords.current_password ||
-      !passwords.new_password ||
-      !passwords.confirm_password
-    ) {
+    const {
+      current_password,
+      new_password,
+      confirm_password,
+    } = passwords;
+
+    if (!current_password || !new_password || !confirm_password) {
       setPasswordMessage({
         type: "error",
         text: "Please complete all password fields.",
@@ -129,15 +182,26 @@ export default function AdminProfile() {
       return;
     }
 
-    if (passwords.new_password.length < 8) {
+    if (
+      new_password.length < MIN_PASSWORD_LENGTH ||
+      new_password.length > MAX_PASSWORD_LENGTH
+    ) {
       setPasswordMessage({
         type: "error",
-        text: "Your new password must contain at least 8 characters.",
+        text: "Your new password must contain between 12 and 128 characters.",
       });
       return;
     }
 
-    if (passwords.new_password !== passwords.confirm_password) {
+    if (new_password === current_password) {
+      setPasswordMessage({
+        type: "error",
+        text: "Your new password must be different from your current password.",
+      });
+      return;
+    }
+
+    if (new_password !== confirm_password) {
       setPasswordMessage({
         type: "error",
         text: "The new passwords do not match.",
@@ -149,8 +213,8 @@ export default function AdminProfile() {
       setPasswordLoading(true);
 
       const response = await api.patch("/auth/change-password", {
-        current_password: passwords.current_password,
-        new_password: passwords.new_password,
+        current_password,
+        new_password,
       });
 
       if (response?.success) {
@@ -160,40 +224,56 @@ export default function AdminProfile() {
           confirm_password: "",
         });
 
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+
         setPasswordMessage({
           type: "success",
           text: response.message || "Password changed successfully.",
         });
       } else {
-        throw new Error(response?.message || "Unable to change password.");
+        throw new Error(
+          response?.message || "Unable to change your password."
+        );
       }
     } catch (error) {
       setPasswordMessage({
         type: "error",
-        text: error.message || "Unable to change your password.",
+        text: getErrorMessage(
+          error,
+          "Unable to change your password. Please try again."
+        ),
       });
     } finally {
       setPasswordLoading(false);
     }
   };
 
+  // Display only supported administrator roles.
   const formatRole = (role) => {
-    if (!role) return "Administrator";
+    const normalizedRole = String(role || "").toLowerCase();
 
-    return role
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (character) => character.toUpperCase());
+    const roles = {
+      super_admin: "Super Admin",
+      admin: "Admin",
+    };
+
+    return roles[normalizedRole] || "Administrator";
   };
 
+  // Generate administrator avatar initials.
   const initials = (name) => {
     return (name || "Admin")
-      .split(" ")
+      .trim()
+      .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)
       .map((word) => word[0].toUpperCase())
       .join("");
   };
 
+  // Display success and error messages.
   const renderMessage = (message) => {
     if (!message) return null;
 
@@ -202,10 +282,9 @@ export default function AdminProfile() {
 
     return (
       <div
-        className={`profile-message ${
-          isSuccess ? "success" : "error"
-        }`}
+        className={`profile-message ${isSuccess ? "success" : "error"}`}
         role="alert"
+        aria-live="polite"
       >
         <MessageIcon size={18} />
         <span>{message.text}</span>
@@ -215,6 +294,7 @@ export default function AdminProfile() {
 
   return (
     <main className="admin-profile-page">
+      {/* PAGE HEADER */}
       <div className="profile-page-header">
         <div>
           <span className="profile-eyebrow">
@@ -233,6 +313,7 @@ export default function AdminProfile() {
         </div>
       </div>
 
+      {/* PROFILE OVERVIEW */}
       <section className="profile-overview-card">
         <div className="profile-avatar">
           {initials(admin?.full_name)}
@@ -240,6 +321,7 @@ export default function AdminProfile() {
 
         <div className="profile-overview-info">
           <h2>{admin?.full_name || "Administrator"}</h2>
+
           <p>{admin?.email || "No email available"}</p>
 
           <span className="profile-role-badge">
@@ -255,6 +337,7 @@ export default function AdminProfile() {
       </section>
 
       <div className="profile-content-grid">
+        {/* PERSONAL INFORMATION */}
         <section className="profile-section-card">
           <div className="profile-section-heading">
             <div className="profile-section-icon">
@@ -263,7 +346,9 @@ export default function AdminProfile() {
 
             <div>
               <h2>Personal Information</h2>
-              <p>Update your administrator account details.</p>
+              <p>
+                Update your administrator account details.
+              </p>
             </div>
           </div>
 
@@ -287,6 +372,7 @@ export default function AdminProfile() {
                   placeholder="Enter your full name"
                   minLength={2}
                   maxLength={200}
+                  autoComplete="name"
                   required
                 />
               </div>
@@ -308,39 +394,50 @@ export default function AdminProfile() {
                   onChange={handleProfileChange}
                   placeholder="Enter your email address"
                   maxLength={254}
+                  autoComplete="email"
                   required
                 />
               </div>
             </div>
 
             <div className="profile-form-group">
-              <label>Administrator Role</label>
+              <label htmlFor="profile-role">
+                Administrator Role
+              </label>
 
               <div className="profile-input-wrapper profile-readonly">
                 <Shield size={18} />
 
                 <input
+                  id="profile-role"
                   type="text"
                   value={formatRole(admin?.role)}
                   readOnly
+                  aria-readonly="true"
                 />
 
-                <span className="readonly-label">Read only</span>
+                <span className="readonly-label">
+                  Read only
+                </span>
               </div>
 
               <small>
-                Your administrator role cannot be changed from this page.
+                Your administrator role can only be changed by an authorized
+                Super Admin.
               </small>
             </div>
 
             <button
               type="submit"
               className="profile-primary-button"
-              disabled={profileLoading}
+              disabled={profileLoading || !admin}
             >
               {profileLoading ? (
                 <>
-                  <LoaderCircle size={18} className="profile-spinner" />
+                  <LoaderCircle
+                    size={18}
+                    className="profile-spinner"
+                  />
                   Saving Changes...
                 </>
               ) : (
@@ -353,6 +450,7 @@ export default function AdminProfile() {
           </form>
         </section>
 
+        {/* ACCOUNT SECURITY */}
         <section className="profile-section-card">
           <div className="profile-section-heading">
             <div className="profile-section-icon security">
@@ -361,13 +459,16 @@ export default function AdminProfile() {
 
             <div>
               <h2>Account Security</h2>
-              <p>Keep your administrator account secure.</p>
+              <p>
+                Keep your administrator account secure.
+              </p>
             </div>
           </div>
 
           {renderMessage(passwordMessage)}
 
           <form onSubmit={handlePasswordSubmit}>
+            {/* CURRENT PASSWORD */}
             <div className="profile-form-group">
               <label htmlFor="current-password">
                 Current Password
@@ -394,7 +495,9 @@ export default function AdminProfile() {
                     setShowCurrentPassword((previous) => !previous)
                   }
                   aria-label={
-                    showCurrentPassword ? "Hide password" : "Show password"
+                    showCurrentPassword
+                      ? "Hide current password"
+                      : "Show current password"
                   }
                 >
                   {showCurrentPassword ? (
@@ -406,6 +509,7 @@ export default function AdminProfile() {
               </div>
             </div>
 
+            {/* NEW PASSWORD */}
             <div className="profile-form-group">
               <label htmlFor="new-password">
                 New Password
@@ -422,8 +526,8 @@ export default function AdminProfile() {
                   onChange={handlePasswordChange}
                   placeholder="Enter new password"
                   autoComplete="new-password"
-                  minLength={8}
-                  maxLength={128}
+                  minLength={MIN_PASSWORD_LENGTH}
+                  maxLength={MAX_PASSWORD_LENGTH}
                   required
                 />
 
@@ -434,7 +538,9 @@ export default function AdminProfile() {
                     setShowNewPassword((previous) => !previous)
                   }
                   aria-label={
-                    showNewPassword ? "Hide password" : "Show password"
+                    showNewPassword
+                      ? "Hide new password"
+                      : "Show new password"
                   }
                 >
                   {showNewPassword ? (
@@ -446,6 +552,7 @@ export default function AdminProfile() {
               </div>
             </div>
 
+            {/* CONFIRM PASSWORD */}
             <div className="profile-form-group">
               <label htmlFor="confirm-password">
                 Confirm New Password
@@ -462,8 +569,8 @@ export default function AdminProfile() {
                   onChange={handlePasswordChange}
                   placeholder="Confirm new password"
                   autoComplete="new-password"
-                  minLength={8}
-                  maxLength={128}
+                  minLength={MIN_PASSWORD_LENGTH}
+                  maxLength={MAX_PASSWORD_LENGTH}
                   required
                 />
 
@@ -474,7 +581,9 @@ export default function AdminProfile() {
                     setShowConfirmPassword((previous) => !previous)
                   }
                   aria-label={
-                    showConfirmPassword ? "Hide password" : "Show password"
+                    showConfirmPassword
+                      ? "Hide confirmation password"
+                      : "Show confirmation password"
                   }
                 >
                   {showConfirmPassword ? (
@@ -486,19 +595,26 @@ export default function AdminProfile() {
               </div>
             </div>
 
+            {/* PASSWORD REQUIREMENT */}
             <div className="profile-password-hint">
               <ShieldCheck size={17} />
-              Use at least 8 characters for your new password.
+
+              <span>
+                Use at least 12 characters for your new password.
+              </span>
             </div>
 
             <button
               type="submit"
               className="profile-primary-button security-button"
-              disabled={passwordLoading}
+              disabled={passwordLoading || !admin}
             >
               {passwordLoading ? (
                 <>
-                  <LoaderCircle size={18} className="profile-spinner" />
+                  <LoaderCircle
+                    size={18}
+                    className="profile-spinner"
+                  />
                   Updating Password...
                 </>
               ) : (
@@ -512,6 +628,7 @@ export default function AdminProfile() {
         </section>
       </div>
 
+      {/* SECURITY INFORMATION */}
       <section className="profile-security-note">
         <div className="profile-note-icon">
           <ShieldCheck size={21} />
@@ -519,9 +636,11 @@ export default function AdminProfile() {
 
         <div>
           <h3>Account Protection</h3>
+
           <p>
             Your password is securely hashed before being stored.
             Never share your administrator login credentials with anyone.
+            Use a strong, unique password to protect your account.
           </p>
         </div>
       </section>

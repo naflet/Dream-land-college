@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -57,9 +58,7 @@ function About() {
       <Navbar />
 
       <main>
-        {/* =====================================================
-            HERO SECTION
-        ===================================================== */}
+        {/* HERO SECTION */}
         <section className="dl-page-hero dl-about-hero">
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
@@ -108,9 +107,7 @@ function About() {
           </div>
         </section>
 
-        {/* =====================================================
-            LIBRARY & CAMPUS ATMOSPHERE
-        ===================================================== */}
+        {/* LIBRARY & CAMPUS ATMOSPHERE */}
         <section className="dl-about-section">
           <div className="dl-shell">
             <div className="dl-about-split">
@@ -185,9 +182,7 @@ function About() {
           </div>
         </section>
 
-        {/* =====================================================
-            INTERACTIVE MODALITY SECTION
-        ===================================================== */}
+        {/* INTERACTIVE MODALITY SECTION */}
         <section className="dl-about-modalities-section">
           <div className="dl-shell">
             <div className="dl-centered-header">
@@ -209,28 +204,29 @@ function About() {
               role="tablist"
               aria-label="Learning modalities"
             >
-              {Object.entries(modalityData).map(
-                ([key, modality]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeModality === key}
-                    className={`dl-modality-tab-btn ${
-                      activeModality === key ? "active" : ""
-                    }`}
-                    onClick={() => setActiveModality(key)}
-                  >
-                    {modality.title}
-                  </button>
-                )
-              )}
+              {Object.entries(modalityData).map(([key, modality]) => (
+                <button
+                  key={key}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeModality === key}
+                  aria-controls="dl-active-modality-panel"
+                  className={`dl-modality-tab-btn ${
+                    activeModality === key ? "active" : ""
+                  }`}
+                  onClick={() => setActiveModality(key)}
+                >
+                  {modality.title}
+                </button>
+              ))}
             </div>
 
             {/* ACTIVE MODALITY */}
             <div
+              id="dl-active-modality-panel"
               className="dl-modality-display-card"
               key={activeModality}
+              role="tabpanel"
             >
               <div className="dl-modality-header-info">
                 <div>

@@ -1131,3 +1131,144 @@
     transition: none !important;
   }
 }
+
+/* ==========================================================
+   PROGRAM DETAIL - LOADING / ERROR / NOT FOUND STATES
+========================================================== */
+
+.dl-program-system-state {
+  width: 100%;
+  min-height: 330px;
+  padding: 45px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+}
+
+.dl-program-system-state h1 {
+  margin: 4px 0 0;
+  color: #10243a;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 800;
+}
+
+.dl-program-system-state p {
+  max-width: 520px;
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.dl-program-spinner {
+  color: #16a34a;
+  animation: dlProgramSpin 1s linear infinite;
+}
+
+@keyframes dlProgramSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dl-program-state-icon {
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  background: #fef2f2;
+  border-radius: 50%;
+}
+
+.dl-program-not-found-state .dl-program-state-icon {
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.dl-program-state-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.dl-program-state-actions .dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.dl-program-state-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================================
+   PROGRAM HERO IMAGE FALLBACK
+========================================================== */
+
+.dl-program-detail-hero {
+  position: relative;
+}
+
+.dl-program-detail-hero > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dl-program-image-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #cbd5e1;
+  background: #10243a;
+  font-size: 14px;
+}
+
+.dl-program-image-placeholder svg {
+  opacity: 0.7;
+}
+
+.dl-program-detail-overlay {
+  z-index: 1;
+}
+
+.dl-program-detail-hero .dl-hero-content-shell {
+  position: relative;
+  z-index: 2;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .dl-program-system-state {
+    min-height: 270px;
+    padding: 32px 18px;
+  }
+
+  .dl-program-state-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .dl-program-state-actions .dl-btn {
+    width: 100%;
+  }
+}

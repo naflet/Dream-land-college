@@ -1080,3 +1080,136 @@
     transition: none !important;
   }
 }
+
+/* ==========================================================
+   ADMISSIONS - PROFESSIONAL FORM STATES
+========================================================== */
+
+.dl-admission-feedback {
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 35px 20px;
+  text-align: center;
+}
+
+.dl-admission-feedback h3 {
+  margin: 5px 0 0;
+  color: #183b56;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.dl-admission-feedback p {
+  max-width: 440px;
+  margin: 0 0 12px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.dl-admission-loading-icon {
+  color: #078b83;
+  animation: dlAdmissionSpin 1.2s linear infinite;
+}
+
+@keyframes dlAdmissionSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dl-admission-error-state {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 0 20px;
+  padding: 16px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.dl-admission-error-state > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dl-admission-error-state > div {
+  flex: 1;
+  min-width: 180px;
+}
+
+.dl-admission-error-state strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #991b1b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dl-admission-error-state p {
+  margin: 0;
+  color: #7f1d1d;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dl-admission-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #b91c1c;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dl-admission-retry-btn:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+}
+
+.dl-admission-success {
+  color: #15803d;
+}
+
+.dl-admission-success .dl-success-check-circle {
+  margin-bottom: 5px;
+}
+
+.dl-article-modal-actions button:disabled,
+.dl-lightbox-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dl-faq-question {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dl-faq-question:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 4px;
+  border-radius: 5px;
+}

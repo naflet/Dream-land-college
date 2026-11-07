@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Plus,
   Search,
@@ -15,6 +16,11 @@ import {
   CheckCircle,
   AlertCircle,
   CalendarDays,
+  Send,
+  RotateCcw,
+  EyeOff,
+  UserRound,
+  Tag,
 } from "lucide-react";
 
 import api, { getStoredAdmin } from "../services/api";
@@ -32,8 +38,71 @@ const initialForm = {
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
+const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+];
+
+/* ==========================================================
+   ROLE HELPERS
+========================================================== */
+
+const normalizeRole = (role) =>
+  String(role || "").trim().toLowerCase();
+
+const VALID_ADMIN_ROLES = ["super_admin", "admin"];
+
+/* ==========================================================
+   API HELPERS
+========================================================== */
+
+function unwrapResponse(response) {
+  let result = response;
+
+  for (let i = 0; i < 3; i += 1) {
+    if (
+      result &&
+      typeof result === "object" &&
+      !Array.isArray(result) &&
+      result.data !== undefined &&
+      result.news === undefined &&
+      result.events === undefined
+    ) {
+      result = result.data;
+    } else {
+      break;
+    }
+  }
+
+  return result;
+}
+
+function getNewsFromResponse(response) {
+  const result = unwrapResponse(response);
+
+  if (Array.isArray(result)) return result;
+  if (Array.isArray(result?.news)) return result.news;
+  if (Array.isArray(result?.data?.news)) return result.data.news;
+  if (Array.isArray(result?.articles)) return result.articles;
+  if (Array.isArray(result?.data)) return result.data;
+  if (Array.isArray(result?.items)) return result.items;
+
+  return [];
+}
+
+function getErrorMessage(error, fallback) {
+  return (
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.data?.message ||
+    error?.message ||
+    fallback
+  );
+}
+
 function formatDate(date) {
-  if (!date) return "Not published";
+  if (!date) return "Not available";
 
   const parsedDate = new Date(date);
 
@@ -46,18 +115,43 @@ function formatDate(date) {
   });
 }
 
-function getErrorMessage(error, fallback) {
-  return error?.message || fallback;
+function normalizeNews(item = {}) {
+  return {
+    ...item,
+    id: item.id || item.news_id || item.newsId,
+    title: item.title || "",
+    excerpt: item.excerpt || "",
+    content: item.content || "",
+    image: item.image || item.image_url || "",
+    category: item.category || "",
+    author: item.author || "",
+    status: item.status || "draft",
+  };
 }
+
+/* ==========================================================
+   ADMIN NEWS
+========================================================== */
 
 export default function AdminNews() {
   const admin = getStoredAdmin();
-  const role = admin?.role;
+  const role = normalizeRole(admin?.role);
 
-  const canManage = ["super_admin", "admin"].includes(role);
-  const canDelete = role === "super_admin";
+  const isSuperAdmin = role === "super_admin";
+  const isAdmin = role === "admin";
+
+  const isAuthorized = VALID_ADMIN_ROLES.includes(role);
+
+  // Both Super Admin and Admin have full News management access.
+  const canManage = isAuthorized;
+  const canDelete = isAuthorized;
+
+  /* ========================================================
+     STATE
+  ======================================================== */
 
   const [news, setNews] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -66,32 +160,48 @@ export default function AdminNews() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingNews, setEditingNews] = useState(null);
+  const [viewingNews, setViewingNews] = useState(null);
+
   const [form, setForm] = useState(initialForm);
 
   const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+
   const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
+
   const [deletingId, setDeletingId] = useState(null);
+  const [changingStatusId, setChangingStatusId] = useState(null);
 
   const [alert, setAlert] = useState(null);
 
-  const showAlert = (message, type = "success") => {
+  /* ========================================================
+     ALERT
+  ======================================================== */
+
+  const showAlert = useCallback((message, type = "success") => {
     setAlert({ message, type });
+  }, []);
 
-    window.setTimeout(() => {
-      setAlert(null);
-    }, 4000);
-  };
+  /* ========================================================
+     LOAD NEWS FROM BACKEND
+  ======================================================== */
 
-  const loadNews = async (showLoader = true) => {
+  const loadNews = useCallback(async (showLoader = true) => {
     try {
-      if (showLoader) setLoading(true);
-      else setRefreshing(true);
+      if (showLoader) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
 
       const response = await api.get("/news");
+      const articles = getNewsFromResponse(response);
 
-      setNews(Array.isArray(response?.news) ? response.news : []);
+      setNews(articles.map(normalizeNews));
     } catch (error) {
+      console.error("Failed to load news:", error);
+
       showAlert(
         getErrorMessage(error, "Failed to load news articles."),
         "error"
@@ -100,20 +210,48 @@ export default function AdminNews() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [showAlert]);
 
   useEffect(() => {
     loadNews();
-  }, []);
+  }, [loadNews]);
 
-  const stats = useMemo(() => {
-    return {
-      total: news.length,
-      published: news.filter((item) => item.status === "published").length,
-      drafts: news.filter((item) => item.status === "draft").length,
-      archived: news.filter((item) => item.status === "archived").length,
-    };
-  }, [news]);
+  /* ========================================================
+     IMAGE PREVIEW
+  ======================================================== */
+
+  useEffect(() => {
+    if (!selectedImage) {
+      setImagePreview("");
+      return undefined;
+    }
+
+    const previewUrl = URL.createObjectURL(selectedImage);
+    setImagePreview(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [selectedImage]);
+
+  /* ========================================================
+     STATISTICS
+  ======================================================== */
+
+  const stats = useMemo(() => ({
+    total: news.length,
+    published: news.filter(
+      (item) => item.status === "published"
+    ).length,
+    drafts: news.filter(
+      (item) => item.status === "draft"
+    ).length,
+    archived: news.filter(
+      (item) => item.status === "archived"
+    ).length,
+  }), [news]);
+
+  /* ========================================================
+     SEARCH AND FILTER
+  ======================================================== */
 
   const filteredNews = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
@@ -121,38 +259,64 @@ export default function AdminNews() {
     return news.filter((item) => {
       const matchesSearch =
         !searchValue ||
-        item.title?.toLowerCase().includes(searchValue) ||
-        item.category?.toLowerCase().includes(searchValue) ||
-        item.author?.toLowerCase().includes(searchValue);
+        item.title.toLowerCase().includes(searchValue) ||
+        item.category.toLowerCase().includes(searchValue) ||
+        item.author.toLowerCase().includes(searchValue) ||
+        item.excerpt.toLowerCase().includes(searchValue);
 
       const matchesStatus =
-        statusFilter === "all" || item.status === statusFilter;
+        statusFilter === "all" ||
+        item.status === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
   }, [news, search, statusFilter]);
 
+  /* ========================================================
+     MODAL HANDLERS
+  ======================================================== */
+
   const openCreateModal = () => {
+    if (!canManage) return;
+
     setEditingNews(null);
     setForm({ ...initialForm });
     setSelectedImage(null);
+    setImagePreview("");
+    setAlert(null);
     setModalOpen(true);
   };
 
   const openEditModal = (item) => {
-    setEditingNews(item);
+    if (!canManage || !item) return;
+
+    const article = normalizeNews(item);
+
+    if (!article.id) {
+      showAlert(
+        "Cannot edit this article because its ID is missing.",
+        "error"
+      );
+
+      console.error("News article is missing an ID:", item);
+      return;
+    }
+
+    setEditingNews(article);
 
     setForm({
-      title: item.title || "",
-      excerpt: item.excerpt || "",
-      content: item.content || "",
-      image: item.image || "",
-      category: item.category || "",
-      author: item.author || "",
-      status: item.status || "draft",
+      title: article.title,
+      excerpt: article.excerpt,
+      content: article.content,
+      image: article.image,
+      category: article.category,
+      author: article.author,
+      status: article.status,
     });
 
     setSelectedImage(null);
+    setImagePreview("");
+    setAlert(null);
     setModalOpen(true);
   };
 
@@ -163,7 +327,20 @@ export default function AdminNews() {
     setEditingNews(null);
     setForm({ ...initialForm });
     setSelectedImage(null);
+    setImagePreview("");
   };
+
+  const openViewModal = (item) => {
+    setViewingNews(normalizeNews(item));
+  };
+
+  const closeViewModal = () => {
+    setViewingNews(null);
+  };
+
+  /* ========================================================
+     FORM HANDLERS
+  ======================================================== */
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -179,16 +356,22 @@ export default function AdminNews() {
 
     if (!file) return;
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      showAlert(
+        "Please select a JPG, PNG, or WEBP image.",
+        "error"
+      );
 
-    if (!allowedTypes.includes(file.type)) {
-      showAlert("Please select a JPG, PNG, or WEBP image.", "error");
       event.target.value = "";
       return;
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
-      showAlert("Image size must not exceed 5 MB.", "error");
+      showAlert(
+        "Image size must not exceed 5 MB.",
+        "error"
+      );
+
       event.target.value = "";
       return;
     }
@@ -196,6 +379,10 @@ export default function AdminNews() {
     setSelectedImage(file);
     event.target.value = "";
   };
+
+  /* ========================================================
+     UPLOAD IMAGE
+  ======================================================== */
 
   const uploadImage = async () => {
     if (!selectedImage) return form.image;
@@ -206,35 +393,74 @@ export default function AdminNews() {
     try {
       setUploadingImage(true);
 
-      const response = await api.post("/news/upload-image", formData);
+      const response = await api.post(
+        "/news/upload-image",
+        formData
+      );
 
-      if (!response?.image) {
-        throw new Error("Image upload did not return an image URL.");
+      const result = unwrapResponse(response);
+
+      const imageUrl =
+        result?.image ||
+        result?.image_url ||
+        result?.url ||
+        result?.data?.image ||
+        result?.data?.image_url;
+
+      if (!imageUrl) {
+        throw new Error(
+          "Image upload did not return an image URL."
+        );
       }
 
-      return response.image;
+      return imageUrl;
     } finally {
       setUploadingImage(false);
     }
   };
 
+  /* ========================================================
+     CREATE / UPDATE NEWS
+  ======================================================== */
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!canManage) return;
+    if (!canManage) {
+      showAlert(
+        "You do not have permission to manage news articles.",
+        "error"
+      );
+      return;
+    }
 
     if (form.title.trim().length < 3) {
-      showAlert("Title must contain at least 3 characters.", "error");
+      showAlert(
+        "Title must contain at least 3 characters.",
+        "error"
+      );
       return;
     }
 
     if (form.content.trim().length < 10) {
-      showAlert("Content must contain at least 10 characters.", "error");
+      showAlert(
+        "Content must contain at least 10 characters.",
+        "error"
+      );
+      return;
+    }
+
+    if (editingNews && !editingNews.id) {
+      showAlert(
+        "Cannot update this article because its ID is missing.",
+        "error"
+      );
       return;
     }
 
     try {
       setSaving(true);
+      setAlert(null);
 
       let imageUrl = form.image;
 
@@ -253,10 +479,15 @@ export default function AdminNews() {
       };
 
       if (editingNews) {
-        await api.patch(`/news/${editingNews.id}`, payload);
+        await api.patch(
+          `/news/${editingNews.id}`,
+          payload
+        );
+
         showAlert("News article updated successfully.");
       } else {
         await api.post("/news", payload);
+
         showAlert("News article created successfully.");
       }
 
@@ -264,11 +495,17 @@ export default function AdminNews() {
       setEditingNews(null);
       setForm({ ...initialForm });
       setSelectedImage(null);
+      setImagePreview("");
 
       await loadNews(false);
     } catch (error) {
+      console.error("Failed to save news:", error);
+
       showAlert(
-        getErrorMessage(error, "Failed to save the news article."),
+        getErrorMessage(
+          error,
+          "Failed to save the news article."
+        ),
         "error"
       );
     } finally {
@@ -276,11 +513,95 @@ export default function AdminNews() {
     }
   };
 
-  const handleDelete = async (item) => {
-    if (!canDelete) return;
+  /* ========================================================
+     PUBLISH / UNPUBLISH / ARCHIVE / RESTORE
+  ======================================================== */
+
+  const handleStatusChange = async (item, newStatus) => {
+    if (!canManage) {
+      showAlert(
+        "You do not have permission to change news status.",
+        "error"
+      );
+      return;
+    }
+
+    const actionMessages = {
+      published: "publish",
+      draft: "move back to drafts",
+      archived: "archive",
+    };
+
+    const action = actionMessages[newStatus] || "update";
 
     const confirmed = window.confirm(
-      `Are you sure you want to delete "${item.title}"? This action cannot be undone.`
+      `Are you sure you want to ${action} "${item.title}"?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setChangingStatusId(item.id);
+
+      await api.patch(`/news/${item.id}`, {
+        status: newStatus,
+      });
+
+      setNews((previous) =>
+        previous.map((newsItem) =>
+          newsItem.id === item.id
+            ? { ...newsItem, status: newStatus }
+            : newsItem
+        )
+      );
+
+      if (viewingNews?.id === item.id) {
+        setViewingNews((previous) => ({
+          ...previous,
+          status: newStatus,
+        }));
+      }
+
+      const successMessages = {
+        published: "News article published successfully.",
+        draft: "News article moved to drafts successfully.",
+        archived: "News article archived successfully.",
+      };
+
+      showAlert(
+        successMessages[newStatus] ||
+        "News status updated successfully."
+      );
+    } catch (error) {
+      console.error("Failed to update news status:", error);
+
+      showAlert(
+        getErrorMessage(
+          error,
+          "Failed to update news status."
+        ),
+        "error"
+      );
+    } finally {
+      setChangingStatusId(null);
+    }
+  };
+
+  /* ========================================================
+     PERMANENT DELETE - SUPER ADMIN AND ADMIN
+  ======================================================== */
+
+  const handleDelete = async (item) => {
+    if (!canDelete) {
+      showAlert(
+        "You do not have permission to permanently delete news articles.",
+        "error"
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Permanently delete "${item.title}"?\n\nThis action cannot be undone.`
     );
 
     if (!confirmed) return;
@@ -291,19 +612,34 @@ export default function AdminNews() {
       await api.delete(`/news/${item.id}`);
 
       setNews((previous) =>
-        previous.filter((newsItem) => newsItem.id !== item.id)
+        previous.filter(
+          (newsItem) => newsItem.id !== item.id
+        )
       );
 
-      showAlert("News article deleted successfully.");
+      if (viewingNews?.id === item.id) {
+        setViewingNews(null);
+      }
+
+      showAlert("News article permanently deleted.");
     } catch (error) {
+      console.error("Failed to delete news:", error);
+
       showAlert(
-        getErrorMessage(error, "Failed to delete the news article."),
+        getErrorMessage(
+          error,
+          "Failed to delete the news article."
+        ),
         "error"
       );
     } finally {
       setDeletingId(null);
     }
   };
+
+  /* ========================================================
+     STATUS HELPERS
+  ======================================================== */
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -316,21 +652,151 @@ export default function AdminNews() {
     }
   };
 
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "published":
+        return "Published";
+      case "archived":
+        return "Archived";
+      default:
+        return "Draft";
+    }
+  };
+
+  /* ========================================================
+     RENDER ACTION BUTTONS
+  ======================================================== */
+
+  const renderActions = (item) => (
+    <div className="admin-news-actions">
+      <button
+        type="button"
+        className="admin-news-action-button view"
+        title="View article"
+        onClick={() => openViewModal(item)}
+      >
+        <Eye size={17} />
+      </button>
+
+      {canManage && (
+        <button
+          type="button"
+          className="admin-news-action-button edit"
+          title="Edit article"
+          onClick={(event) => {
+            event.stopPropagation();
+            openEditModal(item);
+          }}
+        >
+          <Edit size={17} />
+        </button>
+      )}
+
+      {canManage && item.status === "draft" && (
+        <button
+          type="button"
+          className="admin-news-action-button publish"
+          title="Publish article"
+          onClick={() => handleStatusChange(item, "published")}
+          disabled={changingStatusId === item.id}
+        >
+          {changingStatusId === item.id ? (
+            <RefreshCw size={17} className="admin-news-spinning" />
+          ) : (
+            <Send size={17} />
+          )}
+        </button>
+      )}
+
+      {canManage && item.status === "published" && (
+        <button
+          type="button"
+          className="admin-news-action-button unpublish"
+          title="Move to drafts"
+          onClick={() => handleStatusChange(item, "draft")}
+          disabled={changingStatusId === item.id}
+        >
+          {changingStatusId === item.id ? (
+            <RefreshCw size={17} className="admin-news-spinning" />
+          ) : (
+            <EyeOff size={17} />
+          )}
+        </button>
+      )}
+
+      {canManage && item.status !== "archived" && (
+        <button
+          type="button"
+          className="admin-news-action-button archive"
+          title="Archive article"
+          onClick={() => handleStatusChange(item, "archived")}
+          disabled={changingStatusId === item.id}
+        >
+          {changingStatusId === item.id ? (
+            <RefreshCw size={17} className="admin-news-spinning" />
+          ) : (
+            <Archive size={17} />
+          )}
+        </button>
+      )}
+
+      {canManage && item.status === "archived" && (
+        <button
+          type="button"
+          className="admin-news-action-button restore"
+          title="Restore to drafts"
+          onClick={() => handleStatusChange(item, "draft")}
+          disabled={changingStatusId === item.id}
+        >
+          {changingStatusId === item.id ? (
+            <RefreshCw size={17} className="admin-news-spinning" />
+          ) : (
+            <RotateCcw size={17} />
+          )}
+        </button>
+      )}
+
+      {canDelete && (
+        <button
+          type="button"
+          className="admin-news-action-button delete"
+          title="Permanently delete article"
+          onClick={() => handleDelete(item)}
+          disabled={deletingId === item.id}
+        >
+          {deletingId === item.id ? (
+            <RefreshCw
+              size={17}
+              className="admin-news-spinning"
+            />
+          ) : (
+            <Trash2 size={17} />
+          )}
+        </button>
+      )}
+    </div>
+  );
+
+  /* ========================================================
+     RENDER
+  ======================================================== */
+
   return (
     <div className="admin-news-page">
-      <div className="admin-news-header">
-        <div>
-          <div className="admin-news-heading">
-            <div className="admin-news-heading-icon">
-              <Newspaper size={23} />
-            </div>
 
-            <div>
-              <h1>News & Updates</h1>
-              <p>
-                Create, manage, and publish news and announcements.
-              </p>
-            </div>
+      {/* HEADER */}
+
+      <div className="admin-news-header">
+        <div className="admin-news-heading">
+          <div className="admin-news-heading-icon">
+            <Newspaper size={23} />
+          </div>
+
+          <div>
+            <h1>News & Updates</h1>
+            <p>
+              Create, manage, publish, and organize college news.
+            </p>
           </div>
         </div>
 
@@ -339,11 +805,13 @@ export default function AdminNews() {
             type="button"
             className="admin-news-refresh"
             onClick={() => loadNews(false)}
-            disabled={refreshing}
+            disabled={refreshing || loading}
           >
             <RefreshCw
               size={17}
-              className={refreshing ? "admin-news-spinning" : ""}
+              className={
+                refreshing ? "admin-news-spinning" : ""
+              }
             />
             Refresh
           </button>
@@ -360,6 +828,36 @@ export default function AdminNews() {
           )}
         </div>
       </div>
+
+      {/* ROLE INFORMATION */}
+
+      <div className="admin-news-role-info">
+        <span className="admin-news-role-indicator">
+          <UserRound size={16} />
+        </span>
+
+        <span>
+          Signed in as <strong>{admin?.full_name || admin?.email || "Admin"}</strong>
+          {" · "}
+          <strong>
+            {isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : "Unauthorized"}
+          </strong>
+        </span>
+
+        {isAuthorized && (
+          <span
+            className={
+              isSuperAdmin
+                ? "admin-news-super-label"
+                : "admin-news-admin-label"
+            }
+          >
+            Full management access
+          </span>
+        )}
+      </div>
+
+      {/* ALERT */}
 
       {alert && (
         <div
@@ -383,6 +881,8 @@ export default function AdminNews() {
           </button>
         </div>
       )}
+
+      {/* STATISTICS */}
 
       <div className="admin-news-stats">
         <div className="admin-news-stat-card">
@@ -426,9 +926,12 @@ export default function AdminNews() {
         </div>
       </div>
 
+      {/* SEARCH AND FILTER */}
+
       <div className="admin-news-toolbar">
         <div className="admin-news-search">
           <Search size={19} />
+
           <input
             type="search"
             placeholder="Search by title, category, or author..."
@@ -450,6 +953,8 @@ export default function AdminNews() {
         </select>
       </div>
 
+      {/* NEWS TABLE */}
+
       <div className="admin-news-list-container">
         <div className="admin-news-list-heading">
           <div>
@@ -462,7 +967,10 @@ export default function AdminNews() {
 
         {loading ? (
           <div className="admin-news-loading">
-            <RefreshCw size={27} className="admin-news-spinning" />
+            <RefreshCw
+              size={27}
+              className="admin-news-spinning"
+            />
             <p>Loading news articles...</p>
           </div>
         ) : filteredNews.length === 0 ? (
@@ -515,7 +1023,10 @@ export default function AdminNews() {
                       <div className="admin-news-article-cell">
                         <div className="admin-news-thumbnail">
                           {item.image ? (
-                            <img src={item.image} alt={item.title} />
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                            />
                           ) : (
                             <ImageIcon size={22} />
                           )}
@@ -544,81 +1055,82 @@ export default function AdminNews() {
                           item.status
                         )}`}
                       >
-                        {item.status || "draft"}
+                        {getStatusLabel(item.status)}
                       </span>
                     </td>
 
                     <td>
                       <div className="admin-news-date">
                         <CalendarDays size={15} />
-                        {formatDate(item.published_at || item.created_at)}
-                      </div>
-                    </td>
-
-                    <td>
-                      <div className="admin-news-actions">
-                        {canManage && (
-                          <button
-                            type="button"
-                            className="admin-news-action-button edit"
-                            title="Edit article"
-                            onClick={() => openEditModal(item)}
-                          >
-                            <Edit size={17} />
-                          </button>
-                        )}
-
-                        {canDelete && (
-                          <button
-                            type="button"
-                            className="admin-news-action-button delete"
-                            title="Delete article"
-                            onClick={() => handleDelete(item)}
-                            disabled={deletingId === item.id}
-                          >
-                            {deletingId === item.id ? (
-                              <RefreshCw
-                                size={17}
-                                className="admin-news-spinning"
-                              />
-                            ) : (
-                              <Trash2 size={17} />
-                            )}
-                          </button>
+                        {formatDate(
+                          item.published_at || item.created_at
                         )}
                       </div>
                     </td>
+
+                    <td>{renderActions(item)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+
+        {/* ACTION LEGEND */}
+
+        {!loading && news.length > 0 && (
+          <div className="admin-news-permission-note">
+            <div>
+              <Eye size={15} />
+              View
+            </div>
+            <div>
+              <Edit size={15} />
+              Edit
+            </div>
+            <div>
+              <Send size={15} />
+              Publish
+            </div>
+            <div>
+              <Archive size={15} />
+              Archive
+            </div>
+            {canDelete && (
+              <div>
+                <Trash2 size={15} />
+                Delete permanently
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* CREATE / EDIT MODAL */}
 
       {modalOpen && (
         <div
           className="admin-news-modal-overlay"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) closeModal();
+            if (event.target === event.currentTarget) {
+              closeModal();
+            }
           }}
         >
           <div
             className="admin-news-modal"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              height: "min(820px, calc(100vh - 50px))",
-              maxHeight: "calc(100vh - 50px)",
-              minHeight: 0,
-              overflow: "hidden",
-            }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="news-modal-title"
           >
             <div className="admin-news-modal-header">
               <div>
-                <h2>
-                  {editingNews ? "Edit News Article" : "Create News Article"}
+                <h2 id="news-modal-title">
+                  {editingNews
+                    ? "Edit News Article"
+                    : "Create News Article"}
                 </h2>
+
                 <p>
                   {editingNews
                     ? "Update the article details below."
@@ -637,25 +1149,8 @@ export default function AdminNews() {
               </button>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              style={{
-                minHeight: 0,
-                flex: "1 1 auto",
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                className="admin-news-modal-body"
-                style={{
-                  minHeight: 0,
-                  flex: "1 1 auto",
-                  overflowY: "auto",
-                  overscrollBehavior: "contain",
-                }}
-              >
+            <form onSubmit={handleSubmit}>
+              <div className="admin-news-modal-body">
                 <div className="admin-news-form-group">
                   <label htmlFor="news-title">
                     Article Title <span>*</span>
@@ -675,7 +1170,10 @@ export default function AdminNews() {
 
                 <div className="admin-news-form-row">
                   <div className="admin-news-form-group">
-                    <label htmlFor="news-category">Category</label>
+                    <label htmlFor="news-category">
+                      Category
+                    </label>
+
                     <input
                       id="news-category"
                       name="category"
@@ -689,6 +1187,7 @@ export default function AdminNews() {
 
                   <div className="admin-news-form-group">
                     <label htmlFor="news-author">Author</label>
+
                     <input
                       id="news-author"
                       name="author"
@@ -702,7 +1201,10 @@ export default function AdminNews() {
                 </div>
 
                 <div className="admin-news-form-group">
-                  <label htmlFor="news-excerpt">Short Description</label>
+                  <label htmlFor="news-excerpt">
+                    Short Description
+                  </label>
+
                   <textarea
                     id="news-excerpt"
                     name="excerpt"
@@ -718,6 +1220,7 @@ export default function AdminNews() {
                   <label htmlFor="news-content">
                     Article Content <span>*</span>
                   </label>
+
                   <textarea
                     id="news-content"
                     name="content"
@@ -728,21 +1231,20 @@ export default function AdminNews() {
                     maxLength={50000}
                     required
                   />
-                  <small>{form.content.length}/50,000 characters</small>
+
+                  <small>
+                    {form.content.length}/50,000 characters
+                  </small>
                 </div>
 
                 <div className="admin-news-form-group">
                   <label>Cover Image</label>
 
                   <div className="admin-news-image-upload">
-                    {(selectedImage || form.image) && (
+                    {(imagePreview || form.image) && (
                       <div className="admin-news-image-preview">
                         <img
-                          src={
-                            selectedImage
-                              ? URL.createObjectURL(selectedImage)
-                              : form.image
-                          }
+                          src={imagePreview || form.image}
                           alt="News cover preview"
                         />
 
@@ -750,6 +1252,8 @@ export default function AdminNews() {
                           type="button"
                           onClick={() => {
                             setSelectedImage(null);
+                            setImagePreview("");
+
                             setForm((previous) => ({
                               ...previous,
                               image: "",
@@ -773,7 +1277,9 @@ export default function AdminNews() {
                             : "Upload cover image"}
                       </span>
 
-                      <small>JPG, PNG, or WEBP. Maximum 5 MB.</small>
+                      <small>
+                        JPG, PNG, or WEBP. Maximum 5 MB.
+                      </small>
 
                       <input
                         type="file"
@@ -785,7 +1291,9 @@ export default function AdminNews() {
                 </div>
 
                 <div className="admin-news-form-group">
-                  <label htmlFor="news-status">Publication Status</label>
+                  <label htmlFor="news-status">
+                    Publication Status
+                  </label>
 
                   <select
                     id="news-status"
@@ -804,12 +1312,7 @@ export default function AdminNews() {
                 </div>
               </div>
 
-              <div
-                className="admin-news-modal-footer"
-                style={{
-                  flexShrink: 0,
-                }}
-              >
+              <div className="admin-news-modal-footer">
                 <button
                   type="button"
                   className="admin-news-cancel-button"
@@ -830,17 +1333,136 @@ export default function AdminNews() {
                         size={17}
                         className="admin-news-spinning"
                       />
-                      {uploadingImage ? "Uploading image..." : "Saving..."}
+                      {uploadingImage
+                        ? "Uploading image..."
+                        : "Saving..."}
                     </>
                   ) : (
                     <>
                       <CheckCircle size={17} />
-                      {editingNews ? "Save Changes" : "Create Article"}
+                      {editingNews
+                        ? "Save Changes"
+                        : "Create Article"}
                     </>
                   )}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW ARTICLE MODAL */}
+
+      {viewingNews && (
+        <div
+          className="admin-news-modal-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeViewModal();
+            }
+          }}
+        >
+          <div
+            className="admin-news-modal admin-news-view-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="news-view-title"
+          >
+            <div className="admin-news-modal-header">
+              <div>
+                <h2 id="news-view-title">Article Details</h2>
+                <p>Preview the complete news article.</p>
+              </div>
+
+              <button
+                type="button"
+                className="admin-news-modal-close"
+                onClick={closeViewModal}
+                aria-label="Close article preview"
+              >
+                <X size={21} />
+              </button>
+            </div>
+
+            <div className="admin-news-modal-body">
+              {viewingNews.image && (
+                <div className="admin-news-view-image">
+                  <img
+                    src={viewingNews.image}
+                    alt={viewingNews.title}
+                  />
+                </div>
+              )}
+
+              <div className="admin-news-view-meta">
+                <span
+                  className={`admin-news-status ${getStatusClass(
+                    viewingNews.status
+                  )}`}
+                >
+                  {getStatusLabel(viewingNews.status)}
+                </span>
+
+                {viewingNews.category && (
+                  <span>
+                    <Tag size={15} />
+                    {viewingNews.category}
+                  </span>
+                )}
+
+                {viewingNews.author && (
+                  <span>
+                    <UserRound size={15} />
+                    {viewingNews.author}
+                  </span>
+                )}
+
+                <span>
+                  <CalendarDays size={15} />
+                  {formatDate(viewingNews.published_at || viewingNews.created_at)}
+                </span>
+              </div>
+
+              <h2 className="admin-news-view-title">
+                {viewingNews.title}
+              </h2>
+
+              {viewingNews.excerpt && (
+                <p className="admin-news-view-excerpt">
+                  {viewingNews.excerpt}
+                </p>
+              )}
+
+              <div className="admin-news-view-content">
+                {viewingNews.content || "No article content available."}
+              </div>
+            </div>
+
+            <div className="admin-news-modal-footer">
+              <button
+                type="button"
+                className="admin-news-cancel-button"
+                onClick={closeViewModal}
+              >
+                Close
+              </button>
+
+              {canManage && (
+                <button
+                  type="button"
+                  className="admin-news-save-button"
+                  onClick={() => {
+                    const article = viewingNews;
+                    setViewingNews(null);
+                    openEditModal(article);
+                  }}
+                >
+                  <Edit size={17} />
+                  Edit Article
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

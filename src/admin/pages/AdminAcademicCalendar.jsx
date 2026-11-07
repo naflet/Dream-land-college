@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Plus,
   Search,
@@ -19,19 +19,73 @@ import api, { getStoredAdmin } from "../services/api";
 import "../styles/admin-academic-calendar.css";
 
 /* ==========================================================
-   HELPERS
+   API HELPERS
 ========================================================== */
 
-const getEventsFromResponse = (response) => {
-  if (Array.isArray(response)) return response;
-  if (Array.isArray(response?.data)) return response.data;
-  if (Array.isArray(response?.events)) return response.events;
-  if (Array.isArray(response?.calendarEvents)) {
-    return response.calendarEvents;
+const getResponseData = (response) => {
+  let result = response;
+
+  for (let i = 0; i < 3; i += 1) {
+    if (
+      result &&
+      typeof result === "object" &&
+      !Array.isArray(result) &&
+      result.data !== undefined &&
+      result.events === undefined &&
+      result.calendarEvents === undefined
+    ) {
+      result = result.data;
+    } else {
+      break;
+    }
   }
+
+  return result;
+};
+
+const getEventsFromResponse = (response) => {
+  const result = getResponseData(response);
+
+  if (Array.isArray(result)) return result;
+  if (Array.isArray(result?.events)) return result.events;
+  if (Array.isArray(result?.calendarEvents)) {
+    return result.calendarEvents;
+  }
+  if (Array.isArray(result?.data?.events)) {
+    return result.data.events;
+  }
+  if (Array.isArray(result?.data)) return result.data;
+  if (Array.isArray(result?.items)) return result.items;
 
   return [];
 };
+
+const getErrorMessage = (error, fallback) => {
+  return (
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.data?.message ||
+    error?.message ||
+    fallback
+  );
+};
+
+const normalizeEvent = (event) => ({
+  ...event,
+  title: event.title || "",
+  description: event.description || "",
+  event_date: event.event_date || "",
+  event_type: event.event_type || "Other",
+  academic_year: event.academic_year || "",
+  is_published:
+    event.is_published === true ||
+    event.is_published === "true" ||
+    event.is_published === 1,
+});
+
+/* ==========================================================
+   DATE HELPERS
+========================================================== */
 
 const getTodayDate = () => {
   const today = new Date();
@@ -45,7 +99,8 @@ const getTodayDate = () => {
 const formatEventDate = (date) => {
   if (!date) return "—";
 
-  const parsedDate = new Date(`${date}T00:00:00`);
+  const dateValue = String(date).slice(0, 10);
+  const parsedDate = new Date(`${dateValue}T00:00:00`);
 
   if (Number.isNaN(parsedDate.getTime())) return date;
 
@@ -55,6 +110,10 @@ const formatEventDate = (date) => {
     year: "numeric",
   });
 };
+
+/* ==========================================================
+   EVENT TYPE
+========================================================== */
 
 const getEventTypeClass = (type) => {
   const normalizedType = String(type || "Other").toLowerCase();
@@ -73,6 +132,10 @@ const getEventTypeClass = (type) => {
     : "other";
 };
 
+/* ==========================================================
+   EMPTY FORM
+========================================================== */
+
 const emptyForm = {
   title: "",
   description: "",
@@ -83,15 +146,17 @@ const emptyForm = {
 };
 
 /* ==========================================================
-   ACADEMIC CALENDAR ADMIN PAGE
+   ADMIN ACADEMIC CALENDAR
 ========================================================== */
 
 export default function AdminAcademicCalendar() {
   const admin = getStoredAdmin();
-
   const role = admin?.role || "";
 
+  // Only Super Admin and Admin can manage calendar events.
   const canManage = ["super_admin", "admin"].includes(role);
+
+  // Only Super Admin can delete calendar events.
   const canDelete = role === "super_admin";
 
   /* ========================================================
@@ -117,10 +182,18 @@ export default function AdminAcademicCalendar() {
   const [alert, setAlert] = useState(null);
 
   /* ========================================================
-     LOAD EVENTS
+     ALERT
   ======================================================== */
 
-  const fetchEvents = async (showRefresh = false) => {
+  const showAlert = useCallback((type, message) => {
+    setAlert({ type, message });
+  }, []);
+
+  /* ========================================================
+     FETCH EVENTS FROM BACKEND
+  ======================================================== */
+
+  const fetchEvents = useCallback(async (showRefresh = false) => {
     try {
       if (showRefresh) {
         setRefreshing(true);
@@ -128,36 +201,34 @@ export default function AdminAcademicCalendar() {
         setLoading(true);
       }
 
+      // Admin endpoint returns both published and draft events.
       const response = await api.get("/academic-calendar/admin");
 
-      setEvents(getEventsFromResponse(response));
-    } catch (error) {
-      console.error("Failed to load academic calendar:", error);
+      const fetchedEvents = getEventsFromResponse(response);
 
-      setAlert({
-        type: "error",
-        message:
-          error?.response?.data?.message ||
-          error?.message ||
-          "Unable to load academic calendar events.",
-      });
+      setEvents(fetchedEvents.map(normalizeEvent));
+    } catch (error) {
+      console.error(
+        "Failed to load academic calendar:",
+        error
+      );
+
+      showAlert(
+        "error",
+        getErrorMessage(
+          error,
+          "Unable to load academic calendar events."
+        )
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [showAlert]);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
-
-  /* ========================================================
-     ALERT
-  ======================================================== */
-
-  const showAlert = (type, message) => {
-    setAlert({ type, message });
-  };
+  }, [fetchEvents]);
 
   /* ========================================================
      STATISTICS
@@ -169,14 +240,14 @@ export default function AdminAcademicCalendar() {
     const total = events.length;
 
     const published = events.filter(
-      (event) => event.is_published === true
+      (event) => event.is_published
     ).length;
 
     const drafts = total - published;
 
     const upcoming = events.filter(
       (event) =>
-        event.is_published === true &&
+        event.is_published &&
         event.event_date >= today
     ).length;
 
@@ -193,20 +264,20 @@ export default function AdminAcademicCalendar() {
   ======================================================== */
 
   const filteredEvents = useMemo(() => {
-    return events.filter((event) => {
-      const searchValue = search.toLowerCase().trim();
+    const searchValue = search.trim().toLowerCase();
 
+    return events.filter((event) => {
       const matchesSearch =
         !searchValue ||
-        event.title?.toLowerCase().includes(searchValue) ||
-        event.description?.toLowerCase().includes(searchValue) ||
-        event.event_type?.toLowerCase().includes(searchValue) ||
-        event.academic_year?.toLowerCase().includes(searchValue);
+        event.title.toLowerCase().includes(searchValue) ||
+        event.description.toLowerCase().includes(searchValue) ||
+        event.event_type.toLowerCase().includes(searchValue) ||
+        event.academic_year.toLowerCase().includes(searchValue);
 
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "published" && event.is_published === true) ||
-        (statusFilter === "draft" && event.is_published !== true);
+        (statusFilter === "published" && event.is_published) ||
+        (statusFilter === "draft" && !event.is_published);
 
       return matchesSearch && matchesStatus;
     });
@@ -225,7 +296,13 @@ export default function AdminAcademicCalendar() {
     }));
   };
 
+  /* ========================================================
+     MODAL HANDLERS
+  ======================================================== */
+
   const openCreateModal = () => {
+    if (!canManage) return;
+
     setEditingEvent(null);
     setForm({ ...emptyForm });
     setAlert(null);
@@ -233,12 +310,16 @@ export default function AdminAcademicCalendar() {
   };
 
   const openEditModal = (event) => {
+    if (!canManage) return;
+
     setEditingEvent(event);
 
     setForm({
       title: event.title || "",
       description: event.description || "",
-      event_date: event.event_date || "",
+      event_date: event.event_date
+        ? String(event.event_date).slice(0, 10)
+        : "",
       event_type: event.event_type || "Academic",
       academic_year: event.academic_year || "",
       is_published: event.is_published === true,
@@ -271,8 +352,11 @@ export default function AdminAcademicCalendar() {
       return;
     }
 
-    if (!form.title.trim()) {
-      showAlert("error", "Please enter an event title.");
+    if (form.title.trim().length < 3) {
+      showAlert(
+        "error",
+        "Event title must contain at least 3 characters."
+      );
       return;
     }
 
@@ -287,7 +371,7 @@ export default function AdminAcademicCalendar() {
       event_date: form.event_date,
       event_type: form.event_type.trim() || "Academic",
       academic_year: form.academic_year.trim() || null,
-      is_published: form.is_published,
+      is_published: Boolean(form.is_published),
     };
 
     try {
@@ -305,7 +389,10 @@ export default function AdminAcademicCalendar() {
           "Academic calendar event updated successfully."
         );
       } else {
-        await api.post("/academic-calendar", payload);
+        await api.post(
+          "/academic-calendar",
+          payload
+        );
 
         showAlert(
           "success",
@@ -319,13 +406,17 @@ export default function AdminAcademicCalendar() {
 
       await fetchEvents(true);
     } catch (error) {
-      console.error("Failed to save calendar event:", error);
+      console.error(
+        "Failed to save calendar event:",
+        error
+      );
 
       showAlert(
         "error",
-        error?.response?.data?.message ||
-          error?.message ||
+        getErrorMessage(
+          error,
           "Unable to save academic calendar event."
+        )
       );
     } finally {
       setSaving(false);
@@ -340,7 +431,7 @@ export default function AdminAcademicCalendar() {
     if (!canDelete) {
       showAlert(
         "error",
-        "You do not have permission to delete calendar events."
+        "Only the Super Admin can delete calendar events."
       );
       return;
     }
@@ -355,7 +446,9 @@ export default function AdminAcademicCalendar() {
       setDeletingId(event.id);
       setAlert(null);
 
-      await api.delete(`/academic-calendar/${event.id}`);
+      await api.delete(
+        `/academic-calendar/${event.id}`
+      );
 
       setEvents((previous) =>
         previous.filter((item) => item.id !== event.id)
@@ -366,13 +459,17 @@ export default function AdminAcademicCalendar() {
         "Academic calendar event deleted successfully."
       );
     } catch (error) {
-      console.error("Failed to delete calendar event:", error);
+      console.error(
+        "Failed to delete calendar event:",
+        error
+      );
 
       showAlert(
         "error",
-        error?.response?.data?.message ||
-          error?.message ||
+        getErrorMessage(
+          error,
           "Unable to delete academic calendar event."
+        )
       );
     } finally {
       setDeletingId(null);
@@ -385,6 +482,7 @@ export default function AdminAcademicCalendar() {
 
   return (
     <div className="admin-calendar-page">
+
       {/* PAGE HEADER */}
 
       <div className="admin-calendar-header">
@@ -392,8 +490,8 @@ export default function AdminAcademicCalendar() {
           <h1>Academic Calendar</h1>
 
           <p>
-            Manage academic schedules, registration dates, examinations,
-            holidays, and important college events.
+            Manage academic schedules, registration dates,
+            examinations, holidays, and important college events.
           </p>
         </div>
 
@@ -408,6 +506,7 @@ export default function AdminAcademicCalendar() {
               size={15}
               className={refreshing ? "animate-spin" : ""}
             />
+
             {refreshing ? "Refreshing..." : "Refresh"}
           </button>
 
@@ -438,6 +537,14 @@ export default function AdminAcademicCalendar() {
           )}
 
           <span>{alert.message}</span>
+
+          <button
+            type="button"
+            onClick={() => setAlert(null)}
+            aria-label="Close alert"
+          >
+            <X size={17} />
+          </button>
         </div>
       )}
 
@@ -504,7 +611,9 @@ export default function AdminAcademicCalendar() {
         </div>
 
         <div className="admin-calendar-filter">
-          <label htmlFor="calendar-status-filter">Status:</label>
+          <label htmlFor="calendar-status-filter">
+            Status:
+          </label>
 
           <select
             id="calendar-status-filter"
@@ -523,7 +632,10 @@ export default function AdminAcademicCalendar() {
       <div className="admin-calendar-table-container">
         {loading ? (
           <div className="admin-calendar-loading">
-            <RefreshCw size={25} className="animate-spin" />
+            <RefreshCw
+              size={25}
+              className="animate-spin"
+            />
             <p>Loading academic calendar events...</p>
           </div>
         ) : filteredEvents.length === 0 ? (
@@ -541,6 +653,20 @@ export default function AdminAcademicCalendar() {
                 ? "Try changing your search or filter."
                 : "Add your first academic calendar event to get started."}
             </p>
+
+            {canManage &&
+              events.length === 0 &&
+              !search &&
+              statusFilter === "all" && (
+                <button
+                  type="button"
+                  className="admin-calendar-btn admin-calendar-btn-primary"
+                  onClick={openCreateModal}
+                >
+                  <Plus size={17} />
+                  Add First Event
+                </button>
+              )}
           </div>
         ) : (
           <table className="admin-calendar-table">
@@ -551,7 +677,9 @@ export default function AdminAcademicCalendar() {
                 <th>Event Type</th>
                 <th>Academic Year</th>
                 <th>Status</th>
-                <th style={{ textAlign: "right" }}>Actions</th>
+                <th style={{ textAlign: "right" }}>
+                  Actions
+                </th>
               </tr>
             </thead>
 
@@ -595,10 +723,14 @@ export default function AdminAcademicCalendar() {
                   <td>
                     <span
                       className={`admin-calendar-status ${
-                        event.is_published ? "published" : "draft"
+                        event.is_published
+                          ? "published"
+                          : "draft"
                       }`}
                     >
-                      {event.is_published ? "Published" : "Draft"}
+                      {event.is_published
+                        ? "Published"
+                        : "Draft"}
                     </span>
                   </td>
 
@@ -668,7 +800,9 @@ export default function AdminAcademicCalendar() {
             <div className="admin-calendar-modal-header">
               <div>
                 <h2 id="calendar-modal-title">
-                  {editingEvent ? "Edit Calendar Event" : "Add Calendar Event"}
+                  {editingEvent
+                    ? "Edit Calendar Event"
+                    : "Add Calendar Event"}
                 </h2>
 
                 <p>
@@ -692,6 +826,7 @@ export default function AdminAcademicCalendar() {
             <form onSubmit={handleSubmit}>
               <div className="admin-calendar-modal-body">
                 <div className="admin-calendar-form">
+
                   {/* EVENT TITLE */}
 
                   <div className="admin-calendar-form-group">
@@ -706,6 +841,7 @@ export default function AdminAcademicCalendar() {
                       placeholder="Enter event title"
                       value={form.title}
                       onChange={handleFormChange}
+                      maxLength={255}
                       required
                     />
                   </div>
@@ -724,6 +860,7 @@ export default function AdminAcademicCalendar() {
                       value={form.description}
                       onChange={handleFormChange}
                       rows={4}
+                      maxLength={5000}
                     />
                   </div>
 
@@ -781,6 +918,7 @@ export default function AdminAcademicCalendar() {
                       placeholder="Example: 2026/2027"
                       value={form.academic_year}
                       onChange={handleFormChange}
+                      maxLength={50}
                     />
                   </div>
 
@@ -797,12 +935,14 @@ export default function AdminAcademicCalendar() {
 
                     <label htmlFor="calendar-publish">
                       Publish this event
+
                       <span>
                         Published events will be visible on the public
                         college website.
                       </span>
                     </label>
                   </div>
+
                 </div>
               </div>
 
@@ -825,13 +965,18 @@ export default function AdminAcademicCalendar() {
                 >
                   {saving ? (
                     <>
-                      <RefreshCw size={15} className="animate-spin" />
+                      <RefreshCw
+                        size={15}
+                        className="animate-spin"
+                      />
                       Saving...
                     </>
                   ) : (
                     <>
                       <CheckCircle size={15} />
-                      {editingEvent ? "Update Event" : "Create Event"}
+                      {editingEvent
+                        ? "Update Event"
+                        : "Create Event"}
                     </>
                   )}
                 </button>

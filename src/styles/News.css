@@ -922,3 +922,121 @@
     transition: none !important;
   }
 }
+
+/* ==========================================================
+   NEWS - PROFESSIONAL LOADING / ERROR / IMAGE STATES
+========================================================== */
+
+.dl-news-system-state {
+  width: 100%;
+  min-height: 250px;
+  padding: 42px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+}
+
+.dl-news-system-state h3 {
+  margin: 4px 0 0;
+  color: #10243a;
+  font-size: 19px;
+  font-weight: 750;
+}
+
+.dl-news-system-state p {
+  max-width: 500px;
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.dl-news-loading-state > svg {
+  color: #16a34a;
+}
+
+.dl-news-spinner {
+  animation: dlNewsSpin 1s linear infinite;
+}
+
+@keyframes dlNewsSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dl-news-error-state .dl-news-state-icon {
+  width: 62px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  background: #fef2f2;
+  border-radius: 50%;
+}
+
+.dl-news-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 8px;
+}
+
+.dl-news-retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* IMAGE FALLBACK */
+
+.dl-news-image-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #64748b;
+  background: #f1f5f9;
+  font-size: 13px;
+}
+
+.dl-news-image-placeholder svg {
+  color: #94a3b8;
+}
+
+.dl-news-page-image > img,
+.dl-article-modal-img > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dl-news-page-image > .dl-news-image-placeholder,
+.dl-article-modal-img > .dl-news-image-placeholder {
+  position: absolute;
+  inset: 0;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+  .dl-news-system-state {
+    min-height: 210px;
+    padding: 30px 18px;
+  }
+
+  .dl-news-system-state h3 {
+    font-size: 17px;
+  }
+}

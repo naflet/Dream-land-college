@@ -1,6 +1,11 @@
 
-import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Link } from "react-router-dom";
+
 import {
   ArrowRight,
   ArrowUpRight,
@@ -22,6 +27,9 @@ import {
   BellRing,
   Info,
   ExternalLink,
+  RefreshCw,
+  AlertCircle,
+  ImageOff,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
@@ -35,6 +43,10 @@ import supabase from "../config/supabase";
 import "../styles/global.css";
 import "../styles/home.css";
 
+/* ==========================================================
+   CAMPUS DATA
+========================================================== */
+
 const campusCards = [
   {
     name: "Addis Ababa",
@@ -43,7 +55,11 @@ const campusCards = [
       "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1000&q=85",
     description:
       "A central learning environment supporting students across Dream Land College programs.",
-    highlights: ["State-of-the-art ICT Labs", "Modern Library", "Central Administration"],
+    highlights: [
+      "State-of-the-art ICT Labs",
+      "Modern Library",
+      "Central Administration",
+    ],
   },
   {
     name: "Asella",
@@ -52,7 +68,11 @@ const campusCards = [
       "https://images.unsplash.com/photo-1564981797816-1043664bf78d?auto=format&fit=crop&w=1000&q=85",
     description:
       "A welcoming campus focused on accessible learning, practical skills and student development.",
-    highlights: ["TVET Workshops", "Student Residence", "Community Clinic"],
+    highlights: [
+      "TVET Workshops",
+      "Student Residence",
+      "Community Clinic",
+    ],
   },
   {
     name: "Bale",
@@ -61,9 +81,17 @@ const campusCards = [
       "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1000&q=85",
     description:
       "A growing learning community connecting students with academic and professional opportunities.",
-    highlights: ["Agricultural Hub", "Research Center", "Digital Hub"],
+    highlights: [
+      "Agricultural Hub",
+      "Research Center",
+      "Digital Hub",
+    ],
   },
 ];
+
+/* ==========================================================
+   QUICK ACTIONS
+========================================================== */
 
 const quickActions = [
   {
@@ -92,30 +120,89 @@ const quickActions = [
   },
 ];
 
-function Home() {
-  const navigate = useNavigate();
+/* ==========================================================
+   REUSABLE IMAGE WITH PROFESSIONAL FALLBACK
+========================================================== */
 
+function HomeImage({
+  src,
+  alt,
+  className = "",
+  fallbackLabel = "Image",
+}) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  if (!src || failed) {
+    return (
+      <div
+        className={`dl-home-image-fallback ${className}`}
+        role="img"
+        aria-label={`Unable to load ${fallbackLabel}`}
+      >
+        <ImageOff size={30} />
+
+        <strong>Unable to Load Image</strong>
+
+        <span>{fallbackLabel}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt || ""}
+      className={className}
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
+/* ==========================================================
+   HOME COMPONENT
+========================================================== */
+
+function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [portalOpen, setPortalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [announcementVisible, setAnnouncementVisible] = useState(true);
 
-  // Academic Calendar state
+  /* ========================================================
+     ACADEMIC CALENDAR STATE
+  ======================================================== */
+
   const [calendarItems, setCalendarItems] = useState([]);
   const [calendarLoading, setCalendarLoading] = useState(true);
+  const [calendarError, setCalendarError] = useState(false);
+  const [calendarRetry, setCalendarRetry] = useState(0);
 
-  // News & Updates state
+  /* ========================================================
+     NEWS STATE
+  ======================================================== */
+
   const [newsItems, setNewsItems] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
+  const [newsError, setNewsError] = useState(false);
+  const [newsRetry, setNewsRetry] = useState(0);
 
-  // Fetch published Academic Calendar events directly from Supabase
+  /* ========================================================
+     FETCH ACADEMIC CALENDAR
+  ======================================================== */
+
   useEffect(() => {
     let isMounted = true;
 
     const fetchCalendarEvents = async () => {
       try {
         setCalendarLoading(true);
+        setCalendarError(false);
 
         const { data, error } = await supabase
           .from("academic_calendar")
@@ -135,6 +222,7 @@ function Home() {
 
         if (isMounted) {
           setCalendarItems([]);
+          setCalendarError(true);
         }
       } finally {
         if (isMounted) {
@@ -148,15 +236,19 @@ function Home() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [calendarRetry]);
 
-  // Fetch latest published News & Updates directly from Supabase
+  /* ========================================================
+     FETCH LATEST NEWS
+  ======================================================== */
+
   useEffect(() => {
     let isMounted = true;
 
     const fetchNews = async () => {
       try {
         setNewsLoading(true);
+        setNewsError(false);
 
         const { data, error } = await supabase
           .from("news")
@@ -177,6 +269,7 @@ function Home() {
 
         if (isMounted) {
           setNewsItems([]);
+          setNewsError(true);
         }
       } finally {
         if (isMounted) {
@@ -190,9 +283,12 @@ function Home() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [newsRetry]);
 
-  // Student Portal event listener
+  /* ========================================================
+     STUDENT PORTAL EVENT LISTENER
+  ======================================================== */
+
   useEffect(() => {
     const openPortal = () => {
       setPortalOpen(true);
@@ -205,12 +301,20 @@ function Home() {
     };
   }, []);
 
+  /* ========================================================
+     PROGRAM CATEGORIES
+  ======================================================== */
+
   const categories = [
     "All",
     "Degree Programs",
     "TVET Level 1–4",
     "Short Term Trainings",
   ];
+
+  /* ========================================================
+     FILTER PROGRAMS
+  ======================================================== */
 
   const filteredPrograms = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -231,34 +335,38 @@ function Home() {
 
   const featuredPrograms = filteredPrograms.slice(0, 6);
 
+  /* ========================================================
+     HERO SEARCH
+  ======================================================== */
+
   const handleHeroSearch = (event) => {
     event.preventDefault();
 
-    const element = document.getElementById("programs");
+    document.getElementById("programs")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
-    if (element) {
-      element.scrollIntoView({
+  /* ========================================================
+     QUICK ACTION
+  ======================================================== */
+
+  const handleQuickAction = (to) => {
+    if (to.startsWith("#")) {
+      const id = to.substring(1);
+
+      document.getElementById(id)?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     }
   };
 
-  const handleQuickAction = (to) => {
-    if (to.startsWith("#")) {
-      const id = to.substring(1);
-      const element = document.getElementById(id);
+  /* ========================================================
+     FORMAT CALENDAR DATE
+  ======================================================== */
 
-      if (element) {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
-    }
-  };
-
-  // Format database event date for Academic Calendar
   const formatCalendarDate = (eventDate) => {
     if (!eventDate) {
       return { date: "", month: "" };
@@ -286,7 +394,10 @@ function Home() {
     };
   };
 
-  // Format news publication date
+  /* ========================================================
+     FORMAT NEWS DATE
+  ======================================================== */
+
   const formatNewsDate = (publishedDate) => {
     if (!publishedDate) {
       return "";
@@ -307,13 +418,30 @@ function Home() {
       .toUpperCase();
   };
 
+  /* ========================================================
+     RETRY HANDLERS
+  ======================================================== */
+
+  const retryCalendar = () => {
+    setCalendarRetry((previous) => previous + 1);
+  };
+
+  const retryNews = () => {
+    setNewsRetry((previous) => previous + 1);
+  };
+
+  /* ========================================================
+     RENDER
+  ======================================================== */
+
   return (
     <div className="dl-home-page">
       <Navbar />
 
       {/* =====================================================
-          ANNOUNCEMENT BAR / TICKER
+          ANNOUNCEMENT BAR
       ====================================================== */}
+
       {announcementVisible && (
         <div className="dl-announcement-bar">
           <div className="dl-shell dl-announcement-flex">
@@ -323,7 +451,9 @@ function Home() {
               </span>
 
               <span>
-                <strong>Admissions Open for 2026/27 Academic Year!</strong>{" "}
+                <strong>
+                  Admissions Open for 2026/27 Academic Year!
+                </strong>{" "}
                 Apply online early to secure your spot.
               </span>
             </div>
@@ -350,6 +480,7 @@ function Home() {
         {/* =====================================================
             HERO SECTION
         ====================================================== */}
+
         <section className="dl-home-hero">
           <div className="dl-home-hero-overlay" />
 
@@ -435,9 +566,8 @@ function Home() {
               </div>
             </div>
 
-            {/* =================================================
-                STUDENT PORTAL CARD
-            ================================================== */}
+            {/* STUDENT PORTAL CARD */}
+
             <div className="dl-portal-card">
               <div className="dl-portal-card-top">
                 <div className="dl-portal-icon">
@@ -492,6 +622,7 @@ function Home() {
         {/* =====================================================
             QUICK ACTIONS
         ====================================================== */}
+
         <section className="dl-quick-actions">
           <div className="dl-shell dl-quick-actions-grid">
             {quickActions.map((action) => {
@@ -544,6 +675,7 @@ function Home() {
         {/* =====================================================
             PROGRAMS SECTION
         ====================================================== */}
+
         <section
           className="dl-section dl-program-section"
           id="programs"
@@ -607,10 +739,10 @@ function Home() {
                     key={program.id}
                   >
                     <div className="dl-program-image">
-                      <img
+                      <HomeImage
                         src={program.image}
                         alt={program.title}
-                        loading="lazy"
+                        fallbackLabel={program.title}
                       />
 
                       <span className="dl-program-level">
@@ -678,6 +810,7 @@ function Home() {
         {/* =====================================================
             ADMISSIONS
         ====================================================== */}
+
         <section className="dl-admissions-home">
           <div className="dl-shell">
             <div className="dl-admissions-grid">
@@ -766,6 +899,7 @@ function Home() {
         {/* =====================================================
             CAMPUSES
         ====================================================== */}
+
         <section className="dl-section dl-campus-section">
           <div className="dl-shell">
             <div className="dl-section-head dl-centered-head">
@@ -789,10 +923,10 @@ function Home() {
                   className="dl-campus-card"
                   key={campus.name}
                 >
-                  <img
+                  <HomeImage
                     src={campus.image}
                     alt={`${campus.name} campus`}
-                    loading="lazy"
+                    fallbackLabel={`${campus.name} campus`}
                   />
 
                   <div className="dl-campus-overlay" />
@@ -829,6 +963,7 @@ function Home() {
         {/* =====================================================
             ACADEMIC CALENDAR
         ====================================================== */}
+
         <section
           className="dl-calendar-section"
           id="calendar"
@@ -854,11 +989,49 @@ function Home() {
             </div>
 
             <div className="dl-calendar-grid">
-              {calendarLoading ? (
-                <div className="dl-calendar-empty">
-                  <p>Loading academic calendar...</p>
+              {/* LOADING */}
+
+              {calendarLoading && (
+                <div className="dl-calendar-status">
+                  <RefreshCw className="dl-home-loading-icon" size={28} />
+
+                  <h3>Loading Academic Calendar</h3>
+
+                  <p>
+                    Please wait while we load the latest academic dates.
+                  </p>
                 </div>
-              ) : calendarItems.length > 0 ? (
+              )}
+
+              {/* ERROR */}
+
+              {!calendarLoading && calendarError && (
+                <div className="dl-calendar-status dl-home-error-state">
+                  <AlertCircle size={32} />
+
+                  <h3>Unable to Load Academic Calendar</h3>
+
+                  <p>
+                    We couldn't load academic calendar events.
+                    Please try again.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="dl-btn dl-btn-primary"
+                    onClick={retryCalendar}
+                  >
+                    <RefreshCw size={16} />
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {/* SUCCESS */}
+
+              {!calendarLoading &&
+                !calendarError &&
+                calendarItems.length > 0 &&
                 calendarItems.map((item) => {
                   const formattedDate = formatCalendarDate(
                     item.event_date
@@ -883,15 +1056,24 @@ function Home() {
                       </div>
                     </div>
                   );
-                })
-              ) : (
-                <div className="dl-calendar-empty">
-                  <p>
-                    No academic calendar events are currently available.
-                    Please check back later.
-                  </p>
-                </div>
-              )}
+                })}
+
+              {/* EMPTY */}
+
+              {!calendarLoading &&
+                !calendarError &&
+                calendarItems.length === 0 && (
+                  <div className="dl-calendar-status">
+                    <CalendarDays size={30} />
+
+                    <h3>No Upcoming Events</h3>
+
+                    <p>
+                      No academic calendar events are currently available.
+                      Please check back later.
+                    </p>
+                  </div>
+                )}
             </div>
           </div>
         </section>
@@ -899,6 +1081,7 @@ function Home() {
         {/* =====================================================
             NEWS & EVENTS
         ====================================================== */}
+
         <section className="dl-section dl-news-home">
           <div className="dl-shell">
             <div className="dl-program-heading">
@@ -924,24 +1107,60 @@ function Home() {
             </div>
 
             <div className="dl-news-grid">
-              {newsLoading ? (
-                <div className="dl-news-empty">
-                  <p>Loading latest news and updates...</p>
+              {/* LOADING */}
+
+              {newsLoading && (
+                <div className="dl-news-status">
+                  <RefreshCw className="dl-home-loading-icon" size={28} />
+
+                  <h3>Loading Latest News</h3>
+
+                  <p>
+                    Please wait while we load the latest updates.
+                  </p>
                 </div>
-              ) : newsItems.length > 0 ? (
+              )}
+
+              {/* ERROR */}
+
+              {!newsLoading && newsError && (
+                <div className="dl-news-status dl-home-error-state">
+                  <AlertCircle size={32} />
+
+                  <h3>Unable to Load News</h3>
+
+                  <p>
+                    We couldn't load the latest news and updates.
+                    Please try again.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="dl-btn dl-btn-primary"
+                    onClick={retryNews}
+                  >
+                    <RefreshCw size={16} />
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {/* SUCCESS */}
+
+              {!newsLoading &&
+                !newsError &&
+                newsItems.length > 0 &&
                 newsItems.map((item) => (
                   <div
                     className="dl-news-card"
                     key={item.id}
                   >
                     <div className="dl-news-image">
-                      {(item.image || item.image_url) && (
-                        <img
-                          src={item.image || item.image_url}
-                          alt={item.title}
-                          loading="lazy"
-                        />
-                      )}
+                      <HomeImage
+                        src={item.image || item.image_url}
+                        alt={item.title}
+                        fallbackLabel={item.title}
+                      />
 
                       <span>{item.category || "NEWS"}</span>
                     </div>
@@ -949,6 +1168,7 @@ function Home() {
                     <div className="dl-news-body">
                       <div className="dl-news-date">
                         <CalendarDays size={14} />
+
                         {formatNewsDate(
                           item.published_at || item.created_at
                         )}
@@ -956,7 +1176,9 @@ function Home() {
 
                       <h3>{item.title}</h3>
 
-                      <p>{item.excerpt || item.description || ""}</p>
+                      <p>
+                        {item.excerpt || item.description || ""}
+                      </p>
 
                       <Link
                         to="/news"
@@ -967,15 +1189,24 @@ function Home() {
                       </Link>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="dl-news-empty">
-                  <p>
-                    No news and updates are currently available.
-                    Please check back later.
-                  </p>
-                </div>
-              )}
+                ))}
+
+              {/* EMPTY */}
+
+              {!newsLoading &&
+                !newsError &&
+                newsItems.length === 0 && (
+                  <div className="dl-news-status">
+                    <BookOpen size={30} />
+
+                    <h3>No News Available</h3>
+
+                    <p>
+                      No news and updates are currently available.
+                      Please check back later.
+                    </p>
+                  </div>
+                )}
             </div>
           </div>
         </section>
@@ -983,12 +1214,14 @@ function Home() {
         {/* =====================================================
             TESTIMONIALS & ACCREDITATION
         ====================================================== */}
+
         <Testimonials />
         <Accreditation />
 
         {/* =====================================================
             FINAL CTA
         ====================================================== */}
+
         <section className="dl-home-final-cta">
           <div className="dl-shell">
             <div className="dl-home-final-card">
@@ -1034,6 +1267,7 @@ function Home() {
       {/* =======================================================
           QUICK VIEW PROGRAM MODAL
       ======================================================= */}
+
       {selectedProgram && (
         <div
           className="dl-modal-backdrop"
@@ -1060,10 +1294,11 @@ function Home() {
             </div>
 
             <div className="dl-modal-body">
-              <img
+              <HomeImage
                 src={selectedProgram.image}
                 alt={selectedProgram.title}
                 className="dl-modal-img"
+                fallbackLabel={selectedProgram.title}
               />
 
               <p>{selectedProgram.description}</p>
@@ -1105,6 +1340,7 @@ function Home() {
       {/* =======================================================
           STUDENT PORTAL MODAL
       ======================================================= */}
+
       {portalOpen && (
         <div
           className="dl-modal-backdrop"

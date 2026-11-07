@@ -1,5 +1,11 @@
 
-import React, { useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import {
   Search,
   Mail,
@@ -14,6 +20,11 @@ import {
   Sparkles,
   UserCheck,
   PhoneCall,
+  RefreshCw,
+  AlertCircle,
+  LoaderCircle,
+  Image as ImageIcon,
+  WifiOff,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
@@ -21,126 +32,274 @@ import Footer from "../components/Footer";
 import api from "../admin/services/api";
 import "../styles/Staff.css";
 
-const staffMembers = [
-  {
-    id: 1,
-    name: "Dr. Almaz Bekele",
-    title: "President & Professor of Educational Leadership",
-    department: "Executive Board",
-    email: "a.bekele@dreamland.edu.et",
-    office: "Main Campus, Admin Building 101",
-    hours: "Mon & Wed: 2:00 PM - 5:00 PM",
-    phone: "+251 11 123 4501",
-    bio: "Dr. Almaz Bekele has over 25 years of experience in higher education administration, curriculum design, and national academic policy reform across East Africa.",
-    research: [
-      "Higher Education Administration",
-      "Policy Reform",
-      "Institutional Growth",
-    ],
-    image:
-      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=85",
-  },
-  {
-    id: 2,
-    name: "Dr. Yohannes Tadesse",
-    title: "Dean of Computing & Software Engineering",
-    department: "Computer Science",
-    email: "y.tadesse@dreamland.edu.et",
-    office: "Tech Block, Room 304",
-    hours: "Tue & Thu: 10:00 AM - 1:00 PM",
-    phone: "+251 11 123 4512",
-    bio: "Specializing in distributed systems, cloud computing architectures, and artificial intelligence for regional agricultural and financial development.",
-    research: [
-      "Distributed Systems",
-      "Cloud Computing",
-      "AI for Social Good",
-    ],
-    image:
-      "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=800&q=85",
-  },
-  {
-    id: 3,
-    name: "Prof. Meron Lemma",
-    title: "Head of Nursing & Clinical Health Sciences",
-    department: "Health Sciences",
-    email: "m.lemma@dreamland.edu.et",
-    office: "Assela Health Wing, Room 202",
-    hours: "Mon & Fri: 9:00 AM - 12:00 PM",
-    phone: "+251 23 331 2255",
-    bio: "Dedicated clinical educator focused on patient safety protocols, community health nursing, and maternal care training programs.",
-    research: [
-      "Community Health Nursing",
-      "Clinical Safety",
-      "Maternal Care",
-    ],
-    image:
-      "https://images.unsplash.com/photo-1594744803329-e58b31de8c5f?auto=format&fit=crop&w=800&q=85",
-  },
-  {
-    id: 4,
-    name: "Dr. Dawit Kebede",
-    title: "Senior Lecturer in Business & Corporate Finance",
-    department: "Business & Economics",
-    email: "d.kebede@dreamland.edu.et",
-    office: "Bale Robe Campus, Hall B",
-    hours: "Wed & Fri: 1:30 PM - 4:30 PM",
-    phone: "+251 22 441 8911",
-    bio: "Expert in IFRS accounting standards, banking regulations, and entrepreneurial venture capital financing in developing markets.",
-    research: [
-      "Corporate Finance",
-      "IFRS Standards",
-      "Venture Capital",
-    ],
-    image:
-      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=85",
-  },
-  {
-    id: 5,
-    name: "Eng. Samuel Mulugeta",
-    title: "Coordinator of Electrical & Computer Engineering",
-    department: "Engineering",
-    email: "s.mulugeta@dreamland.edu.et",
-    office: "Engineering Block, Lab 4",
-    hours: "Tue & Thu: 2:00 PM - 4:00 PM",
-    phone: "+251 11 123 4589",
-    bio: "Passionate about renewable micro-grid systems, IoT embedded controllers, and hands-on laboratory training for undergraduate engineers.",
-    research: [
-      "Renewable Micro-Grids",
-      "IoT Systems",
-      "Embedded Electronics",
-    ],
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=85",
-  },
-  {
-    id: 6,
-    name: "Dr. Tigist Haile",
-    title: "Director of Student Academic Advising & Admissions",
-    department: "Executive Board",
-    email: "t.haile@dreamland.edu.et",
-    office: "Main Campus, Registry Building",
-    hours: "Mon - Fri: 8:30 AM - 11:30 AM",
-    phone: "+251 11 123 4520",
-    bio: "Guiding students through academic planning, career counseling, scholarship programs, and cross-campus transfer pathways.",
-    research: [
-      "Student Retention",
-      "Academic Counseling",
-      "Pedagogical Support",
-    ],
-    image:
-      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=800&q=85",
-  },
-];
+/* ==========================================================
+   CONFIGURATION
+========================================================== */
+
+const STAFF_CACHE_KEY = "dream_land_public_staff_cache";
+
+const getErrorStatus = (error) =>
+  error?.response?.status ||
+  error?.status ||
+  error?.statusCode ||
+  0;
+
+/* ==========================================================
+   ERROR HELPERS
+========================================================== */
+
+const getStaffErrorMessage = (error) => {
+  const status = getErrorStatus(error);
+
+  if (!navigator.onLine) {
+    return "You appear to be offline. Check your internet connection and try again.";
+  }
+
+  if (status === 404) {
+    return "The staff directory is temporarily unavailable.";
+  }
+
+  if (status >= 500) {
+    return "Our server is temporarily unavailable. Please try again shortly.";
+  }
+
+  return "We couldn't load the staff directory. Please try again.";
+};
+
+const getConsultErrorMessage = (error) => {
+  const status = getErrorStatus(error);
+  const message = String(error?.message || "").toLowerCase();
+
+  if (
+    !navigator.onLine ||
+    message.includes("failed to fetch") ||
+    message.includes("network") ||
+    message.includes("fetch")
+  ) {
+    return "Connection unavailable. Please check your internet connection and try again.";
+  }
+
+  if (status === 400 || status === 422) {
+    return "Some information is missing or invalid. Please review your form.";
+  }
+
+  if (status === 404) {
+    return "The consultation service is currently unavailable.";
+  }
+
+  if (status === 409) {
+    return "This consultation request may already exist. Please review your details.";
+  }
+
+  if (status >= 500) {
+    return "We couldn't process your request right now. Please try again later.";
+  }
+
+  return "Unable to submit your consultation request. Please try again.";
+};
+
+/* ==========================================================
+   RESPONSE HELPERS
+========================================================== */
+
+const normalizeResponse = (response) =>
+  response?.data ?? response ?? {};
+
+const getStaffRecords = (response) => {
+  const result = normalizeResponse(response);
+
+  if (Array.isArray(result)) {
+    return result;
+  }
+
+  if (Array.isArray(result.staff)) {
+    return result.staff;
+  }
+
+  if (Array.isArray(result.data?.staff)) {
+    return result.data.staff;
+  }
+
+  if (Array.isArray(result.data)) {
+    return result.data;
+  }
+
+  return null;
+};
+
+/* ==========================================================
+   LOCAL STORAGE CACHE
+========================================================== */
+
+const readStaffCache = () => {
+  try {
+    const cached = localStorage.getItem(STAFF_CACHE_KEY);
+
+    if (!cached) return [];
+
+    const parsed = JSON.parse(cached);
+
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
+  } catch (error) {
+    console.warn("Unable to read saved staff directory:", error);
+    return [];
+  }
+};
+
+const saveStaffCache = (staff) => {
+  try {
+    localStorage.setItem(
+      STAFF_CACHE_KEY,
+      JSON.stringify(staff)
+    );
+  } catch (error) {
+    console.warn("Unable to save staff directory:", error);
+  }
+};
+
+/* ==========================================================
+   NORMALIZE STAFF
+========================================================== */
+
+const normalizeStaff = (staff) => ({
+  id: staff.id,
+
+  name:
+    staff.full_name ||
+    staff.name ||
+    "Staff Member",
+
+  title:
+    staff.position ||
+    staff.title ||
+    "College Staff",
+
+  department:
+    staff.department ||
+    "General",
+
+  email:
+    staff.email ||
+    "",
+
+  office:
+    staff.office ||
+    staff.campus?.name ||
+    "Office information unavailable",
+
+  hours:
+    staff.office_hours ||
+    staff.hours ||
+    "Please contact the staff member",
+
+  phone:
+    staff.phone ||
+    "",
+
+  bio:
+    staff.bio ||
+    "Biography information is not available.",
+
+  research: Array.isArray(staff.research)
+    ? staff.research
+    : [],
+
+  image:
+    staff.image_url ||
+    staff.image ||
+    staff.image_path ||
+    "",
+});
+
+const getLocalDate = () => {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+/* ==========================================================
+   STAFF IMAGE
+========================================================== */
+
+function StaffImage({ src, name }) {
+  const [imageFailed, setImageFailed] = useState(!src);
+
+  useEffect(() => {
+    setImageFailed(!src);
+  }, [src]);
+
+  if (imageFailed) {
+    return (
+      <div
+        className="dl-staff-image-fallback"
+        role="img"
+        aria-label={`Image unavailable for ${name}`}
+        style={{
+          width: "100%",
+          height: "100%",
+          minHeight: "190px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: "8px",
+          background: "#edf3f6",
+          color: "#64748b",
+        }}
+      >
+        <ImageIcon size={36} />
+        <span style={{ fontSize: "12px" }}>
+          Image unavailable
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={name}
+      loading="lazy"
+      onError={() => setImageFailed(true)}
+    />
+  );
+}
+
+/* ==========================================================
+   MAIN COMPONENT
+========================================================== */
 
 function Staff() {
-  const [selectedDepartment, setSelectedDepartment] = useState("all");
+  const [staffMembers, setStaffMembers] = useState(
+    () => readStaffCache().map(normalizeStaff)
+  );
+
+  const [staffLoading, setStaffLoading] = useState(
+    () => readStaffCache().length === 0
+  );
+
+  const [staffError, setStaffError] = useState("");
+  const [isOffline, setIsOffline] = useState(
+    () => !navigator.onLine
+  );
+
+  const [selectedDepartment, setSelectedDepartment] =
+    useState("all");
+
   const [searchQuery, setSearchQuery] = useState("");
+
   const [activeBioModal, setActiveBioModal] = useState(null);
   const [activeConsultModal, setActiveConsultModal] = useState(null);
+
   const [consultSuccess, setConsultSuccess] = useState(false);
   const [savedStaff, setSavedStaff] = useState([]);
 
-  // Consultation form state
   const [consultForm, setConsultForm] = useState({
     student_name: "",
     student_id: "",
@@ -151,24 +310,170 @@ function Staff() {
   const [consultLoading, setConsultLoading] = useState(false);
   const [consultError, setConsultError] = useState("");
 
-  const filteredStaff = staffMembers.filter((staff) => {
-    const matchesDept =
-      selectedDepartment === "all" ||
-      staff.department.toLowerCase() === selectedDepartment.toLowerCase();
+  const hasStaff = staffMembers.length > 0;
 
+  /* ========================================================
+     LOAD STAFF FROM BACKEND
+
+     GET /api/staff/active
+
+     Offline:
+     - Keep cached staff.
+     - Do not clear the directory.
+     - Show a friendly error only if no cache exists.
+  ======================================================== */
+
+  const fetchStaff = useCallback(async () => {
+    if (!navigator.onLine) {
+      setIsOffline(true);
+
+      if (!hasStaff) {
+        setStaffError(
+          "You are currently offline and no saved staff directory is available. Connect to the internet and try again."
+        );
+      }
+
+      setStaffLoading(false);
+      return;
+    }
+
+    setStaffLoading(!hasStaff);
+    setStaffError("");
+
+    try {
+      const response = await api.get("/staff/active");
+
+      const result = normalizeResponse(response);
+
+      if (result.success === false) {
+        throw new Error(
+          result.message || "Unable to load staff."
+        );
+      }
+
+      const records = getStaffRecords(response);
+
+      if (!Array.isArray(records)) {
+        throw new Error("Invalid staff directory response.");
+      }
+
+      const normalizedStaff = records
+        .map(normalizeStaff)
+        .filter((staff) => staff.id);
+
+      setStaffMembers(normalizedStaff);
+
+      saveStaffCache(normalizedStaff);
+
+      setStaffError("");
+      setIsOffline(false);
+
+      setSavedStaff((previous) =>
+        previous.filter((id) =>
+          normalizedStaff.some(
+            (staff) => String(staff.id) === String(id)
+          )
+        )
+      );
+    } catch (error) {
+      console.error("Staff directory loading error:", error);
+
+      setIsOffline(
+        !navigator.onLine ||
+        String(error?.message || "")
+          .toLowerCase()
+          .includes("network")
+      );
+
+      // Keep existing staff profiles when the backend fails.
+      if (!hasStaff) {
+        setStaffError(getStaffErrorMessage(error));
+      } else {
+        setStaffError("");
+      }
+    } finally {
+      setStaffLoading(false);
+    }
+  }, [hasStaff]);
+
+  useEffect(() => {
+    fetchStaff();
+  }, [fetchStaff]);
+
+  /* ========================================================
+     AUTOMATIC RECONNECTION
+  ======================================================== */
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      fetchStaff();
+    };
+
+    const handleOffline = () => {
+      setIsOffline(true);
+
+      if (!hasStaff) {
+        setStaffError(
+          "You are offline. Connect to the internet to load the staff directory."
+        );
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [fetchStaff, hasStaff]);
+
+  /* ========================================================
+     DEPARTMENT FILTERS
+  ======================================================== */
+
+  const departments = [
+    "Executive Board",
+    "Computer Science",
+    "Health Sciences",
+    "Business & Economics",
+    "Engineering",
+  ];
+
+  const filteredStaff = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    const matchesSearch =
-      !query ||
-      staff.name.toLowerCase().includes(query) ||
-      staff.title.toLowerCase().includes(query) ||
-      staff.office.toLowerCase().includes(query) ||
-      staff.department.toLowerCase().includes(query);
+    return staffMembers.filter((staff) => {
+      const matchesDept =
+        selectedDepartment === "all" ||
+        staff.department.toLowerCase() ===
+          selectedDepartment.toLowerCase();
 
-    return matchesDept && matchesSearch;
-  });
+      const searchableValues = [
+        staff.name,
+        staff.title,
+        staff.office,
+        staff.department,
+        staff.bio,
+      ];
 
-  // Open consultation modal
+      const matchesSearch =
+        !query ||
+        searchableValues.some((value) =>
+          String(value || "")
+            .toLowerCase()
+            .includes(query)
+        );
+
+      return matchesDept && matchesSearch;
+    });
+  }, [staffMembers, selectedDepartment, searchQuery]);
+
+  /* ========================================================
+     CONSULTATION MODAL
+  ======================================================== */
+
   const openConsultModal = (staff) => {
     setConsultForm({
       student_name: "",
@@ -182,26 +487,72 @@ function Staff() {
     setActiveConsultModal(staff);
   };
 
-  // Submit consultation to backend
+  const closeConsultModal = () => {
+    if (consultLoading) return;
+
+    setActiveConsultModal(null);
+    setConsultError("");
+    setConsultSuccess(false);
+  };
+
+  /* ========================================================
+     SUBMIT CONSULTATION
+
+     POST /api/consultations/submit
+
+     This action requires a live backend connection.
+  ======================================================== */
+
   const handleConsultSubmit = async (e) => {
     e.preventDefault();
 
-    if (!activeConsultModal) return;
+    if (!activeConsultModal || consultLoading) return;
+
+    if (!navigator.onLine) {
+      setConsultError(
+        "You are offline. Your consultation request has not been submitted. Please reconnect and try again."
+      );
+      return;
+    }
+
+    if (!activeConsultModal.id) {
+      setConsultError(
+        "This staff profile does not have a valid record. Please refresh the directory."
+      );
+      return;
+    }
+
+    const studentName = consultForm.student_name.trim();
+    const studentId = consultForm.student_id.trim();
+    const purpose = consultForm.purpose.trim();
+
+    if (studentName.length < 2) {
+      setConsultError("Please enter your full name.");
+      return;
+    }
+
+    if (!consultForm.preferred_date) {
+      setConsultError("Please select your preferred date.");
+      return;
+    }
+
+    if (purpose.length < 5) {
+      setConsultError(
+        "Please describe the purpose of your meeting in at least 5 characters."
+      );
+      return;
+    }
 
     setConsultLoading(true);
     setConsultError("");
 
     try {
       const payload = {
-        // Current staff directory uses local numeric IDs.
-        // The backend expects a UUID, so null is sent until
-        // actual database staff IDs are connected.
-        staff_id: null,
-
-        student_name: consultForm.student_name.trim(),
-        student_id: consultForm.student_id.trim() || null,
+        staff_id: activeConsultModal.id,
+        student_name: studentName,
+        student_id: studentId || null,
         preferred_date: consultForm.preferred_date,
-        purpose: consultForm.purpose.trim(),
+        purpose,
       };
 
       const response = await api.post(
@@ -209,9 +560,11 @@ function Staff() {
         payload
       );
 
-      if (!response?.success) {
+      const result = normalizeResponse(response);
+
+      if (result.success === false) {
         throw new Error(
-          response?.message || "Consultation submission failed."
+          result.message || "Consultation submission failed."
         );
       }
 
@@ -223,32 +576,32 @@ function Staff() {
         preferred_date: "",
         purpose: "",
       });
-
-      setTimeout(() => {
-        setConsultSuccess(false);
-        setActiveConsultModal(null);
-      }, 2200);
     } catch (error) {
       console.error("Consultation submission error:", error);
 
-      setConsultError(
-        error.message ||
-          "Unable to submit your consultation. Please try again."
-      );
+      setConsultError(getConsultErrorMessage(error));
     } finally {
       setConsultLoading(false);
     }
   };
 
+  /* ========================================================
+     BOOKMARKS
+  ======================================================== */
+
   const toggleBookmark = (staffId, e) => {
     e.stopPropagation();
 
-    setSavedStaff((prev) =>
-      prev.includes(staffId)
-        ? prev.filter((id) => id !== staffId)
-        : [...prev, staffId]
+    setSavedStaff((previous) =>
+      previous.includes(staffId)
+        ? previous.filter((id) => id !== staffId)
+        : [...previous, staffId]
     );
   };
+
+  /* ========================================================
+     RENDER
+  ======================================================== */
 
   return (
     <div className="dl-page dl-fade-in">
@@ -256,6 +609,7 @@ function Staff() {
 
       <main>
         {/* HERO SECTION */}
+
         <section className="dl-page-hero dl-staff-hero">
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
@@ -274,19 +628,22 @@ function Staff() {
             <h1>Meet Our Distinguished Faculty & Staff</h1>
 
             <p>
-              Dedicated educators, experienced researchers, and administrative
-              leaders committed to guiding your academic journey at Dream Land
-              College.
+              Dedicated educators, experienced researchers, and
+              administrative leaders committed to guiding your
+              academic journey at Dream Land College.
             </p>
 
-            {/* HERO QUICK STATS */}
             <div className="dl-hero-stats-grid">
               <div className="dl-stat-pill">
                 <UserCheck size={18} />
 
                 <div>
-                  <strong>120+</strong>
-                  <span>Qualified Instructors</span>
+                  <strong>
+                    {staffLoading && !hasStaff
+                      ? "..."
+                      : `${staffMembers.length}+`}
+                  </strong>
+                  <span>Published Staff Profiles</span>
                 </div>
               </div>
 
@@ -312,6 +669,7 @@ function Staff() {
         </section>
 
         {/* DIRECTORY SECTION */}
+
         <section className="dl-staff-directory-section">
           <div className="dl-shell">
             <div className="dl-section-heading">
@@ -323,12 +681,28 @@ function Staff() {
               <h2>Browse Faculty & Staff Members</h2>
 
               <p>
-                Filter by department or search by name to book consultations or
-                view office hours.
+                Filter by department or search by name to book
+                consultations or view office hours.
               </p>
             </div>
 
-            {/* DEPARTMENT FILTER TABS */}
+            {/* OFFLINE INDICATOR */}
+
+            {isOffline && hasStaff && (
+              <div
+                className="dl-staff-offline-indicator"
+                role="status"
+              >
+                <WifiOff size={15} />
+                <span>
+                  Showing saved staff profiles. Some information
+                  may not reflect the latest updates.
+                </span>
+              </div>
+            )}
+
+            {/* DEPARTMENT FILTERS */}
+
             <div className="dl-lib-tabs">
               <button
                 type="button"
@@ -340,68 +714,37 @@ function Staff() {
                 All Departments ({staffMembers.length})
               </button>
 
-              <button
-                type="button"
-                className={`dl-lib-tab ${
-                  selectedDepartment === "Executive Board" ? "active" : ""
-                }`}
-                onClick={() => setSelectedDepartment("Executive Board")}
-              >
-                Executive & Admin
-              </button>
-
-              <button
-                type="button"
-                className={`dl-lib-tab ${
-                  selectedDepartment === "Computer Science" ? "active" : ""
-                }`}
-                onClick={() => setSelectedDepartment("Computer Science")}
-              >
-                Computer Science
-              </button>
-
-              <button
-                type="button"
-                className={`dl-lib-tab ${
-                  selectedDepartment === "Health Sciences" ? "active" : ""
-                }`}
-                onClick={() => setSelectedDepartment("Health Sciences")}
-              >
-                Health Sciences
-              </button>
-
-              <button
-                type="button"
-                className={`dl-lib-tab ${
-                  selectedDepartment === "Business & Economics" ? "active" : ""
-                }`}
-                onClick={() =>
-                  setSelectedDepartment("Business & Economics")
-                }
-              >
-                Business & Economics
-              </button>
-
-              <button
-                type="button"
-                className={`dl-lib-tab ${
-                  selectedDepartment === "Engineering" ? "active" : ""
-                }`}
-                onClick={() => setSelectedDepartment("Engineering")}
-              >
-                Engineering
-              </button>
+              {departments.map((department) => (
+                <button
+                  key={department}
+                  type="button"
+                  className={`dl-lib-tab ${
+                    selectedDepartment === department ? "active" : ""
+                  }`}
+                  onClick={() =>
+                    setSelectedDepartment(department)
+                  }
+                >
+                  {department === "Executive Board"
+                    ? "Executive & Admin"
+                    : department}
+                </button>
+              ))}
             </div>
 
-            {/* SEARCH BAR */}
+            {/* SEARCH */}
+
             <div className="dl-lib-search">
               <Search size={18} />
 
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) =>
+                  setSearchQuery(e.target.value)
+                }
                 placeholder="Search by instructor name, title, department, or office location..."
+                aria-label="Search faculty and staff"
               />
 
               {searchQuery && (
@@ -415,111 +758,206 @@ function Staff() {
               )}
             </div>
 
-            {/* STAFF CARDS GRID */}
-            <div className="dl-staff-grid">
-              {filteredStaff.length > 0 ? (
-                filteredStaff.map((staff) => {
-                  const isSaved = savedStaff.includes(staff.id);
+            {/* LOADING STATE */}
 
-                  return (
-                    <div key={staff.id} className="dl-staff-card">
-                      <div className="dl-staff-img-box">
-                        <img
-                          src={staff.image}
-                          alt={staff.name}
-                          loading="lazy"
-                        />
+            {staffLoading && !hasStaff && (
+              <div
+                className="dl-lib-empty dl-fade-in"
+                role="status"
+                aria-live="polite"
+              >
+                <LoaderCircle
+                  size={38}
+                  className="dl-loading-spinner"
+                />
 
-                        <span className="dl-staff-dept-badge">
-                          {staff.department}
-                        </span>
+                <h3>Loading Faculty & Staff</h3>
 
-                        <button
-                          type="button"
-                          className={`dl-bookmark-btn dl-staff-bookmark ${
-                            isSaved ? "saved" : ""
-                          }`}
-                          onClick={(e) => toggleBookmark(staff.id, e)}
-                          title={
-                            isSaved
-                              ? "Remove from bookmarks"
-                              : "Bookmark advisor"
-                          }
-                        >
-                          <Bookmark
-                            size={15}
-                            fill={isSaved ? "currentColor" : "none"}
-                          />
-                        </button>
-                      </div>
+                <p>
+                  Please wait while we load the staff directory.
+                </p>
+              </div>
+            )}
 
-                      <div className="dl-staff-body">
-                        <h3>{staff.name}</h3>
+            {/* ERROR STATE - ONLY WHEN NO CACHE EXISTS */}
 
-                        <p className="dl-staff-title">{staff.title}</p>
+            {!staffLoading && staffError && !hasStaff && (
+              <div
+                className="dl-lib-empty dl-fade-in"
+                role="alert"
+              >
+                <div className="dl-staff-error-icon">
+                  <AlertCircle size={36} />
+                </div>
 
-                        <p className="dl-staff-office">
-                          <Building2 size={13} />
-                          {staff.office}
-                        </p>
+                <h3>Staff Directory Unavailable</h3>
 
-                        <p className="dl-staff-hours">
-                          <Clock size={13} />
-                          {staff.hours}
-                        </p>
+                <p>{staffError}</p>
 
-                        <div className="dl-staff-actions">
-                          <button
-                            type="button"
-                            className="dl-btn dl-btn-sm dl-btn-outline"
-                            onClick={() => setActiveBioModal(staff)}
-                          >
-                            <BookOpen size={13} />
-                            View Bio & Schedule
-                          </button>
+                <button
+                  type="button"
+                  className="dl-btn dl-btn-primary dl-btn-sm"
+                  onClick={fetchStaff}
+                  disabled={staffLoading}
+                >
+                  <RefreshCw size={15} />
+                  Try Again
+                </button>
+              </div>
+            )}
 
-                          <button
-                            type="button"
-                            className="dl-btn dl-btn-sm dl-btn-primary"
-                            onClick={() => openConsultModal(staff)}
-                          >
-                            <Calendar size={13} />
-                            Request Consultation
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
+            {/* EMPTY DIRECTORY */}
+
+            {!staffLoading &&
+              !staffError &&
+              staffMembers.length === 0 && (
                 <div className="dl-lib-empty dl-fade-in">
-                  <Search size={36} />
+                  <UserCheck size={42} />
 
-                  <h3>No staff members found</h3>
+                  <h3>No Staff Profiles Available</h3>
 
                   <p>
-                    No faculty or staff match your current department filter
-                    and search query.
+                    There are currently no published staff profiles.
+                    Please check again later.
                   </p>
 
                   <button
                     type="button"
-                    className="dl-btn dl-btn-sm dl-btn-primary"
-                    onClick={() => {
-                      setSelectedDepartment("all");
-                      setSearchQuery("");
-                    }}
+                    className="dl-btn dl-btn-outline dl-btn-sm"
+                    onClick={fetchStaff}
                   >
-                    Reset All Filters
+                    <RefreshCw size={15} />
+                    Refresh Directory
                   </button>
                 </div>
               )}
-            </div>
+
+            {/* STAFF GRID */}
+
+            {hasStaff && (
+              <div className="dl-staff-grid">
+                {filteredStaff.length > 0 ? (
+                  filteredStaff.map((staff) => {
+                    const isSaved = savedStaff.includes(staff.id);
+
+                    return (
+                      <div
+                        key={staff.id}
+                        className="dl-staff-card"
+                      >
+                        <div className="dl-staff-img-box">
+                          <StaffImage
+                            src={staff.image}
+                            name={staff.name}
+                          />
+
+                          <span className="dl-staff-dept-badge">
+                            {staff.department}
+                          </span>
+
+                          <button
+                            type="button"
+                            className={`dl-bookmark-btn dl-staff-bookmark ${
+                              isSaved ? "saved" : ""
+                            }`}
+                            onClick={(e) =>
+                              toggleBookmark(staff.id, e)
+                            }
+                            title={
+                              isSaved
+                                ? "Remove from bookmarks"
+                                : "Bookmark advisor"
+                            }
+                            aria-label={
+                              isSaved
+                                ? `Remove ${staff.name} from bookmarks`
+                                : `Bookmark ${staff.name}`
+                            }
+                          >
+                            <Bookmark
+                              size={15}
+                              fill={
+                                isSaved ? "currentColor" : "none"
+                              }
+                            />
+                          </button>
+                        </div>
+
+                        <div className="dl-staff-body">
+                          <h3>{staff.name}</h3>
+
+                          <p className="dl-staff-title">
+                            {staff.title}
+                          </p>
+
+                          <p className="dl-staff-office">
+                            <Building2 size={13} />
+                            {staff.office}
+                          </p>
+
+                          <p className="dl-staff-hours">
+                            <Clock size={13} />
+                            {staff.hours}
+                          </p>
+
+                          <div className="dl-staff-actions">
+                            <button
+                              type="button"
+                              className="dl-btn dl-btn-sm dl-btn-outline"
+                              onClick={() =>
+                                setActiveBioModal(staff)
+                              }
+                            >
+                              <BookOpen size={13} />
+                              View Bio & Schedule
+                            </button>
+
+                            <button
+                              type="button"
+                              className="dl-btn dl-btn-sm dl-btn-primary"
+                              onClick={() =>
+                                openConsultModal(staff)
+                              }
+                            >
+                              <Calendar size={13} />
+                              Request Consultation
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="dl-lib-empty dl-fade-in">
+                    <Search size={36} />
+
+                    <h3>No Staff Members Found</h3>
+
+                    <p>
+                      No faculty or staff match your current
+                      department filter and search query.
+                    </p>
+
+                    <button
+                      type="button"
+                      className="dl-btn dl-btn-sm dl-btn-primary"
+                      onClick={() => {
+                        setSelectedDepartment("all");
+                        setSearchQuery("");
+                      }}
+                    >
+                      Reset All Filters
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
       </main>
 
       {/* BIO & SCHEDULE MODAL */}
+
       {activeBioModal && (
         <div
           className="dl-modal-overlay"
@@ -528,6 +966,9 @@ function Staff() {
           <div
             className="dl-modal-card dl-fade-in"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dl-staff-bio-title"
           >
             <button
               type="button"
@@ -543,7 +984,9 @@ function Staff() {
                 {activeBioModal.department}
               </span>
 
-              <h2>{activeBioModal.name}</h2>
+              <h2 id="dl-staff-bio-title">
+                {activeBioModal.name}
+              </h2>
 
               <p className="dl-modal-subtext">
                 {activeBioModal.title}
@@ -564,38 +1007,47 @@ function Staff() {
                   <span>{activeBioModal.hours}</span>
                 </div>
 
-                <div className="dl-branch-info-row">
-                  <Mail size={16} />
-                  <span>{activeBioModal.email}</span>
-                </div>
+                {activeBioModal.email && (
+                  <div className="dl-branch-info-row">
+                    <Mail size={16} />
+                    <span>{activeBioModal.email}</span>
+                  </div>
+                )}
 
-                <div className="dl-branch-info-row">
-                  <PhoneCall size={16} />
-                  <span>{activeBioModal.phone}</span>
-                </div>
+                {activeBioModal.phone && (
+                  <div className="dl-branch-info-row">
+                    <PhoneCall size={16} />
+                    <span>{activeBioModal.phone}</span>
+                  </div>
+                )}
               </div>
 
-              <div className="dl-branch-amenities-box">
-                <strong>Key Research Interests & Publications:</strong>
+              {activeBioModal.research.length > 0 && (
+                <div className="dl-branch-amenities-box">
+                  <strong>
+                    Key Research Interests & Publications:
+                  </strong>
 
-                <ul>
-                  {activeBioModal.research.map((item, idx) => (
-                    <li key={idx}>
-                      <CheckCircle2
-                        size={13}
-                        className="dl-text-green"
-                      />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                  <ul>
+                    {activeBioModal.research.map((item, idx) => (
+                      <li key={`${item}-${idx}`}>
+                        <CheckCircle2
+                          size={13}
+                          className="dl-text-green"
+                        />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <button
                 type="button"
                 className="dl-btn dl-btn-primary dl-btn-block"
                 onClick={() => {
                   const target = activeBioModal;
+
                   setActiveBioModal(null);
                   openConsultModal(target);
                 }}
@@ -610,29 +1062,23 @@ function Staff() {
       )}
 
       {/* CONSULTATION REQUEST MODAL */}
+
       {activeConsultModal && (
         <div
           className="dl-modal-overlay"
-          onClick={() => {
-            if (!consultLoading) {
-              setActiveConsultModal(null);
-              setConsultError("");
-            }
-          }}
+          onClick={closeConsultModal}
         >
           <div
             className="dl-modal-card dl-fade-in"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dl-consult-title"
           >
             <button
               type="button"
               className="dl-modal-close"
-              onClick={() => {
-                if (!consultLoading) {
-                  setActiveConsultModal(null);
-                  setConsultError("");
-                }
-              }}
+              onClick={closeConsultModal}
               aria-label="Close modal"
               disabled={consultLoading}
             >
@@ -649,10 +1095,21 @@ function Staff() {
                 <h3>Consultation Requested!</h3>
 
                 <p>
-                  Your meeting request has been successfully submitted.
-                  You will receive further information about your
-                  consultation.
+                  Your meeting request has been successfully
+                  submitted. You will receive further information
+                  about your consultation.
                 </p>
+
+                <button
+                  type="button"
+                  className="dl-btn dl-btn-primary dl-btn-block"
+                  onClick={() => {
+                    setConsultSuccess(false);
+                    setActiveConsultModal(null);
+                  }}
+                >
+                  Close
+                </button>
               </div>
             ) : (
               <div className="dl-modal-content-box">
@@ -660,12 +1117,25 @@ function Staff() {
                   Consultation Booking
                 </span>
 
-                <h2>Meet with {activeConsultModal.name}</h2>
+                <h2 id="dl-consult-title">
+                  Meet with {activeConsultModal.name}
+                </h2>
 
                 <p className="dl-modal-text">
                   Office Hours: {activeConsultModal.hours} (
                   {activeConsultModal.office})
                 </p>
+
+                {!navigator.onLine && (
+                  <div
+                    className="dl-staff-form-notice"
+                    role="status"
+                  >
+                    <WifiOff size={16} />
+                    You are offline. Reconnect before submitting
+                    your consultation request.
+                  </div>
+                )}
 
                 <form
                   onSubmit={handleConsultSubmit}
@@ -686,6 +1156,7 @@ function Staff() {
                         })
                       }
                       placeholder="Enter your full name"
+                      disabled={consultLoading}
                     />
                   </label>
 
@@ -702,6 +1173,7 @@ function Staff() {
                         })
                       }
                       placeholder="e.g., DLC/2049/23"
+                      disabled={consultLoading}
                     />
                   </label>
 
@@ -710,7 +1182,7 @@ function Staff() {
                     <input
                       required
                       type="date"
-                      min={new Date().toISOString().split("T")[0]}
+                      min={getLocalDate()}
                       value={consultForm.preferred_date}
                       onChange={(e) =>
                         setConsultForm({
@@ -718,6 +1190,7 @@ function Staff() {
                           preferred_date: e.target.value,
                         })
                       }
+                      disabled={consultLoading}
                     />
                   </label>
 
@@ -736,6 +1209,7 @@ function Staff() {
                         })
                       }
                       placeholder="Briefly describe what you would like to discuss..."
+                      disabled={consultLoading}
                       style={{
                         padding: "10px 14px",
                         border: "1px solid #cbd5e1",
@@ -750,27 +1224,33 @@ function Staff() {
 
                   {consultError && (
                     <div
+                      className="dl-staff-form-error"
                       role="alert"
-                      style={{
-                        color: "#dc2626",
-                        background: "#fef2f2",
-                        padding: "10px 12px",
-                        borderRadius: "8px",
-                        fontSize: "13px",
-                      }}
                     >
-                      {consultError}
+                      <AlertCircle size={17} />
+                      <span>{consultError}</span>
                     </div>
                   )}
 
                   <button
                     type="submit"
                     className="dl-btn dl-btn-primary dl-btn-block"
-                    disabled={consultLoading}
+                    disabled={consultLoading || !navigator.onLine}
                   >
-                    {consultLoading
-                      ? "Submitting..."
-                      : "Submit Consultation Request"}
+                    {consultLoading ? (
+                      <>
+                        <LoaderCircle
+                          size={16}
+                          className="dl-loading-spinner"
+                        />
+                        Submitting Request...
+                      </>
+                    ) : (
+                      <>
+                        <Calendar size={15} />
+                        Submit Consultation Request
+                      </>
+                    )}
                   </button>
                 </form>
               </div>

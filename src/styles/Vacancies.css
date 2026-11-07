@@ -667,3 +667,75 @@
     transition: none !important;
   }
 }
+
+/* ==========================================================
+   VACANCIES LOADING / ERROR / EMPTY STATES
+========================================================== */
+
+.dl-vacancies-state {
+  width: 100%;
+  min-height: 260px;
+  padding: 45px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  color: #64748b;
+}
+
+.dl-vacancies-state > svg {
+  color: #16a34a;
+}
+
+.dl-vacancies-state h3 {
+  margin: 5px 0 0;
+  color: #10243a;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.dl-vacancies-state p {
+  max-width: 480px;
+  margin: 0 0 8px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.dl-vacancies-spinner {
+  animation: dl-vacancies-spin 1s linear infinite;
+}
+
+@keyframes dl-vacancies-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dl-vacancy-form-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dl-vacancy-form-error svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dl-vacancy-form button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

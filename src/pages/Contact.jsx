@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
 import {
   Mail,
@@ -13,6 +12,8 @@ import {
   ChevronDown,
   MessageSquare,
   Globe,
+  RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
@@ -78,10 +79,12 @@ const faqItems = [
 ];
 
 function Contact() {
+  const formRef = useRef(null);
+
   const [activeCampus, setActiveCampus] = useState(campusLocations[0]);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const [submitError, setSubmitError] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   const [formData, setFormData] = useState({
@@ -92,6 +95,10 @@ function Contact() {
     message: "",
   });
 
+  /* ==========================================================
+     FORM INPUT HANDLING
+  ========================================================== */
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -101,18 +108,21 @@ function Contact() {
     }));
 
     if (submitError) {
-      setSubmitError("");
+      setSubmitError(false);
     }
   };
 
-  // SUBMIT CONTACT MESSAGE TO BACKEND
+  /* ==========================================================
+     SUBMIT CONTACT MESSAGE
+  ========================================================== */
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-    setSubmitError("");
+    setSubmitError(false);
 
     try {
       const finalMessage = formData.studentId.trim()
@@ -130,23 +140,33 @@ function Contact() {
       const response = await api.post("/contact/submit", payload);
 
       if (!response?.success) {
-        throw new Error(
-          response?.message || "Failed to submit your message."
-        );
+        throw new Error("Contact submission failed.");
       }
 
       setFormSubmitted(true);
     } catch (error) {
+      // Keep technical details in the console, not on the public page.
       console.error("Contact form submission error:", error);
 
-      setSubmitError(
-        error.message ||
-          "Unable to submit your message. Please try again."
-      );
+      setSubmitError(true);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  /* ==========================================================
+     RETRY FAILED SUBMISSION
+  ========================================================== */
+
+  const handleRetry = () => {
+    if (isSubmitting) return;
+
+    formRef.current?.requestSubmit();
+  };
+
+  /* ==========================================================
+     SEND ANOTHER MESSAGE
+  ========================================================== */
 
   const handleSendAnother = () => {
     setFormData({
@@ -157,9 +177,13 @@ function Contact() {
       message: "",
     });
 
-    setSubmitError("");
+    setSubmitError(false);
     setFormSubmitted(false);
   };
+
+  /* ==========================================================
+     FAQ
+  ========================================================== */
 
   const toggleFaq = (index) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
@@ -387,6 +411,7 @@ function Contact() {
 
               <div className="dl-contact-form-box">
                 {formSubmitted ? (
+                  /* SUCCESS STATE */
                   <div
                     className="dl-modal-success dl-fade-in"
                     style={{ padding: "40px 10px" }}
@@ -418,24 +443,41 @@ function Contact() {
                   </div>
                 ) : (
                   <form
+                    ref={formRef}
                     onSubmit={handleSubmit}
                     className="dl-contact-form"
                   >
                     <h3>Inquiry Form</h3>
 
+                    {/* ERROR STATE */}
                     {submitError && (
                       <div
+                        className="dl-contact-submit-error"
                         role="alert"
-                        style={{
-                          padding: "12px 14px",
-                          marginBottom: "16px",
-                          borderRadius: "8px",
-                          background: "#FEE2E2",
-                          color: "#991B1B",
-                          fontSize: "14px",
-                        }}
                       >
-                        {submitError}
+                        <div className="dl-contact-error-content">
+                          <AlertCircle size={22} />
+
+                          <div>
+                            <strong>Unable to Send Your Message</strong>
+
+                            <p>
+                              Something went wrong while submitting
+                              your inquiry. Please check your
+                              connection and try again.
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="dl-contact-retry-btn"
+                          onClick={handleRetry}
+                          disabled={isSubmitting}
+                        >
+                          <RefreshCw size={15} />
+                          Try Again
+                        </button>
                       </div>
                     )}
 
@@ -526,17 +568,36 @@ function Contact() {
                       />
                     </label>
 
+                    {/* SUBMIT BUTTON */}
                     <button
                       type="submit"
-                      className="dl-btn dl-btn-primary dl-btn-block"
+                      className="dl-btn dl-btn-primary dl-btn-block dl-contact-submit-btn"
                       disabled={isSubmitting}
                     >
-                      <Send size={16} />
-
-                      {isSubmitting
-                        ? "Submitting Message..."
-                        : "Submit Inquiry"}
+                      {isSubmitting ? (
+                        <>
+                          <RefreshCw
+                            size={17}
+                            className="dl-contact-spinner"
+                          />
+                          Sending Your Message...
+                        </>
+                      ) : (
+                        <>
+                          <Send size={16} />
+                          Submit Inquiry
+                        </>
+                      )}
                     </button>
+
+                    {isSubmitting && (
+                      <p
+                        className="dl-contact-submitting-text"
+                        role="status"
+                      >
+                        Please wait. Your message is being submitted.
+                      </p>
+                    )}
                   </form>
                 )}
               </div>

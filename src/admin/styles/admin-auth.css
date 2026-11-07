@@ -209,3 +209,12 @@
     font-size: 25px;
   }
 }
+.admin-login-spinner {
+  animation: adminLoginSpin 1s linear infinite;
+}
+
+@keyframes adminLoginSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

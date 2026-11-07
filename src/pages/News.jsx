@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 
 import {
@@ -9,6 +10,10 @@ import {
   Clock,
   User,
   Bell,
+  RefreshCw,
+  AlertCircle,
+  Image as ImageIcon,
+  LoaderCircle,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
@@ -23,6 +28,10 @@ const categories = [
   "ACADEMIC",
   "COMMUNITY",
 ];
+
+/* ==========================================================
+   HELPERS
+========================================================== */
 
 const formatNewsDate = (date) => {
   if (!date) return "";
@@ -46,6 +55,66 @@ const calculateReadTime = (content = "") => {
   return `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
 };
 
+const getNewsErrorMessage = (error) => {
+  if (!error) {
+    return "Something went wrong while loading news.";
+  }
+
+  // Avoid displaying raw database and infrastructure errors.
+  if (
+    error.message?.toLowerCase().includes("fetch") ||
+    error.message?.toLowerCase().includes("network") ||
+    error.message?.toLowerCase().includes("failed to fetch")
+  ) {
+    return "Unable to connect to the server. Please check your internet connection and try again.";
+  }
+
+  if (
+    error.code === "PGRST301" ||
+    error.code === "401" ||
+    error.code === "403"
+  ) {
+    return "We couldn't access the latest news. Please try again later.";
+  }
+
+  return "We couldn't load the latest news articles. Please try again.";
+};
+
+/* ==========================================================
+   REUSABLE IMAGE
+========================================================== */
+
+function NewsImage({ src, alt, className = "" }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [src]);
+
+  if (!src || imageFailed) {
+    return (
+      <div className={`dl-news-image-placeholder ${className}`}>
+        <ImageIcon size={36} />
+        <span>Image unavailable</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      className={className}
+      src={src}
+      alt={alt || "News article"}
+      loading="lazy"
+      onError={() => setImageFailed(true)}
+    />
+  );
+}
+
+/* ==========================================================
+   NEWS PAGE
+========================================================== */
+
 function News() {
   const [newsItems, setNewsItems] = useState([]);
   const [activeCategory, setActiveCategory] = useState("ALL");
@@ -55,7 +124,10 @@ function News() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch published news directly from Supabase.
+  /* ========================================================
+     FETCH PUBLISHED NEWS
+  ======================================================== */
+
   const fetchNews = useCallback(async () => {
     try {
       setLoading(true);
@@ -68,13 +140,16 @@ function News() {
         .order("published_at", { ascending: false });
 
       if (supabaseError) {
+        console.error("News database error:", supabaseError);
         throw supabaseError;
       }
 
       setNewsItems(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Public news loading error:", err);
-      setError(err.message || "Failed to load news articles.");
+
+      setNewsItems([]);
+      setError(getNewsErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -83,6 +158,10 @@ function News() {
   useEffect(() => {
     fetchNews();
   }, [fetchNews]);
+
+  /* ========================================================
+     FILTER NEWS
+  ======================================================== */
 
   const filteredNews = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -94,13 +173,17 @@ function News() {
 
       const matchesSearch =
         (item.title || "").toLowerCase().includes(query) ||
-        (item.excerpt || "").toLowerCase().includes(query);
+        (item.excerpt || "").toLowerCase().includes(query) ||
+        (item.content || "").toLowerCase().includes(query);
 
       return matchesCategory && matchesSearch;
     });
   }, [newsItems, activeCategory, searchQuery]);
 
-  // Close modal with Escape key.
+  /* ========================================================
+     CLOSE MODAL WITH ESCAPE
+  ======================================================== */
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -115,17 +198,96 @@ function News() {
     };
   }, []);
 
+  /* ========================================================
+     LOADING STATE
+  ======================================================== */
+
+  const renderLoadingState = () => (
+    <div className="dl-news-system-state dl-news-loading-state">
+      <LoaderCircle size={38} className="dl-news-spinner" />
+
+      <h3>Loading news and announcements</h3>
+
+      <p>
+        Please wait while we retrieve the latest college updates.
+      </p>
+    </div>
+  );
+
+  /* ========================================================
+     ERROR STATE
+  ======================================================== */
+
+  const renderErrorState = () => (
+    <div className="dl-news-system-state dl-news-error-state">
+      <div className="dl-news-state-icon">
+        <AlertCircle size={34} />
+      </div>
+
+      <h3>Unable to load news</h3>
+
+      <p>{error}</p>
+
+      <button
+        type="button"
+        className="dl-btn dl-btn-primary dl-news-retry-btn"
+        onClick={fetchNews}
+        disabled={loading}
+      >
+        <RefreshCw size={15} />
+        Try Again
+      </button>
+    </div>
+  );
+
+  /* ========================================================
+     EMPTY STATE
+  ======================================================== */
+
+  const renderEmptyState = () => (
+    <div className="dl-gallery-empty-state dl-fade-in">
+      <Bell size={48} />
+
+      <h3>No articles found</h3>
+
+      <p>
+        {newsItems.length === 0
+          ? "There are currently no published news articles or announcements."
+          : "We couldn't find any announcements matching your search or category."}
+      </p>
+
+      {(activeCategory !== "ALL" || searchQuery) && (
+        <button
+          type="button"
+          className="dl-btn dl-btn-primary"
+          onClick={() => {
+            setActiveCategory("ALL");
+            setSearchQuery("");
+          }}
+          style={{ marginTop: "16px" }}
+        >
+          Reset Filters
+        </button>
+      )}
+    </div>
+  );
+
+  /* ========================================================
+     RENDER
+  ======================================================== */
+
   return (
     <div className="dl-page dl-fade-in">
       <Navbar />
 
       <main>
         {/* HERO SECTION */}
+
         <section className="dl-page-hero dl-news-hero">
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
               <span className="dl-page-kicker">
-                 News & Events
+                News & Events
               </span>
             </div>
 
@@ -142,18 +304,21 @@ function News() {
             >
               <div className="dl-stat-pill dl-hover-float">
                 <Bell size={18} />
+
                 <div>
                   <strong>
                     {loading
                       ? "Loading..."
                       : `${newsItems.length} Active Posts`}
                   </strong>
+
                   <span>Announcements & Events</span>
                 </div>
               </div>
 
               <div className="dl-stat-pill dl-hover-float">
                 <CalendarDays size={18} />
+
                 <div>
                   <strong>Updated Schedule</strong>
                   <span>2026 Academic Year</span>
@@ -164,9 +329,11 @@ function News() {
         </section>
 
         {/* NEWS CONTENT SECTION */}
+
         <section className="dl-news-content">
           <div className="dl-shell">
             {/* CONTROLS */}
+
             <div className="dl-news-controls-row">
               <div className="dl-news-filters">
                 {categories.map((category) => (
@@ -193,7 +360,10 @@ function News() {
                   type="text"
                   placeholder="Search articles..."
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onChange={(event) =>
+                    setSearchQuery(event.target.value)
+                  }
+                  disabled={loading || Boolean(error)}
                 />
 
                 {searchQuery && (
@@ -201,6 +371,7 @@ function News() {
                     type="button"
                     onClick={() => setSearchQuery("")}
                     className="dl-clear-search"
+                    aria-label="Clear search"
                   >
                     <X size={14} />
                   </button>
@@ -209,33 +380,15 @@ function News() {
             </div>
 
             {/* LOADING */}
-            {loading && (
-              <div className="dl-gallery-empty-state dl-fade-in">
-                <Bell size={40} />
-                <h3>Loading news...</h3>
-                <p>Please wait while we retrieve the latest updates.</p>
-              </div>
-            )}
+
+            {loading && renderLoadingState()}
 
             {/* ERROR */}
-            {!loading && error && (
-              <div className="dl-gallery-empty-state dl-fade-in">
-                <Bell size={40} />
-                <h3>Unable to load news</h3>
-                <p>{error}</p>
 
-                <button
-                  type="button"
-                  className="dl-btn dl-btn-primary"
-                  onClick={fetchNews}
-                  style={{ marginTop: "16px" }}
-                >
-                  Try Again
-                </button>
-              </div>
-            )}
+            {!loading && error && renderErrorState()}
 
             {/* NEWS GRID */}
+
             {!loading && !error && filteredNews.length > 0 && (
               <div
                 className="dl-news-page-grid dl-fade-in"
@@ -248,13 +401,10 @@ function News() {
                     onClick={() => setSelectedArticle(item)}
                   >
                     <div className="dl-news-page-image">
-                      {item.image && (
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          loading="lazy"
-                        />
-                      )}
+                      <NewsImage
+                        src={item.image}
+                        alt={item.title}
+                      />
 
                       <span className="dl-news-cat-badge">
                         {item.category}
@@ -265,11 +415,13 @@ function News() {
                       <div className="dl-news-meta-row">
                         <div className="dl-news-page-date">
                           <CalendarDays size={14} />
+
                           {formatNewsDate(item.published_at)}
                         </div>
 
                         <span className="dl-news-readtime">
                           <Clock size={12} />
+
                           {calculateReadTime(item.content)}
                         </span>
                       </div>
@@ -296,33 +448,17 @@ function News() {
             )}
 
             {/* EMPTY STATE */}
-            {!loading && !error && filteredNews.length === 0 && (
-              <div className="dl-gallery-empty-state dl-fade-in">
-                <Bell size={48} />
-                <h3>No articles found</h3>
-                <p>
-                  We couldn't find any announcements matching your search or
-                  category.
-                </p>
 
-                <button
-                  type="button"
-                  className="dl-btn dl-btn-primary"
-                  onClick={() => {
-                    setActiveCategory("ALL");
-                    setSearchQuery("");
-                  }}
-                  style={{ marginTop: "16px" }}
-                >
-                  Reset Filters
-                </button>
-              </div>
-            )}
+            {!loading &&
+              !error &&
+              filteredNews.length === 0 &&
+              renderEmptyState()}
           </div>
         </section>
       </main>
 
       {/* ARTICLE READER MODAL */}
+
       {selectedArticle && (
         <div
           className="dl-gallery-lightbox dl-fade-in"
@@ -343,12 +479,10 @@ function News() {
 
           <div className="dl-article-modal-box dl-scale-up">
             <div className="dl-article-modal-img">
-              {selectedArticle.image && (
-                <img
-                  src={selectedArticle.image}
-                  alt={selectedArticle.title}
-                />
-              )}
+              <NewsImage
+                src={selectedArticle.image}
+                alt={selectedArticle.title}
+              />
 
               <span className="dl-news-cat-badge">
                 {selectedArticle.category}
@@ -362,11 +496,13 @@ function News() {
               >
                 <span className="dl-news-page-date">
                   <CalendarDays size={14} />
+
                   {formatNewsDate(selectedArticle.published_at)}
                 </span>
 
                 <span className="dl-news-readtime">
                   <User size={12} />
+
                   {selectedArticle.author || "Dream Land College"}
                 </span>
               </div>

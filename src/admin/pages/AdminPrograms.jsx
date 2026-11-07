@@ -15,7 +15,6 @@ import {
   Loader2,
   Image as ImageIcon,
   GraduationCap,
-  Building2,
   Clock,
   Wallet,
   Eye,
@@ -23,7 +22,8 @@ import {
   Save,
 } from "lucide-react";
 
-import api, { getStoredAdmin } from "../services/api";
+import api from "../services/api";
+import { useAuth } from "../AuthContext";
 import "../styles/admin-programs.css";
 
 const emptyForm = {
@@ -65,11 +65,14 @@ const formatPayment = (amount) => {
 };
 
 const AdminPrograms = () => {
-  const admin = getStoredAdmin();
+  const { admin } = useAuth();
+
   const role = admin?.role;
 
+  // Super Admin and Admin have equal management permissions.
+  // Editors can only view programs.
   const canManage = ["super_admin", "admin"].includes(role);
-  const canDelete = role === "super_admin";
+  const canDelete = canManage;
 
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -144,6 +147,8 @@ const AdminPrograms = () => {
   }, [programs, search, filter]);
 
   const openAddModal = () => {
+    if (!canManage) return;
+
     setEditingProgram(null);
     setForm({ ...emptyForm });
     setError("");
@@ -151,6 +156,8 @@ const AdminPrograms = () => {
   };
 
   const openEditModal = (program) => {
+    if (!canManage) return;
+
     setEditingProgram(program);
 
     setForm({
@@ -188,6 +195,8 @@ const AdminPrograms = () => {
   };
 
   const handleChange = (event) => {
+    if (!canManage) return;
+
     const { name, value, type, checked } = event.target;
 
     setForm((previous) => ({
@@ -272,7 +281,7 @@ const AdminPrograms = () => {
   };
 
   const handleToggleStatus = async (program) => {
-    if (!canManage || updatingId) return;
+    if (!canManage || updatingId || deletingId) return;
 
     const action = program.is_active ? "deactivate" : "activate";
 
@@ -303,7 +312,7 @@ const AdminPrograms = () => {
   };
 
   const handleDelete = async (program) => {
-    if (!canDelete || deletingId) return;
+    if (!canDelete || deletingId || updatingId) return;
 
     const confirmed = window.confirm(
       `Delete "${program.title}"? This cannot be undone. Its campus assignments will also be removed. Existing student applications will remain, but their program reference will become empty.`
@@ -502,7 +511,7 @@ const AdminPrograms = () => {
 
             <p>
               {programs.length === 0
-                ? "Add your first academic program to get started."
+                ? "There are currently no programs to display."
                 : "Try changing your search or status filter."}
             </p>
 
@@ -677,7 +686,7 @@ const AdminPrograms = () => {
       </div>
 
       {/* ADD / EDIT PROGRAM MODAL */}
-      {modalOpen && (
+      {modalOpen && canManage && (
         <div
           className="ap-modal-overlay"
           onMouseDown={(event) => {

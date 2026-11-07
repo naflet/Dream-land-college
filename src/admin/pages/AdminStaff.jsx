@@ -15,7 +15,8 @@ import {
   Upload,
 } from "lucide-react";
 
-import api, { getStoredAdmin } from "../services/api";
+import api from "../services/api";
+import { useAuth } from "../AuthContext";
 import campusService from "../services/campusService";
 import "../styles/admin-staff.css";
 
@@ -35,11 +36,14 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 function AdminStaff() {
-  const admin = getStoredAdmin();
+  const { admin } = useAuth();
+
   const role = admin?.role;
 
+  // Super Admin and Admin have exactly the same permissions.
+  // Editors can view staff but cannot modify anything.
   const canManage = ["super_admin", "admin"].includes(role);
-  const canDelete = role === "super_admin";
+  const canDelete = ["super_admin", "admin"].includes(role);
 
   const fileInputRef = useRef(null);
   const previewUrlRef = useRef(null);
@@ -78,7 +82,7 @@ function AdminStaff() {
         campusService.getAllCampuses(),
       ]);
 
-      // The backend returns { success, count, staff: [...] }
+      // Backend returns { success, count, staff: [...] }
       setStaff(
         Array.isArray(staffResponse?.staff)
           ? staffResponse.staff
@@ -104,6 +108,8 @@ function AdminStaff() {
   }, [loadData]);
 
   const openCreateModal = () => {
+    if (!canManage) return;
+
     clearImagePreview();
     setEditingStaff(null);
     setForm({ ...emptyForm });
@@ -113,6 +119,8 @@ function AdminStaff() {
   };
 
   const openEditModal = (member) => {
+    if (!canManage) return;
+
     clearImagePreview();
     setEditingStaff(member);
 
@@ -145,6 +153,8 @@ function AdminStaff() {
   };
 
   const handleChange = (event) => {
+    if (!canManage) return;
+
     const { name, value, type, checked } = event.target;
 
     setForm((current) => ({
@@ -161,6 +171,8 @@ function AdminStaff() {
   };
 
   const handleImageSelect = async (event) => {
+    if (!canManage) return;
+
     const file = event.target.files?.[0];
 
     event.target.value = "";
@@ -223,7 +235,7 @@ function AdminStaff() {
   };
 
   const removeImage = () => {
-    if (uploadingImage) return;
+    if (!canManage || uploadingImage) return;
 
     clearImagePreview();
 
@@ -237,6 +249,12 @@ function AdminStaff() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!canManage) {
+      setError("You do not have permission to manage staff.");
+      return;
+    }
+
     setError("");
     setSuccess("");
 
@@ -287,6 +305,11 @@ function AdminStaff() {
   };
 
   const handleDelete = async (member) => {
+    if (!canDelete) {
+      setError("You do not have permission to delete staff members.");
+      return;
+    }
+
     const confirmed = window.confirm(
       `Are you sure you want to delete ${member.full_name}? This action cannot be undone.`
     );
@@ -455,7 +478,7 @@ function AdminStaff() {
             <h3>No staff members found</h3>
             <p>
               {staff.length === 0
-                ? "Add your first staff member to get started."
+                ? "There are currently no staff members to display."
                 : "Try changing your search or filters."}
             </p>
 
@@ -593,7 +616,7 @@ function AdminStaff() {
         )}
       </div>
 
-      {modalOpen && (
+      {modalOpen && canManage && (
         <div className="staff-modal-overlay" onMouseDown={closeModal}>
           <div
             className="staff-modal"

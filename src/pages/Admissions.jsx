@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -6,13 +7,15 @@ import {
   CheckCircle2,
   FileText,
   Send,
-  Sparkles,
   HelpCircle,
   ChevronDown,
   Building,
   Calendar,
   X,
   Check,
+  RefreshCw,
+  AlertCircle,
+  LoaderCircle,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
@@ -93,56 +96,108 @@ const faqs = [
   },
 ];
 
+const initialAppData = {
+  fullName: "",
+  email: "",
+  phone: "",
+  program: "Degree in Accounting & Finance",
+  campus: "Addis Ababa",
+};
+
 function Admissions() {
   const [activeTab, setActiveTab] = useState("degree");
   const [openFaq, setOpenFaq] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const [appData, setAppData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    program: "Degree in Accounting & Finance",
-    campus: "Addis Ababa",
-  });
+  const [submissionStatus, setSubmissionStatus] = useState("idle");
+  const [submissionError, setSubmissionError] = useState("");
 
-  const handleAppSubmit = (e) => {
-    e.preventDefault();
+  const [appData, setAppData] = useState(initialAppData);
 
-    setIsSubmitted(true);
-
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setIsModalOpen(false);
-
-      setAppData({
-        fullName: "",
-        email: "",
-        phone: "",
-        program: "Degree in Accounting & Finance",
-        campus: "Addis Ababa",
-      });
-    }, 3500);
-  };
+  const submissionTimer = useRef(null);
 
   const activeTrack = programTracks.find(
     (track) => track.id === activeTab
   );
+
+  useEffect(() => {
+    return () => {
+      if (submissionTimer.current) {
+        clearTimeout(submissionTimer.current);
+      }
+    };
+  }, []);
+
+  const resetApplication = () => {
+    if (submissionTimer.current) {
+      clearTimeout(submissionTimer.current);
+      submissionTimer.current = null;
+    }
+
+    setAppData(initialAppData);
+    setSubmissionStatus("idle");
+    setSubmissionError("");
+  };
+
+  const openApplicationModal = () => {
+    resetApplication();
+    setIsModalOpen(true);
+  };
+
+  const closeApplicationModal = () => {
+    if (submissionStatus === "loading") return;
+
+    setIsModalOpen(false);
+    resetApplication();
+  };
+
+  const handleAppSubmit = async (e) => {
+    e.preventDefault();
+
+    if (submissionStatus === "loading") return;
+
+    setSubmissionStatus("loading");
+    setSubmissionError("");
+
+    try {
+      /*
+       * DEMO SUBMISSION STATE
+       *
+       * This is currently a frontend-only simulation.
+       * No application is sent to the backend or saved.
+       *
+       * Replace this section with your real API request
+       * when your admissions endpoint is ready.
+       */
+
+      await new Promise((resolve) => {
+        submissionTimer.current = setTimeout(resolve, 1200);
+      });
+
+      submissionTimer.current = null;
+
+      setSubmissionStatus("success");
+    } catch (error) {
+      console.error("Admissions form submission failed:", error);
+
+      setSubmissionError(
+        "We couldn't process your application right now. Please check your information and try again."
+      );
+
+      setSubmissionStatus("error");
+    }
+  };
 
   return (
     <div className="dl-page dl-fade-in">
       <Navbar />
 
       <main>
-        {/* =====================================================
-            HERO SECTION
-        ====================================================== */}
+        {/* HERO SECTION */}
         <section className="dl-page-hero dl-admissions-hero">
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
               <span className="dl-page-kicker">
-               
                 <span>Admissions 2026</span>
               </span>
             </div>
@@ -179,9 +234,7 @@ function Admissions() {
           </div>
         </section>
 
-        {/* =====================================================
-            HOW IT WORKS
-        ====================================================== */}
+        {/* HOW IT WORKS */}
         <section className="dl-admissions-process">
           <div className="dl-shell">
             <div className="dl-section-head dl-centered-head">
@@ -219,9 +272,7 @@ function Admissions() {
           </div>
         </section>
 
-        {/* =====================================================
-            PROGRAM REQUIREMENTS
-        ====================================================== */}
+        {/* PROGRAM REQUIREMENTS */}
         <section className="dl-admissions-req-section">
           <div className="dl-shell">
             <div className="dl-section-head dl-centered-head">
@@ -296,9 +347,7 @@ function Admissions() {
           </div>
         </section>
 
-        {/* =====================================================
-            FAQ
-        ====================================================== */}
+        {/* FAQ */}
         <section className="dl-admissions-faq">
           <div
             className="dl-shell"
@@ -327,11 +376,15 @@ function Admissions() {
                       isOpen ? "open" : ""
                     }`}
                     key={index}
-                    onClick={() =>
-                      setOpenFaq(isOpen ? null : index)
-                    }
                   >
-                    <div className="dl-faq-question">
+                    <button
+                      type="button"
+                      className="dl-faq-question"
+                      aria-expanded={isOpen}
+                      onClick={() =>
+                        setOpenFaq(isOpen ? null : index)
+                      }
+                    >
                       <HelpCircle
                         size={18}
                         className="dl-text-green"
@@ -345,7 +398,7 @@ function Admissions() {
                           isOpen ? "rotate" : ""
                         }`}
                       />
-                    </div>
+                    </button>
 
                     {isOpen && (
                       <div className="dl-faq-answer dl-fade-in">
@@ -359,9 +412,7 @@ function Admissions() {
           </div>
         </section>
 
-        {/* =====================================================
-            CTA SECTION
-        ====================================================== */}
+        {/* CTA SECTION */}
         <section className="dl-admissions-cta">
           <div className="dl-shell">
             <div className="dl-admissions-cta-card">
@@ -391,7 +442,7 @@ function Admissions() {
                 <button
                   type="button"
                   className="dl-btn dl-btn-primary"
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={openApplicationModal}
                 >
                   <span>Start Application</span>
                   <ArrowRight size={17} />
@@ -414,22 +465,24 @@ function Admissions() {
         </section>
       </main>
 
-      {/* =====================================================
-          ONLINE APPLICATION MODAL
-      ====================================================== */}
+      {/* ONLINE APPLICATION MODAL */}
       {isModalOpen && (
         <div
           className="dl-gallery-lightbox dl-fade-in"
           onMouseDown={(e) => {
-            if (e.target === e.currentTarget) {
-              setIsModalOpen(false);
+            if (
+              e.target === e.currentTarget &&
+              submissionStatus !== "loading"
+            ) {
+              closeApplicationModal();
             }
           }}
         >
           <button
             type="button"
             className="dl-lightbox-close"
-            onClick={() => setIsModalOpen(false)}
+            onClick={closeApplicationModal}
+            disabled={submissionStatus === "loading"}
             aria-label="Close application form"
           >
             <X size={24} />
@@ -437,26 +490,49 @@ function Admissions() {
 
           <div className="dl-article-modal-box dl-scale-up">
             <div className="dl-article-modal-content">
-              {isSubmitted ? (
-                <div
-                  className="dl-gallery-empty-state dl-fade-in"
-                  style={{ padding: "40px 0" }}
-                >
+
+              {/* SUCCESS STATE */}
+              {submissionStatus === "success" ? (
+                <div className="dl-admission-feedback dl-admission-success dl-fade-in">
                   <div className="dl-success-check-circle">
                     <Check size={32} />
                   </div>
 
-                  <h3>
-                    Application Submitted Successfully!
-                  </h3>
+                  <h3>Application Form Completed</h3>
 
                   <p>
-                    Thank you for applying to Dream Land College. Our
-                    admissions committee has received your details and
-                    will contact you via email or phone with your
-                    enrollment details.
+                    Your form passed the local demonstration process.
+                    No application has been sent or saved yet. Please
+                    contact the admissions office to complete your
+                    application.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="dl-btn dl-btn-primary"
+                    onClick={closeApplicationModal}
+                  >
+                    Close
+                    <Check size={16} />
+                  </button>
+                </div>
+
+              ) : submissionStatus === "loading" ? (
+
+                /* LOADING STATE */
+                <div className="dl-admission-feedback dl-fade-in">
+                  <LoaderCircle
+                    size={42}
+                    className="dl-admission-loading-icon"
+                  />
+
+                  <h3>Processing Your Form</h3>
+
+                  <p>
+                    Please wait while we process your information.
                   </p>
                 </div>
+
               ) : (
                 <>
                   <div className="dl-vacancy-modal-top">
@@ -498,11 +574,38 @@ function Admissions() {
                     process.
                   </p>
 
+                  {/* ERROR STATE */}
+                  {submissionStatus === "error" && (
+                    <div
+                      className="dl-admission-error-state"
+                      role="alert"
+                    >
+                      <AlertCircle size={22} />
+
+                      <div>
+                        <strong>Unable to Process Form</strong>
+
+                        <p>{submissionError}</p>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="dl-admission-retry-btn"
+                        onClick={() => {
+                          setSubmissionStatus("idle");
+                          setSubmissionError("");
+                        }}
+                      >
+                        <RefreshCw size={15} />
+                        Try Again
+                      </button>
+                    </div>
+                  )}
+
                   <form
                     onSubmit={handleAppSubmit}
                     className="dl-vacancy-form"
                   >
-                    {/* FULL NAME */}
                     <div className="dl-form-group">
                       <label htmlFor="fullName">
                         Full Name
@@ -523,7 +626,6 @@ function Admissions() {
                       />
                     </div>
 
-                    {/* EMAIL + PHONE */}
                     <div className="dl-form-grid-2">
                       <div className="dl-form-group">
                         <label htmlFor="email">
@@ -566,7 +668,6 @@ function Admissions() {
                       </div>
                     </div>
 
-                    {/* PROGRAM + CAMPUS */}
                     <div className="dl-form-grid-2">
                       <div className="dl-form-group">
                         <label htmlFor="program">
@@ -582,36 +683,15 @@ function Admissions() {
                               program: e.target.value,
                             })
                           }
-                          style={{
-                            padding: "10px 14px",
-                            borderRadius: "10px",
-                            border: "1px solid #cbd5e1",
-                            fontSize: "13.5px",
-                            background: "#f8fafc",
-                            fontFamily: "inherit",
-                            width: "100%",
-                            maxWidth: "100%",
-                          }}
                         >
-                          <option>
-                            Degree in Accounting &amp; Finance
-                          </option>
-
-                          <option>
-                            Degree in Business Management
-                          </option>
-
+                          <option>Degree in Accounting &amp; Finance</option>
+                          <option>Degree in Business Management</option>
                           <option>Degree in Management</option>
-
                           <option>TVET Level 4 ICT</option>
-
                           <option>
                             TVET Level 4 Secretarial Administration
                           </option>
-
-                          <option>
-                            Short-Term Professional Training
-                          </option>
+                          <option>Short-Term Professional Training</option>
                         </select>
                       </div>
 
@@ -629,25 +709,14 @@ function Admissions() {
                               campus: e.target.value,
                             })
                           }
-                          style={{
-                            padding: "10px 14px",
-                            borderRadius: "10px",
-                            border: "1px solid #cbd5e1",
-                            fontSize: "13.5px",
-                            background: "#f8fafc",
-                            fontFamily: "inherit",
-                            width: "100%",
-                            maxWidth: "100%",
-                          }}
                         >
-                          <option>Addis Ababa Campus</option>
-                          <option>Asella Campus</option>
-                          <option>Bale Campus</option>
+                          <option>Addis Ababa</option>
+                          <option>Asella</option>
+                          <option>Bale</option>
                         </select>
                       </div>
                     </div>
 
-                    {/* FORM ACTIONS */}
                     <div
                       className="dl-article-modal-actions"
                       style={{
@@ -660,7 +729,7 @@ function Admissions() {
                       <button
                         type="button"
                         className="dl-btn dl-btn-outline"
-                        onClick={() => setIsModalOpen(false)}
+                        onClick={closeApplicationModal}
                       >
                         Cancel
                       </button>

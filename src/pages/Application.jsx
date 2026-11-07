@@ -7,10 +7,14 @@ import {
   HelpCircle,
   Send,
   ShieldCheck,
+  RefreshCw,
+  AlertCircle,
+  LoaderCircle,
+  Inbox,
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Footer from "../admin/services/api";
 import api from "../admin/services/api";
 import "../styles/Application.css";
 
@@ -40,11 +44,12 @@ function Application() {
 
   const [programs, setPrograms] = useState([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);
-  const [programLoadError, setProgramLoadError] = useState("");
+  const [programLoadError, setProgramLoadError] = useState(false);
+  const [programRetry, setProgramRetry] = useState(0);
 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const [submitError, setSubmitError] = useState(false);
 
   const [activeFaq, setActiveFaq] = useState(null);
 
@@ -64,12 +69,12 @@ function Application() {
     const loadPrograms = async () => {
       try {
         setLoadingPrograms(true);
-        setProgramLoadError("");
+        setProgramLoadError(false);
 
         const response = await api.get("/programs");
 
         if (!response?.success || !Array.isArray(response.data)) {
-          throw new Error("Unable to load available programs.");
+          throw new Error("Invalid programs response.");
         }
 
         if (isMounted) {
@@ -78,10 +83,11 @@ function Application() {
           );
         }
       } catch (error) {
+        console.error("Failed to load application programs:", error);
+
         if (isMounted) {
-          setProgramLoadError(
-            error.message || "Failed to load programs. Please refresh the page."
-          );
+          setPrograms([]);
+          setProgramLoadError(true);
         }
       } finally {
         if (isMounted) {
@@ -95,7 +101,7 @@ function Application() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [programRetry]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -103,13 +109,11 @@ function Application() {
     setFormData((prev) => {
       const updated = { ...prev, [name]: value };
 
-      // Reset program and campus when study level changes
       if (name === "educationLevel") {
         updated.programId = "";
         updated.campusId = "";
       }
 
-      // Reset campus when program changes
       if (name === "programId") {
         updated.campusId = "";
       }
@@ -117,7 +121,7 @@ function Application() {
       return updated;
     });
 
-    setSubmitError("");
+    setSubmitError(false);
   };
 
   // Only show programs belonging to the selected study level
@@ -130,7 +134,7 @@ function Application() {
   // Find selected program
   const selectedProgramDetails = useMemo(() => {
     return programs.find(
-      (program) => program.id === formData.programId
+      (program) => String(program.id) === String(formData.programId)
     );
   }, [programs, formData.programId]);
 
@@ -142,7 +146,7 @@ function Application() {
   // Find selected campus
   const selectedCampusDetails = useMemo(() => {
     return availableCampuses.find(
-      (campus) => campus.id === formData.campusId
+      (campus) => String(campus.id) === String(formData.campusId)
     );
   }, [availableCampuses, formData.campusId]);
 
@@ -158,25 +162,32 @@ function Application() {
     return filled;
   }, [formData]);
 
+  // Retry loading programs
+  const handleRetryPrograms = () => {
+    setProgramRetry((prev) => prev + 1);
+  };
+
   // Submit application to the backend
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (submitting) return;
 
+    if (loadingPrograms || programLoadError) return;
+
     if (!selectedProgramDetails) {
-      setSubmitError("Please select a valid program.");
+      setSubmitError(true);
       return;
     }
 
     if (!selectedCampusDetails) {
-      setSubmitError("Please select a campus for your chosen program.");
+      setSubmitError(true);
       return;
     }
 
     try {
       setSubmitting(true);
-      setSubmitError("");
+      setSubmitError(false);
 
       const applicationData = {
         full_name: formData.fullName.trim(),
@@ -195,7 +206,7 @@ function Application() {
 
       if (!response?.success || !response?.application) {
         throw new Error(
-          response?.message || "The application could not be submitted."
+          response?.message || "Application submission failed."
         );
       }
 
@@ -207,18 +218,18 @@ function Application() {
         behavior: "smooth",
       });
     } catch (error) {
-      setSubmitError(
-        error.message || "Something went wrong. Please try again."
-      );
+      console.error("Application submission failed:", error);
+
+      setSubmitError(true);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Start a fresh application when the user clicks the button
+  // Start a fresh application
   const handleNewApplication = () => {
     setSubmitted(false);
-    setSubmitError("");
+    setSubmitError(false);
     setFormData(initialFormData);
 
     window.scrollTo({
@@ -336,6 +347,7 @@ function Application() {
                         >
                           <button
                             type="button"
+                            aria-expanded={isOpen}
                             onClick={() =>
                               setActiveFaq(isOpen ? null : index)
                             }
@@ -380,8 +392,7 @@ function Application() {
                     {/* FULL NAME */}
                     <div className="dl-form-group">
                       <label htmlFor="fullName">
-                        Full Name{" "}
-                        <span className="dl-required">*</span>
+                        Full Name <span className="dl-required">*</span>
                       </label>
 
                       <input
@@ -393,14 +404,14 @@ function Application() {
                         placeholder="Enter your full name"
                         autoComplete="name"
                         required
+                        disabled={submitting}
                       />
                     </div>
 
                     {/* EMAIL */}
                     <div className="dl-form-group">
                       <label htmlFor="email">
-                        Email Address{" "}
-                        <span className="dl-required">*</span>
+                        Email Address <span className="dl-required">*</span>
                       </label>
 
                       <input
@@ -412,14 +423,14 @@ function Application() {
                         placeholder="name@example.com"
                         autoComplete="email"
                         required
+                        disabled={submitting}
                       />
                     </div>
 
                     {/* PHONE */}
                     <div className="dl-form-group">
                       <label htmlFor="phone">
-                        Phone Number{" "}
-                        <span className="dl-required">*</span>
+                        Phone Number <span className="dl-required">*</span>
                       </label>
 
                       <input
@@ -431,6 +442,7 @@ function Application() {
                         placeholder="+251 ..."
                         autoComplete="tel"
                         required
+                        disabled={submitting}
                       />
                     </div>
 
@@ -445,6 +457,7 @@ function Application() {
                         name="educationLevel"
                         value={formData.educationLevel}
                         onChange={handleChange}
+                        disabled={submitting}
                       >
                         <option value="Degree Programs">
                           Degree Programs
@@ -459,8 +472,7 @@ function Application() {
                     {/* PROGRAM */}
                     <div className="dl-form-group">
                       <label htmlFor="programId">
-                        Select Program{" "}
-                        <span className="dl-required">*</span>
+                        Select Program <span className="dl-required">*</span>
                       </label>
 
                       <select
@@ -469,11 +481,20 @@ function Application() {
                         value={formData.programId}
                         onChange={handleChange}
                         required
-                        disabled={loadingPrograms || !!programLoadError}
+                        disabled={
+                          loadingPrograms ||
+                          programLoadError ||
+                          submitting ||
+                          availablePrograms.length === 0
+                        }
                       >
                         <option value="">
                           {loadingPrograms
                             ? "Loading programs..."
+                            : programLoadError
+                            ? "Programs unavailable"
+                            : availablePrograms.length === 0
+                            ? "No programs available"
                             : "-- Choose Program --"}
                         </option>
 
@@ -491,8 +512,7 @@ function Application() {
                     {/* CAMPUS */}
                     <div className="dl-form-group">
                       <label htmlFor="campusId">
-                        Preferred Campus{" "}
-                        <span className="dl-required">*</span>
+                        Preferred Campus <span className="dl-required">*</span>
                       </label>
 
                       <select
@@ -501,11 +521,13 @@ function Application() {
                         value={formData.campusId}
                         onChange={handleChange}
                         required
-                        disabled={!selectedProgramDetails}
+                        disabled={!selectedProgramDetails || submitting}
                       >
                         <option value="">
                           {!selectedProgramDetails
                             ? "Choose a program first"
+                            : availableCampuses.length === 0
+                            ? "No campus available"
                             : "-- Choose Campus --"}
                         </option>
 
@@ -521,18 +543,67 @@ function Application() {
                     </div>
                   </div>
 
+                  {/* PROGRAM LOADING */}
+                  {loadingPrograms && (
+                    <div className="dl-application-status dl-app-loading">
+                      <LoaderCircle
+                        size={24}
+                        className="dl-app-spin"
+                      />
+
+                      <div>
+                        <strong>Loading Available Programs</strong>
+                        <p>
+                          Please wait while we retrieve the programs.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* PROGRAM LOADING ERROR */}
                   {programLoadError && (
-                    <p
+                    <div
+                      className="dl-application-status dl-app-error"
                       role="alert"
-                      style={{
-                        color: "#dc2626",
-                        marginTop: "12px",
-                      }}
                     >
-                      {programLoadError}
-                    </p>
+                      <AlertCircle size={24} />
+
+                      <div>
+                        <strong>Unable to Load Programs</strong>
+                        <p>
+                          We couldn't retrieve the available programs.
+                          Please try again.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleRetryPrograms}
+                        disabled={loadingPrograms}
+                        className="dl-app-retry-btn"
+                      >
+                        <RefreshCw size={15} />
+                        Try Again
+                      </button>
+                    </div>
                   )}
+
+                  {/* EMPTY PROGRAM STATE */}
+                  {!loadingPrograms &&
+                    !programLoadError &&
+                    availablePrograms.length === 0 && (
+                      <div className="dl-application-status dl-app-empty">
+                        <Inbox size={24} />
+
+                        <div>
+                          <strong>No Programs Available</strong>
+                          <p>
+                            There are currently no active programs
+                            available for this study level.
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                   {/* LIVE PROGRAM PREVIEW */}
                   {selectedProgramDetails && (
@@ -540,9 +611,7 @@ function Application() {
                       <BookOpen size={16} />
 
                       <div>
-                        <span>
-                          Selected Program Overview:
-                        </span>
+                        <span>Selected Program Overview:</span>
 
                         <strong>
                           {selectedProgramDetails.title}
@@ -564,40 +633,69 @@ function Application() {
                       value={formData.notes}
                       onChange={handleChange}
                       placeholder="Share any questions or background details..."
+                      disabled={submitting}
                     />
                   </div>
 
                   {/* SUBMISSION ERROR */}
                   {submitError && (
-                    <p
+                    <div
+                      className="dl-application-status dl-app-error dl-app-submit-error"
                       role="alert"
-                      style={{
-                        color: "#dc2626",
-                        marginTop: "12px",
-                        marginBottom: "12px",
-                      }}
                     >
-                      {submitError}
-                    </p>
+                      <AlertCircle size={24} />
+
+                      <div>
+                        <strong>Unable to Submit Application</strong>
+                        <p>
+                          Something went wrong while submitting your
+                          application. Your entered information is still
+                          available. Please try again.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          document
+                            .getElementById("dl-application-submit")
+                            ?.click()
+                        }
+                        className="dl-app-retry-btn"
+                      >
+                        <RefreshCw size={15} />
+                        Try Again
+                      </button>
+                    </div>
                   )}
 
                   {/* SUBMIT ACTIONS */}
                   <div className="dl-form-actions">
                     <button
+                      id="dl-application-submit"
                       type="submit"
                       className="dl-btn dl-btn-primary"
                       disabled={
                         submitting ||
                         loadingPrograms ||
-                        !!programLoadError
+                        programLoadError ||
+                        availablePrograms.length === 0
                       }
                     >
-                      <Send size={18} />
-                      <span>
-                        {submitting
-                          ? "Submitting Application..."
-                          : "Submit Application"}
-                      </span>
+                      {submitting ? (
+                        <>
+                          <LoaderCircle
+                            size={18}
+                            className="dl-app-spin"
+                          />
+                          <span>Submitting Application...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send size={18} />
+                          <span>Submit Application</span>
+                        </>
+                      )}
                     </button>
                   </div>
 

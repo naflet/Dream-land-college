@@ -699,3 +699,143 @@
     font-size: 13.5px;
   }
 }
+
+/* ==========================================================
+   APPLICATION PAGE - PROFESSIONAL LOADING / ERROR STATES
+========================================================== */
+
+.dl-application-status {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 13px;
+  margin: 18px 0;
+  padding: 17px;
+  border-radius: 12px;
+  grid-column: 1 / -1;
+}
+
+.dl-application-status > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dl-application-status > div {
+  flex: 1;
+  min-width: 180px;
+}
+
+.dl-application-status strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.dl-application-status p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* LOADING */
+
+.dl-app-loading {
+  align-items: center;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+}
+
+.dl-app-loading p {
+  color: #475569;
+}
+
+/* ERROR */
+
+.dl-app-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.dl-app-error strong {
+  color: #991b1b;
+}
+
+.dl-app-error p {
+  color: #7f1d1d;
+}
+
+/* EMPTY */
+
+.dl-app-empty {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+}
+
+.dl-app-empty strong {
+  color: #334155;
+}
+
+.dl-app-empty p {
+  color: #64748b;
+}
+
+/* RETRY BUTTON */
+
+.dl-app-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #b91c1c;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dl-app-retry-btn:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+}
+
+.dl-app-retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* SPINNER */
+
+.dl-app-spin {
+  animation: dlAppSpin 1s linear infinite;
+}
+
+@keyframes dlAppSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* SUBMISSION ERROR SPACING */
+
+.dl-app-submit-error {
+  margin-top: 22px;
+  margin-bottom: 18px;
+}
+
+/* DISABLED SUBMIT BUTTON */
+
+.dl-form-actions button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}

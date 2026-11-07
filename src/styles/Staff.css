@@ -1355,3 +1355,89 @@
     padding: 24px 18px;
   }
 }
+/* Staff directory loading spinner */
+.dl-loading-spinner {
+  animation: dl-staff-spin 1s linear infinite;
+}
+
+@keyframes dl-staff-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   STAFF OFFLINE & FORM FEEDBACK
+========================================= */
+
+.dl-staff-offline-indicator {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 12px 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dl-staff-offline-indicator svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #64748b;
+}
+
+.dl-staff-error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.dl-staff-form-error,
+.dl-staff-form-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dl-staff-form-error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.dl-staff-form-notice {
+  margin-bottom: 15px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.dl-staff-form-error svg,
+.dl-staff-form-notice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dl-staff-form-error svg {
+  color: #dc2626;
+}
+
+.dl-staff-form-notice svg {
+  color: #64748b;
+}

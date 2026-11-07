@@ -1036,3 +1036,119 @@
     animation: none !important;
   }
 }
+/* ==========================================================
+   CONTACT FORM - PROFESSIONAL ERROR STATE
+========================================================== */
+
+.dl-contact-submit-error {
+  width: 100%;
+  padding: 17px;
+  margin-bottom: 22px;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  border-radius: 10px;
+  background: #fff7f7;
+}
+
+.dl-contact-error-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.dl-contact-error-content > svg {
+  flex-shrink: 0;
+  color: #dc2626;
+  margin-top: 2px;
+}
+
+.dl-contact-error-content strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #991b1b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.dl-contact-error-content p {
+  margin: 0;
+  color: #7f1d1d;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dl-contact-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 15px;
+  padding: 9px 15px;
+  border: 1px solid #dc2626;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dl-contact-retry-btn:hover:not(:disabled) {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.dl-contact-retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================================
+   CONTACT FORM - SUBMIT BUTTON
+========================================================== */
+
+.dl-contact-submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dl-contact-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.dl-contact-spinner {
+  animation: dlContactSpin 1s linear infinite;
+}
+
+@keyframes dlContactSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dl-contact-submitting-text {
+  margin: 12px 0 0;
+  text-align: center;
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* ==========================================================
+   MOBILE RESPONSIVENESS
+========================================================== */
+
+@media (max-width: 600px) {
+  .dl-contact-submit-error {
+    padding: 14px;
+  }
+
+  .dl-contact-retry-btn {
+    width: 100%;
+  }
+}

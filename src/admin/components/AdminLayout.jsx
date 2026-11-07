@@ -1,11 +1,18 @@
 
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
+
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import {
   LayoutDashboard,
   GraduationCap,
   BookOpen,
+  LibraryBig,
   MapPin,
   Newspaper,
   Users,
@@ -22,15 +29,26 @@ import {
   Mail,
   CalendarDays,
   Bell,
-  Settings,
   ShieldCheck,
+  Images,
 } from "lucide-react";
 
 import { useAuth } from "../AuthContext";
 import api from "../services/api";
+
 import "../styles/admin-layout.css";
 
 import collegeLogo from "../../assets/dream-land-logo.png";
+
+// =====================================================
+// ROLE CONFIGURATION
+// =====================================================
+
+const VALID_ADMIN_ROLES = ["super_admin", "admin"];
+
+// =====================================================
+// NAVIGATION
+// =====================================================
 
 const navigation = [
   {
@@ -82,6 +100,16 @@ const navigation = [
         path: "/admin/testimonials",
         icon: Star,
       },
+      {
+        label: "Gallery",
+        path: "/admin/gallery",
+        icon: Images,
+      },
+      {
+        label: "Library",
+        path: "/admin/library",
+        icon: LibraryBig,
+      },
     ],
   },
   {
@@ -127,13 +155,19 @@ const navigation = [
         path: "/admin/profile",
         icon: UserRound,
       },
+      {
+        label: "Admin Management",
+        path: "/admin/administrators",
+        icon: ShieldCheck,
+        superAdminOnly: true,
+      },
     ],
   },
 ];
 
-// ==========================================
+// =====================================================
 // NOTIFICATION TIME FORMAT
-// ==========================================
+// =====================================================
 
 const formatNotificationTime = (dateValue) => {
   if (!dateValue) return "";
@@ -158,35 +192,83 @@ const formatNotificationTime = (dateValue) => {
   return date.toLocaleDateString();
 };
 
+// =====================================================
+// ADMIN LAYOUT
+// =====================================================
+
 export default function AdminLayout() {
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
 
+  // ===================================================
+  // ROLE MANAGEMENT
+  // ===================================================
+
+  const role = String(admin?.role || "")
+    .trim()
+    .toLowerCase();
+
+  const isSuperAdmin = role === "super_admin";
+  const isAdmin = role === "admin";
+
+  const hasValidRole = VALID_ADMIN_ROLES.includes(role);
+
+  const formattedRole = isSuperAdmin
+    ? "Super Admin"
+    : isAdmin
+      ? "Admin"
+      : "Unauthorized";
+
+  // ===================================================
+  // STATE
+  // ===================================================
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
-  // Real notification data
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsLoading, setNotificationsLoading] =
+    useState(false);
+
+  // ===================================================
+  // REFS
+  // ===================================================
 
   const dropdownRef = useRef(null);
   const notifRef = useRef(null);
 
-  // Track notification IDs to detect newly submitted requests.
   const previousNotificationIds = useRef(null);
-
-  // Prevent overlapping notification requests.
   const fetchingNotifications = useRef(false);
+  const mountedRef = useRef(true);
 
-  // ==========================================
+  // ===================================================
+  // ADMIN INITIALS
+  // ===================================================
+
+  const initials =
+    admin?.full_name
+      ?.split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0].toUpperCase())
+      .join("") || "AD";
+
+  // ===================================================
   // LOAD NOTIFICATIONS
-  // ==========================================
+  // ===================================================
 
-  const fetchNotifications = async () => {
-    if (fetchingNotifications.current) return;
+  const fetchNotifications = useCallback(async () => {
+    if (
+      !admin?.id ||
+      !hasValidRole ||
+      fetchingNotifications.current
+    ) {
+      return;
+    }
 
     fetchingNotifications.current = true;
 
@@ -194,23 +276,29 @@ export default function AdminLayout() {
       const response = await api.get("/notifications");
 
       if (!response?.success) {
-        throw new Error("Unable to retrieve notifications.");
+        throw new Error(
+          response?.message || "Unable to retrieve notifications."
+        );
       }
 
-      const receivedNotifications = response.notifications || [];
+      const receivedNotifications = Array.isArray(
+        response.notifications
+      )
+        ? response.notifications
+        : [];
 
-      // Detect notifications that arrived after the initial load.
       const currentIds = new Set(
         receivedNotifications.map((notification) => notification.id)
       );
 
+      // Detect newly received notifications.
       if (previousNotificationIds.current !== null) {
         const newNotifications = receivedNotifications.filter(
           (notification) =>
             !previousNotificationIds.current.has(notification.id)
         );
 
-        // Show desktop alerts for newly received requests.
+        // Display desktop notifications when permission is granted.
         if (
           newNotifications.length > 0 &&
           typeof window !== "undefined" &&
@@ -219,18 +307,30 @@ export default function AdminLayout() {
         ) {
           newNotifications.forEach((notification) => {
             try {
-              const alert = new Notification(notification.title, {
-                body: notification.message,
-                icon: collegeLogo,
-              });
+              const alert = new Notification(
+                notification.title || "Dream Land College",
+                {
+                  body:
+                    notification.message ||
+                    "You have a new notification.",
+                  icon: collegeLogo,
+                }
+              );
 
               alert.onclick = () => {
                 window.focus();
-                navigate(notification.target_path || "/admin");
+
+                navigate(
+                  notification.target_path || "/admin"
+                );
+
                 alert.close();
               };
             } catch (error) {
-              console.error("Desktop notification error:", error);
+              console.error(
+                "Desktop notification error:",
+                error
+              );
             }
           });
         }
@@ -238,48 +338,71 @@ export default function AdminLayout() {
 
       previousNotificationIds.current = currentIds;
 
+      if (!mountedRef.current) return;
+
       setNotifications(receivedNotifications);
+
+      const calculatedUnreadCount =
+        receivedNotifications.filter(
+          (notification) => !notification.read_at
+        ).length;
 
       setUnreadCount(
         Number.isFinite(response.unreadCount)
           ? response.unreadCount
-          : receivedNotifications.filter(
-              (notification) => !notification.read_at
-            ).length
+          : calculatedUnreadCount
       );
     } catch (error) {
-      console.error("Notification loading error:", error.message);
+      console.error(
+        "Notification loading error:",
+        error.message
+      );
     } finally {
       fetchingNotifications.current = false;
-      setNotificationsLoading(false);
-    }
-  };
 
-  // ==========================================
+      if (mountedRef.current) {
+        setNotificationsLoading(false);
+      }
+    }
+  }, [admin?.id, hasValidRole, navigate]);
+
+  // ===================================================
   // AUTOMATIC NOTIFICATION CHECKING
-  // ==========================================
+  // ===================================================
 
   useEffect(() => {
-    if (!admin?.id) return;
+    mountedRef.current = true;
+
+    if (!admin?.id || !hasValidRole) {
+      setNotifications([]);
+      setUnreadCount(0);
+      setNotificationsLoading(false);
+      previousNotificationIds.current = null;
+
+      return () => {
+        mountedRef.current = false;
+      };
+    }
 
     setNotificationsLoading(true);
     previousNotificationIds.current = null;
 
     fetchNotifications();
 
-    const notificationInterval = setInterval(() => {
+    const notificationInterval = window.setInterval(() => {
       fetchNotifications();
     }, 15000);
 
     return () => {
-      clearInterval(notificationInterval);
+      window.clearInterval(notificationInterval);
       previousNotificationIds.current = null;
+      mountedRef.current = false;
     };
-  }, [admin?.id]);
+  }, [admin?.id, hasValidRole, fetchNotifications]);
 
-  // ==========================================
+  // ===================================================
   // MARK NOTIFICATION AS READ
-  // ==========================================
+  // ===================================================
 
   const handleNotificationClick = async (notification) => {
     try {
@@ -299,30 +422,30 @@ export default function AdminLayout() {
           )
         );
 
-        setUnreadCount((current) => Math.max(0, current - 1));
+        setUnreadCount((current) =>
+          Math.max(0, current - 1)
+        );
       }
-
-      setNotificationsOpen(false);
-
-      navigate(notification.target_path || "/admin");
     } catch (error) {
-      console.error("Unable to mark notification as read:", error);
-
-      // Still open the relevant request page if marking read fails.
+      console.error(
+        "Unable to mark notification as read:",
+        error
+      );
+    } finally {
       setNotificationsOpen(false);
+
       navigate(notification.target_path || "/admin");
     }
   };
 
-  // ==========================================
+  // ===================================================
   // NOTIFICATION BELL
-  // ==========================================
+  // ===================================================
 
   const handleNotificationToggle = async () => {
     setNotificationsOpen((current) => !current);
     setDropdownOpen(false);
 
-    // Ask permission only after the administrator clicks the bell.
     if (
       typeof window !== "undefined" &&
       "Notification" in window &&
@@ -331,16 +454,19 @@ export default function AdminLayout() {
       try {
         await Notification.requestPermission();
       } catch (error) {
-        console.error("Notification permission error:", error);
+        console.error(
+          "Notification permission error:",
+          error
+        );
       }
     }
 
     fetchNotifications();
   };
 
-  // ==========================================
+  // ===================================================
   // OUTSIDE CLICK HANDLER
-  // ==========================================
+  // ===================================================
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -359,43 +485,114 @@ export default function AdminLayout() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+
+    document.addEventListener(
+      "touchstart",
+      handleClickOutside
+    );
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+
+      document.removeEventListener(
+        "touchstart",
+        handleClickOutside
+      );
     };
   }, []);
 
-  // ==========================================
+  // ===================================================
   // LOGOUT
-  // ==========================================
+  // ===================================================
 
-  const handleLogout = () => {
-    logout();
-    navigate("/admin/login", { replace: true });
+  const handleLogout = async () => {
+    setDropdownOpen(false);
+    setNotificationsOpen(false);
+    setSidebarOpen(false);
+
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      navigate("/admin/login", {
+        replace: true,
+      });
+    }
   };
 
-  const initials =
-    admin?.full_name
-      ?.split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0].toUpperCase())
-      .join("") || "AD";
+  // ===================================================
+  // CLOSE MOBILE SIDEBAR
+  // ===================================================
 
-  const formattedRole = admin?.role?.replace(/_/g, " ") || "Admin";
+  const closeMobileNavigation = () => {
+    setSidebarOpen(false);
+  };
+
+  // ===================================================
+  // ROLE-BASED NAVIGATION
+  // ===================================================
+
+  const visibleNavigation = navigation
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        if (item.superAdminOnly && !isSuperAdmin) {
+          return false;
+        }
+
+        return hasValidRole;
+      }),
+    }))
+    .filter((section) => section.items.length > 0);
+
+  // ===================================================
+  // UNAUTHORIZED STATE
+  // ===================================================
+
+  if (!admin || !hasValidRole) {
+    return null;
+  }
+
+  // ===================================================
+  // RENDER
+  // ===================================================
 
   return (
-    <div className={`admin-layout ${isCollapsed ? "sidebar-collapsed" : ""}`}>
+    <div
+      className={`admin-layout ${
+        isCollapsed ? "sidebar-collapsed" : ""
+      }`}
+    >
+      {/* MOBILE OVERLAY */}
+
       {sidebarOpen && (
         <button
+          type="button"
           className="admin-sidebar-overlay"
           aria-label="Close navigation"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeMobileNavigation}
         />
       )}
 
-      <aside className={`admin-sidebar ${sidebarOpen ? "is-open" : ""}`}>
+      {/* =================================================
+          SIDEBAR
+      ================================================= */}
+
+      <aside
+        className={`admin-sidebar ${
+          sidebarOpen ? "is-open" : ""
+        }`}
+      >
+        {/* SIDEBAR BRAND */}
+
         <div className="admin-sidebar-brand">
           <div className="admin-brand-mark">
             <img
@@ -411,26 +608,41 @@ export default function AdminLayout() {
           </div>
 
           <button
+            type="button"
             className="admin-sidebar-close"
-            onClick={() => setSidebarOpen(false)}
+            onClick={closeMobileNavigation}
             aria-label="Close sidebar"
           >
             <X size={20} />
           </button>
 
           <button
+            type="button"
             className="admin-sidebar-collapse-toggle"
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={() =>
+              setIsCollapsed((current) => !current)
+            }
             aria-label="Toggle sidebar width"
           >
-            <ChevronLeft size={16} />
+            {isCollapsed ? (
+              <ChevronRight size={16} />
+            ) : (
+              <ChevronLeft size={16} />
+            )}
           </button>
         </div>
 
+        {/* NAVIGATION */}
+
         <nav className="admin-navigation">
-          {navigation.map((section) => (
-            <div className="admin-nav-section" key={section.title}>
-              <p className="admin-nav-heading">{section.title}</p>
+          {visibleNavigation.map((section) => (
+            <div
+              className="admin-nav-section"
+              key={section.title}
+            >
+              <p className="admin-nav-heading">
+                {section.title}
+              </p>
 
               {section.items.map((item) => {
                 const Icon = item.icon;
@@ -440,15 +652,25 @@ export default function AdminLayout() {
                     key={item.path}
                     to={item.path}
                     end={item.end}
-                    className={({ isActive }) =>
-                      `admin-nav-link ${isActive ? "active" : ""}`
-                    }
-                    onClick={() => setSidebarOpen(false)}
                     title={item.label}
+                    className={({ isActive }) =>
+                      `admin-nav-link ${
+                        isActive ? "active" : ""
+                      }`
+                    }
+                    onClick={closeMobileNavigation}
                   >
-                    <Icon size={18} className="admin-nav-icon" />
+                    <Icon
+                      size={18}
+                      className="admin-nav-icon"
+                    />
+
                     <span>{item.label}</span>
-                    <ChevronRight className="admin-nav-arrow" size={15} />
+
+                    <ChevronRight
+                      className="admin-nav-arrow"
+                      size={15}
+                    />
                   </NavLink>
                 );
               })}
@@ -456,17 +678,25 @@ export default function AdminLayout() {
           ))}
         </nav>
 
+        {/* SIDEBAR BOTTOM */}
+
         <div className="admin-sidebar-bottom">
           <div className="admin-sidebar-user">
-            <div className="admin-user-avatar">{initials}</div>
+            <div className="admin-user-avatar">
+              {initials}
+            </div>
 
             <div className="admin-user-details">
-              <strong>{admin?.full_name || "Administrator"}</strong>
+              <strong>
+                {admin.full_name || "Administrator"}
+              </strong>
+
               <span>{formattedRole}</span>
             </div>
           </div>
 
           <button
+            type="button"
             className="admin-logout-button"
             onClick={handleLogout}
             title="Sign Out"
@@ -477,13 +707,23 @@ export default function AdminLayout() {
         </div>
       </aside>
 
+      {/* =================================================
+          MAIN CONTENT
+      ================================================= */}
+
       <div className="admin-main">
+        {/* TOPBAR */}
+
         <header className="admin-topbar">
           <div className="admin-topbar-left">
             <button
+              type="button"
               className="admin-menu-button"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={() =>
+                setSidebarOpen((current) => !current)
+              }
               aria-label="Toggle navigation"
+              aria-expanded={sidebarOpen}
             >
               <Menu size={20} />
             </button>
@@ -503,11 +743,17 @@ export default function AdminLayout() {
             </div>
           </div>
 
-          <div className="admin-topbar-right">
-            {/* REAL ADMIN NOTIFICATIONS */}
+          {/* TOPBAR RIGHT */}
 
-            <div className="admin-notif-container" ref={notifRef}>
+          <div className="admin-topbar-right">
+            {/* NOTIFICATIONS */}
+
+            <div
+              className="admin-notif-container"
+              ref={notifRef}
+            >
               <button
+                type="button"
                 className="admin-icon-action-btn"
                 onClick={handleNotificationToggle}
                 aria-label={`View notifications. ${unreadCount} unread`}
@@ -517,7 +763,9 @@ export default function AdminLayout() {
 
                 {unreadCount > 0 && (
                   <span className="admin-pulse-badge">
-                    {unreadCount > 99 ? "99+" : unreadCount}
+                    {unreadCount > 99
+                      ? "99+"
+                      : unreadCount}
                   </span>
                 )}
               </button>
@@ -533,7 +781,8 @@ export default function AdminLayout() {
                   </div>
 
                   <div className="admin-notif-list">
-                    {notificationsLoading && notifications.length === 0 ? (
+                    {notificationsLoading &&
+                    notifications.length === 0 ? (
                       <div className="admin-notif-item">
                         <div>
                           <p>Loading notifications...</p>
@@ -543,7 +792,9 @@ export default function AdminLayout() {
                       <div className="admin-notif-item">
                         <div>
                           <p>No notifications yet</p>
-                          <span>New requests will appear here.</span>
+                          <span>
+                            New requests will appear here.
+                          </span>
                         </div>
                       </div>
                     ) : (
@@ -551,7 +802,9 @@ export default function AdminLayout() {
                         <div
                           key={notification.id}
                           className={`admin-notif-item ${
-                            !notification.read_at ? "unread" : ""
+                            !notification.read_at
+                              ? "unread"
+                              : ""
                           }`}
                           role="button"
                           tabIndex={0}
@@ -565,19 +818,28 @@ export default function AdminLayout() {
                               event.key === " "
                             ) {
                               event.preventDefault();
-                              handleNotificationClick(notification);
+
+                              handleNotificationClick(
+                                notification
+                              );
                             }
                           }}
                         >
                           <div
                             className={`admin-notif-dot ${
-                              notification.read_at ? "inactive" : ""
+                              notification.read_at
+                                ? "inactive"
+                                : ""
                             }`}
                           />
 
                           <div>
                             <p>{notification.title}</p>
-                            <span>{notification.message}</span>
+
+                            <span>
+                              {notification.message}
+                            </span>
+
                             <span>
                               {formatNotificationTime(
                                 notification.created_at
@@ -592,19 +854,31 @@ export default function AdminLayout() {
               )}
             </div>
 
-            {/* ADMIN ACCOUNT DROPDOWN */}
+            {/* ACCOUNT DROPDOWN */}
 
-            <div className="admin-dropdown-wrapper" ref={dropdownRef}>
+            <div
+              className="admin-dropdown-wrapper"
+              ref={dropdownRef}
+            >
               <button
+                type="button"
                 className="admin-topbar-account"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                onClick={() => {
+                  setDropdownOpen((current) => !current);
+                  setNotificationsOpen(false);
+                }}
                 aria-expanded={dropdownOpen}
                 aria-label="User menu"
               >
-                <div className="admin-topbar-avatar">{initials}</div>
+                <div className="admin-topbar-avatar">
+                  {initials}
+                </div>
 
                 <div className="admin-account-info">
-                  <strong>{admin?.full_name || "Administrator"}</strong>
+                  <strong>
+                    {admin.full_name || "Administrator"}
+                  </strong>
+
                   <span>{formattedRole}</span>
                 </div>
 
@@ -618,19 +892,31 @@ export default function AdminLayout() {
 
               {dropdownOpen && (
                 <div className="admin-dropdown-menu admin-user-dropdown">
+                  {/* ACCOUNT INFORMATION */}
+
                   <div className="admin-dropdown-user-header">
-                    <div className="admin-dropdown-big-avatar">{initials}</div>
+                    <div className="admin-dropdown-big-avatar">
+                      {initials}
+                    </div>
 
                     <div>
-                      <strong>{admin?.full_name || "Administrator"}</strong>
-                      <p>{admin?.email || "admin@dreamland.edu"}</p>
+                      <strong>
+                        {admin.full_name || "Administrator"}
+                      </strong>
+
+                      <p>{admin.email || ""}</p>
+
+                      <p>{formattedRole}</p>
                     </div>
                   </div>
 
                   <div className="admin-dropdown-divider" />
 
+                  {/* ACCOUNT LINKS */}
+
                   <div className="admin-dropdown-links">
                     <button
+                      type="button"
                       onClick={() => {
                         setDropdownOpen(false);
                         navigate("/admin/profile");
@@ -640,26 +926,27 @@ export default function AdminLayout() {
                       <span>My Profile</span>
                     </button>
 
-                    <button
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        navigate("/admin/settings");
-                      }}
-                    >
-                      <Settings size={16} />
-                      <span>Portal Settings</span>
-                    </button>
-
-                    <button disabled className="admin-disabled-link">
-                      <ShieldCheck size={16} />
-                      <span>Security & Roles</span>
-                    </button>
+                    {isSuperAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          navigate("/admin/administrators");
+                        }}
+                      >
+                        <ShieldCheck size={16} />
+                        <span>Admin Management</span>
+                      </button>
+                    )}
                   </div>
 
                   <div className="admin-dropdown-divider" />
 
+                  {/* LOGOUT */}
+
                   <div className="admin-dropdown-footer">
                     <button
+                      type="button"
                       className="admin-dropdown-logout"
                       onClick={handleLogout}
                     >
@@ -673,9 +960,13 @@ export default function AdminLayout() {
           </div>
         </header>
 
+        {/* PAGE CONTENT */}
+
         <main className="admin-content">
           <Outlet />
         </main>
+
+        {/* FOOTER */}
 
         <footer className="admin-footer">
           Dream Land College Administration Portal
