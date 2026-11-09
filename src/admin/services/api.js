@@ -207,7 +207,7 @@ const api = {
     request(endpoint, {
       method: "POST",
       body:
-        data instanceof FormData
+        typeof FormData !== "undefined" && data instanceof FormData
           ? data
           : JSON.stringify(data ?? {}),
     }),
@@ -216,7 +216,7 @@ const api = {
     request(endpoint, {
       method: "PATCH",
       body:
-        data instanceof FormData
+        typeof FormData !== "undefined" && data instanceof FormData
           ? data
           : JSON.stringify(data ?? {}),
     }),
@@ -225,7 +225,7 @@ const api = {
     request(endpoint, {
       method: "PUT",
       body:
-        data instanceof FormData
+        typeof FormData !== "undefined" && data instanceof FormData
           ? data
           : JSON.stringify(data ?? {}),
     }),

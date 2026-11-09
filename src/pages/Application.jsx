@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 import Navbar from "../components/Navbar";
-import Footer from "../admin/services/api";
+import Footer from "../components/Footer";
 import api from "../admin/services/api";
 import "../styles/Application.css";
 
@@ -53,7 +53,7 @@ function Application() {
 
   const [activeFaq, setActiveFaq] = useState(null);
 
-  // Always start the application page from the header
+  // Start the application page at the top.
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -62,7 +62,7 @@ function Application() {
     });
   }, []);
 
-  // Load active programs from the backend
+  // Load active programs from the backend.
   useEffect(() => {
     let isMounted = true;
 
@@ -103,11 +103,15 @@ function Application() {
     };
   }, [programRetry]);
 
+  // Handle form changes.
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData((prev) => {
-      const updated = { ...prev, [name]: value };
+      const updated = {
+        ...prev,
+        [name]: value,
+      };
 
       if (name === "educationLevel") {
         updated.programId = "";
@@ -124,33 +128,33 @@ function Application() {
     setSubmitError(false);
   };
 
-  // Only show programs belonging to the selected study level
+  // Only show programs belonging to the selected study level.
   const availablePrograms = useMemo(() => {
     return programs.filter(
       (program) => program.category === formData.educationLevel
     );
   }, [programs, formData.educationLevel]);
 
-  // Find selected program
+  // Find the selected program.
   const selectedProgramDetails = useMemo(() => {
     return programs.find(
       (program) => String(program.id) === String(formData.programId)
     );
   }, [programs, formData.programId]);
 
-  // Only show campuses belonging to the selected program
+  // Only show campuses belonging to the selected program.
   const availableCampuses = useMemo(() => {
     return selectedProgramDetails?.campuses || [];
   }, [selectedProgramDetails]);
 
-  // Find selected campus
+  // Find the selected campus.
   const selectedCampusDetails = useMemo(() => {
     return availableCampuses.find(
       (campus) => String(campus.id) === String(formData.campusId)
     );
   }, [availableCampuses, formData.campusId]);
 
-  // Calculate completion percentage
+  // Calculate completion percentage.
   const formProgress = useMemo(() => {
     let filled = 0;
 
@@ -162,25 +166,20 @@ function Application() {
     return filled;
   }, [formData]);
 
-  // Retry loading programs
+  // Retry loading programs.
   const handleRetryPrograms = () => {
     setProgramRetry((prev) => prev + 1);
   };
 
-  // Submit application to the backend
+  // Submit application to the backend.
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (submitting) return;
-
-    if (loadingPrograms || programLoadError) return;
-
-    if (!selectedProgramDetails) {
-      setSubmitError(true);
+    if (submitting || loadingPrograms || programLoadError) {
       return;
     }
 
-    if (!selectedCampusDetails) {
+    if (!selectedProgramDetails || !selectedCampusDetails) {
       setSubmitError(true);
       return;
     }
@@ -219,14 +218,13 @@ function Application() {
       });
     } catch (error) {
       console.error("Application submission failed:", error);
-
       setSubmitError(true);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Start a fresh application
+  // Start a fresh application.
   const handleNewApplication = () => {
     setSubmitted(false);
     setSubmitError(false);
