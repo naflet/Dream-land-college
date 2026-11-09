@@ -1,5 +1,9 @@
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
-import React, { useEffect, useState } from "react";
 import {
   ClipboardList,
   GraduationCap,
@@ -16,6 +20,10 @@ import {
 
 import api from "../services/api";
 import "../styles/admin-dashboard.css";
+
+// ==========================================
+// DASHBOARD RESOURCES
+// ==========================================
 
 const dashboardResources = [
   {
@@ -68,8 +76,14 @@ const dashboardResources = [
   },
 ];
 
+// ==========================================
+// EXTRACT RECORDS FROM API RESPONSES
+// ==========================================
+
 function getRecords(response) {
-  if (Array.isArray(response)) return response;
+  if (Array.isArray(response)) {
+    return response;
+  }
 
   const possibleArrays = [
     response?.data,
@@ -82,22 +96,45 @@ function getRecords(response) {
     response?.messages,
     response?.consultations,
     response?.jobApplications,
+    response?.job_applications,
+    response?.data?.data,
+    response?.data?.records,
+    response?.data?.applications,
+    response?.data?.campuses,
+    response?.data?.programs,
+    response?.data?.staff,
+    response?.data?.news,
+    response?.data?.messages,
+    response?.data?.consultations,
+    response?.data?.jobApplications,
+    response?.data?.job_applications,
   ];
 
   return possibleArrays.find(Array.isArray) || null;
 }
 
+// ==========================================
+// EXTRACT TOTAL COUNT
+// ==========================================
+
 function getCount(response, records) {
-  if (typeof response?.count === "number") {
-    return response.count;
-  }
+  const possibleCounts = [
+    response?.count,
+    response?.totalRecords,
+    response?.total,
+    response?.data?.count,
+    response?.data?.totalRecords,
+    response?.data?.total,
+  ];
 
-  if (typeof response?.totalRecords === "number") {
-    return response.totalRecords;
-  }
+  const count = possibleCounts.find(
+    (value) =>
+      typeof value === "number" &&
+      Number.isFinite(value)
+  );
 
-  if (typeof response?.total === "number") {
-    return response.total;
+  if (count !== undefined) {
+    return count;
   }
 
   if (records) {
@@ -107,14 +144,66 @@ function getCount(response, records) {
   return null;
 }
 
+// ==========================================
+// GET RECORD DATE
+// ==========================================
+
+function getRecordDate(record) {
+  const value =
+    record?.created_at ||
+    record?.createdAt ||
+    record?.submitted_at ||
+    record?.submittedAt ||
+    record?.published_at ||
+    record?.updated_at ||
+    record?.updatedAt ||
+    record?.date;
+
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+// ==========================================
+// GET RECORD TITLE
+// ==========================================
+
+function getRecordTitle(record, fallback) {
+  return (
+    record?.full_name ||
+    record?.fullName ||
+    record?.author_name ||
+    record?.name ||
+    record?.title ||
+    record?.subject ||
+    record?.email ||
+    fallback
+  );
+}
+
+// ==========================================
+// ADMIN DASHBOARD
+// ==========================================
+
 export default function AdminDashboard() {
   const [statistics, setStatistics] = useState([]);
   const [recentRecords, setRecentRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadDashboard = async () => {
-    setLoading(true);
+  // ========================================
+  // LOAD DASHBOARD DATA
+  // ========================================
+
+  const loadDashboard = useCallback(async (showLoading = true) => {
+    if (showLoading) {
+      setLoading(true);
+    }
+
     setError("");
 
     try {
@@ -131,11 +220,17 @@ export default function AdminDashboard() {
         const resource = dashboardResources[index];
 
         if (result.status !== "fulfilled") {
+          console.error(
+            `Dashboard ${resource.title} error:`,
+            result.reason
+          );
+
           stats.push({
             ...resource,
             count: null,
             failed: true,
           });
+
           return;
         }
 
@@ -150,33 +245,27 @@ export default function AdminDashboard() {
         });
 
         if (records) {
-          records.forEach((record) => {
-            const date =
-              record.created_at ||
-              record.createdAt ||
-              record.submitted_at ||
-              record.updated_at;
+          records.forEach((record, recordIndex) => {
+            const date = getRecordDate(record);
 
             recent.push({
-              id: record.id || `${resource.title}-${recent.length}`,
-              title:
-                record.full_name ||
-                record.name ||
-                record.title ||
-                record.subject ||
-                resource.title,
+              id:
+                record.id ||
+                `${resource.title}-${recordIndex}`,
+              title: getRecordTitle(
+                record,
+                resource.title
+              ),
               category: resource.title,
-              date: date ? new Date(date) : null,
+              date,
+              timestamp: date ? date.getTime() : 0,
             });
           });
         }
       });
 
-      recent.sort((a, b) => {
-        const first = a.date?.getTime() || 0;
-        const second = b.date?.getTime() || 0;
-        return second - first;
-      });
+      // Newest records appear first.
+      recent.sort((a, b) => b.timestamp - a.timestamp);
 
       setStatistics(stats);
       setRecentRecords(recent.slice(0, 8));
@@ -188,15 +277,34 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error("Dashboard loading error:", err);
-      setError("An unexpected error occurred while loading dashboard data.");
+
+      setError(
+        "An unexpected error occurred while loading dashboard data."
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // ========================================
+  // INITIAL LOAD AND AUTOMATIC REFRESH
+  // ========================================
 
   useEffect(() => {
-    loadDashboard();
-  }, []);
+    loadDashboard(true);
+
+    const interval = window.setInterval(() => {
+      loadDashboard(false);
+    }, 30000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [loadDashboard]);
+
+  // ========================================
+  // FORMAT DATE
+  // ========================================
 
   const formatDate = (date) => {
     if (!date || Number.isNaN(date.getTime())) {
@@ -210,18 +318,25 @@ export default function AdminDashboard() {
     });
   };
 
+  // ========================================
+  // RENDER
+  // ========================================
+
   return (
     <div className="admin-dashboard">
       <div className="admin-dashboard-heading">
         <div>
           <span className="admin-eyebrow">OVERVIEW</span>
           <h1>Dashboard</h1>
-          <p>Welcome to your college administration workspace.</p>
+          <p>
+            Welcome to your college administration workspace.
+          </p>
         </div>
 
         <button
+          type="button"
           className="admin-refresh-button"
-          onClick={loadDashboard}
+          onClick={() => loadDashboard(true)}
           disabled={loading}
         >
           <RefreshCw
@@ -241,8 +356,11 @@ export default function AdminDashboard() {
       <div className="admin-dashboard-section-heading">
         <div>
           <h2>College Overview</h2>
-          <p>Records retrieved from your administration system.</p>
+          <p>
+            Records retrieved from your administration system.
+          </p>
         </div>
+
         <TrendingUp size={20} />
       </div>
 
@@ -251,13 +369,19 @@ export default function AdminDashboard() {
           const Icon = item.icon;
 
           return (
-            <article className="admin-stat-card" key={item.title}>
-              <div className={`admin-stat-icon ${item.color}`}>
+            <article
+              className="admin-stat-card"
+              key={item.title}
+            >
+              <div
+                className={`admin-stat-icon ${item.color}`}
+              >
                 <Icon size={21} />
               </div>
 
               <div className="admin-stat-info">
                 <span>{item.title}</span>
+
                 <strong>
                   {loading
                     ? "..."
@@ -265,8 +389,11 @@ export default function AdminDashboard() {
                       ? "—"
                       : item.count.toLocaleString()}
                 </strong>
+
                 <small>
-                  {item.failed ? "Data unavailable" : "Total records"}
+                  {item.failed
+                    ? "Data unavailable"
+                    : "Total records"}
                 </small>
               </div>
             </article>
@@ -278,8 +405,11 @@ export default function AdminDashboard() {
         <div className="admin-dashboard-section-heading">
           <div>
             <h2>Recent Records</h2>
-            <p>Latest records available from your system.</p>
+            <p>
+              Latest records available from your system.
+            </p>
           </div>
+
           <Clock3 size={20} />
         </div>
 
@@ -290,7 +420,10 @@ export default function AdminDashboard() {
         ) : recentRecords.length > 0 ? (
           <div className="admin-recent-list">
             {recentRecords.map((record) => (
-              <div className="admin-recent-item" key={record.id}>
+              <div
+                className="admin-recent-item"
+                key={`${record.category}-${record.id}`}
+              >
                 <div className="admin-recent-marker">
                   <ClipboardList size={17} />
                 </div>

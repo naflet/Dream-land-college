@@ -985,3 +985,31 @@
     max-width: 300px;
   }
 }
+.admin-notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.admin-notif-content {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.admin-notif-delete {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  padding: 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-notif-delete:hover {
+  background: rgba(220, 38, 38, 0.1);
+}

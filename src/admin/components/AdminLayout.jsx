@@ -31,6 +31,7 @@ import {
   Bell,
   ShieldCheck,
   Images,
+  Trash2,
 } from "lucide-react";
 
 import { useAuth } from "../AuthContext";
@@ -319,11 +320,7 @@ export default function AdminLayout() {
 
               alert.onclick = () => {
                 window.focus();
-
-                navigate(
-                  notification.target_path || "/admin"
-                );
-
+                navigate(notification.target_path || "/admin");
                 alert.close();
               };
             } catch (error) {
@@ -340,17 +337,11 @@ export default function AdminLayout() {
 
       if (!mountedRef.current) return;
 
+      // The backend now returns only unread notifications.
       setNotifications(receivedNotifications);
 
-      const calculatedUnreadCount =
-        receivedNotifications.filter(
-          (notification) => !notification.read_at
-        ).length;
-
       setUnreadCount(
-        Number.isFinite(response.unreadCount)
-          ? response.unreadCount
-          : calculatedUnreadCount
+        receivedNotifications.length
       );
     } catch (error) {
       console.error(
@@ -407,18 +398,21 @@ export default function AdminLayout() {
   const handleNotificationClick = async (notification) => {
     try {
       if (!notification.read_at) {
-        await api.patch(
+        const response = await api.patch(
           `/notifications/${notification.id}/read`
         );
 
+        if (response?.success === false) {
+          throw new Error(
+            response.message ||
+              "Unable to mark notification as read."
+          );
+        }
+
+        // Remove the notification from the dropdown.
         setNotifications((current) =>
-          current.map((item) =>
-            item.id === notification.id
-              ? {
-                  ...item,
-                  read_at: new Date().toISOString(),
-                }
-              : item
+          current.filter(
+            (item) => item.id !== notification.id
           )
         );
 
@@ -435,6 +429,49 @@ export default function AdminLayout() {
       setNotificationsOpen(false);
 
       navigate(notification.target_path || "/admin");
+    }
+  };
+
+  // ===================================================
+  // DELETE NOTIFICATION
+  // ===================================================
+
+  const handleDeleteNotification = async (
+    event,
+    notification
+  ) => {
+    event.stopPropagation();
+
+    try {
+      const response = await api.delete(
+        `/notifications/${notification.id}`
+      );
+
+      if (response?.success === false) {
+        throw new Error(
+          response.message ||
+            "Unable to delete notification."
+        );
+      }
+
+      // Remove deleted notification from the screen.
+      setNotifications((current) =>
+        current.filter(
+          (item) => item.id !== notification.id
+        )
+      );
+
+      // Update unread count only when it was unread.
+      if (!notification.read_at) {
+        setUnreadCount((current) =>
+          Math.max(0, current - 1)
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Unable to delete notification:",
+        error
+      );
     }
   };
 
@@ -806,24 +843,6 @@ export default function AdminLayout() {
                               ? "unread"
                               : ""
                           }`}
-                          role="button"
-                          tabIndex={0}
-                          title="Open notification"
-                          onClick={() =>
-                            handleNotificationClick(notification)
-                          }
-                          onKeyDown={(event) => {
-                            if (
-                              event.key === "Enter" ||
-                              event.key === " "
-                            ) {
-                              event.preventDefault();
-
-                              handleNotificationClick(
-                                notification
-                              );
-                            }
-                          }}
                         >
                           <div
                             className={`admin-notif-dot ${
@@ -833,7 +852,27 @@ export default function AdminLayout() {
                             }`}
                           />
 
-                          <div>
+                          <div
+                            className="admin-notif-content"
+                            role="button"
+                            tabIndex={0}
+                            title="Open and mark as read"
+                            onClick={() =>
+                              handleNotificationClick(notification)
+                            }
+                            onKeyDown={(event) => {
+                              if (
+                                event.key === "Enter" ||
+                                event.key === " "
+                              ) {
+                                event.preventDefault();
+
+                                handleNotificationClick(
+                                  notification
+                                );
+                              }
+                            }}
+                          >
                             <p>{notification.title}</p>
 
                             <span>
@@ -846,6 +885,21 @@ export default function AdminLayout() {
                               )}
                             </span>
                           </div>
+
+                          <button
+                            type="button"
+                            className="admin-notif-delete"
+                            title="Delete notification"
+                            aria-label="Delete notification"
+                            onClick={(event) =>
+                              handleDeleteNotification(
+                                event,
+                                notification
+                              )
+                            }
+                          >
+                            <Trash2 size={15} />
+                          </button>
                         </div>
                       ))
                     )}
