@@ -1,29 +1,43 @@
 
 /* ==========================================================
-   APPLICATION PAGE STYLES
-   CAMPUSES PAGE HERO STYLE + APPLICATION CONTENT
+   DREAM LAND COLLEGE — APPLICATION PAGE CSS
+   MATCHED WITH CAMPUSES PAGE DESIGN
+   Green & Gold | Navy Hero | Responsive | Professional
+========================================================== */
+
+/* ==========================================================
+   PAGE BASE
 ========================================================== */
 
 .dl-application-page {
-  background: #ffffff;
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  background: #ffffff;
+}
+
+.dl-application-page *,
+.dl-application-page *::before,
+.dl-application-page *::after {
+  box-sizing: border-box;
+}
+
+.dl-application-page img,
+.dl-application-page svg {
+  max-width: 100%;
 }
 
 .dl-application-page main {
-  flex-grow: 1;
+  flex: 1;
 }
 
-/* ==========================================================
-   SHELL
-========================================================== */
-
 .dl-application-page .dl-shell {
-  width: min(1180px, calc(100% - 48px));
-  max-width: 1180px;
+  width: min(1200px, calc(100% - 40px));
+  max-width: 1200px;
   margin: 0 auto;
-  box-sizing: border-box;
 }
 
 /* ==========================================================
@@ -33,7 +47,7 @@
 @keyframes dlFadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px);
   }
 
   to {
@@ -45,7 +59,7 @@
 @keyframes dlSlideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(22px);
   }
 
   to {
@@ -60,55 +74,105 @@
     opacity: 0;
   }
 
+  70% {
+    transform: scale(1.08);
+  }
+
   100% {
     transform: scale(1);
     opacity: 1;
   }
 }
 
+@keyframes dlAppSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dlApplicationHeroEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .dl-fade-in {
-  animation: dlFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: dlFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .dl-slide-up {
-  animation: dlSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: dlSlideUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.dl-app-spin {
+  animation: dlAppSpin 1s linear infinite;
 }
 
 /* ==========================================================
    APPLICATION HERO
-   SAME STYLE AS CAMPUSES HERO
+   SAME DESIGN AS CAMPUSES HERO
 ========================================================== */
 
 .dl-application-hero {
-  background:
-    linear-gradient(
-      120deg,
-      rgba(3, 7, 18, 0.96),
-      rgba(21, 128, 61, 0.84)
-    ),
-    url("https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1800&q=85")
-      center / cover;
-
-  color: #ffffff;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   width: 100%;
-  min-height: 360px;
-  padding: 3.5rem 0;
+  min-height: 390px;
+  padding: 75px 0 70px;
   display: flex;
   align-items: center;
-  box-sizing: border-box;
-  overflow: hidden;
+  color: #ffffff !important;
+
+  background: linear-gradient(
+    120deg,
+    rgba(3, 7, 18, 0.97),
+    rgba(15, 55, 34, 0.96),
+    rgba(21, 128, 61, 0.90)
+  ) !important;
 }
 
-/* ==========================================================
-   HERO CONTENT
-   SAME ALIGNMENT AS CAMPUSES
-========================================================== */
+.dl-application-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 380px;
+  height: 380px;
+  right: -100px;
+  top: -180px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 35px rgba(255, 255, 255, 0.025),
+    0 0 0 75px rgba(255, 255, 255, 0.02),
+    0 0 0 115px rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+
+.dl-application-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 250px;
+  height: 250px;
+  left: -100px;
+  bottom: -160px;
+  background: rgba(34, 197, 94, 0.18);
+  border-radius: 50%;
+  filter: blur(10px);
+  pointer-events: none;
+}
 
 .dl-application-hero .dl-shell {
-  width: min(1180px, calc(100% - 48px));
-  max-width: 1180px;
-  margin: 0 auto;
-  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+  animation: dlApplicationHeroEnter 0.8s ease both;
 }
 
 .dl-application-hero .dl-hero-badge-row {
@@ -116,6 +180,8 @@
   align-items: center;
   justify-content: flex-start;
   flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
 }
 
 .dl-application-hero .dl-page-kicker {
@@ -124,81 +190,101 @@
   justify-content: flex-start;
   gap: 8px;
   max-width: 100%;
+  padding: 9px 15px;
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 1px;
   text-transform: uppercase;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .dl-application-hero h1 {
-  max-width: 800px;
-  margin: 12px 0 0;
-  color: #ffffff;
-  font-size: clamp(34px, 5vw, 54px);
-  line-height: 1.12;
-  letter-spacing: -0.03em;
-  overflow-wrap: anywhere;
+  max-width: 850px;
+  margin: 0;
+  color: #ffffff !important;
+  font-size: clamp(36px, 5vw, 57px);
   font-weight: 800;
+  line-height: 1.13;
+  letter-spacing: -1.7px;
+  overflow-wrap: anywhere;
 }
 
 .dl-application-hero p {
-  max-width: 680px;
-  margin: 16px 0 0;
-  color: rgba(255, 255, 255, 0.86);
+  max-width: 690px;
+  margin: 17px 0 0;
+  color: #e2e8f0 !important;
   font-size: 16px;
-  line-height: 1.7;
+  line-height: 1.85;
   overflow-wrap: anywhere;
 }
 
 /* ==========================================================
-   CONTENT & LAYOUT
+   MAIN CONTENT
 ========================================================== */
 
 .dl-application-content {
-  padding: 60px 0 90px;
-  background: #ffffff;
+  width: 100%;
+  padding: 80px 0 100px;
+  background: #f8fafc;
+  overflow: hidden;
 }
 
 .dl-application-layout {
+  width: 100%;
   display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 50px;
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.5fr);
   align-items: start;
+  gap: 32px;
 }
 
+/* ==========================================================
+   INTRODUCTION SIDEBAR
+========================================================== */
+
 .dl-application-intro {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
   position: sticky;
   top: 30px;
+  animation: dlFadeIn 0.7s ease both;
+}
+
+.dl-application-intro > div:first-child {
+  padding: 5px 0;
 }
 
 .dl-application-intro .dl-section-label {
-  font-size: 11.5px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
+  display: inline-flex;
+  align-items: center;
   color: #15803d;
-  display: block;
-  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  margin-bottom: 12px;
 }
 
 .dl-application-intro h2 {
-  font-size: 26px;
-  font-weight: 800;
+  margin: 0;
   color: #0f172a;
-  margin-top: 4px;
-  line-height: 1.3;
-  letter-spacing: -0.3px;
+  font-size: clamp(25px, 2.5vw, 32px);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.7px;
 }
 
 .dl-application-intro p {
-  font-size: 14px;
+  margin: 13px 0 0;
   color: #64748b;
-  margin-top: 8px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.8;
 }
 
 /* ==========================================================
@@ -206,98 +292,124 @@
 ========================================================== */
 
 .dl-application-progress-card {
-  background: #f8fafc;
+  padding: 21px;
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  padding: 18px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.dl-application-progress-card:hover {
+  transform: translateY(-4px);
+  border-color: #d4af37;
+  box-shadow: 0 12px 25px rgba(15, 23, 42, 0.08);
 }
 
 .dl-progress-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-bottom: 12px;
+  color: #334155;
   font-size: 12.5px;
   font-weight: 700;
-  color: #334155;
 }
 
 .dl-progress-header strong {
   color: #15803d;
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .dl-progress-bar-track {
   width: 100%;
-  height: 8px;
-  background: #e2e8f0;
-  border-radius: 4px;
+  height: 9px;
+  margin-bottom: 12px;
   overflow: hidden;
-  margin-bottom: 8px;
+  background: #e2e8f0;
+  border-radius: 20px;
 }
 
 .dl-progress-bar-fill {
   height: 100%;
-  background: #15803d;
-  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    #15803d,
+    #22c55e
+  );
+  border-radius: 20px;
   transition: width 0.4s ease;
 }
 
 .dl-application-progress-card p {
-  font-size: 12px;
-  color: #64748b;
   margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 /* ==========================================================
-   FAQ
+   FAQ CARD
 ========================================================== */
 
 .dl-application-faq {
-  background: #f8fafc;
+  padding: 21px;
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  padding: 18px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
 }
 
 .dl-faq-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #0f172a;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 17px;
+  color: #15803d;
 }
 
 .dl-faq-title h3 {
-  font-size: 14.5px;
+  margin: 0;
+  color: #0f172a;
+  font-size: 15px;
   font-weight: 800;
 }
 
 .dl-faq-item {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
   border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
 }
 
 .dl-faq-item:last-child {
-  border-bottom: none;
   padding-bottom: 0;
   margin-bottom: 0;
+  border-bottom: none;
 }
 
 .dl-faq-item button {
   width: 100%;
-  background: none;
-  border: none;
+  padding: 5px 0;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #1e293b;
+  background: transparent;
+  border: none;
   text-align: left;
+  font-family: inherit;
   font-size: 13px;
   font-weight: 700;
-  color: #1e293b;
+  line-height: 1.6;
   cursor: pointer;
-  padding: 4px 0;
-  gap: 10px;
+  transition: color 0.25s ease;
 }
 
 .dl-faq-item button:hover {
@@ -305,109 +417,171 @@
 }
 
 .dl-chevron {
-  transition: transform 0.2s ease;
   flex-shrink: 0;
   color: #64748b;
+  transition:
+    transform 0.3s ease,
+    color 0.3s ease;
 }
 
 .dl-chevron.rotate {
   transform: rotate(180deg);
-}
-
-.dl-faq-answer p {
-  font-size: 12.5px;
-  color: #64748b;
-  margin-top: 6px;
-  line-height: 1.5;
-}
-
-/* ==========================================================
-   SECURE NOTE
-========================================================== */
-
-.dl-application-note {
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  padding: 16px;
-  border-radius: 14px;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
   color: #15803d;
 }
 
-.dl-application-note span {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.5;
-  color: #166534;
+.dl-faq-item.open button {
+  color: #15803d;
+}
+
+.dl-faq-answer {
+  animation: dlFadeIn 0.3s ease both;
+}
+
+.dl-faq-answer p {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 12.5px;
+  line-height: 1.75;
 }
 
 /* ==========================================================
-   FORM
+   SECURITY NOTE
+========================================================== */
+
+.dl-application-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 17px;
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 14px;
+  transition:
+    border-color 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.dl-application-note:hover {
+  transform: translateY(-3px);
+  border-color: #d4af37;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+}
+
+.dl-application-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.dl-application-note span {
+  color: #166534;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   APPLICATION FORM CARD
 ========================================================== */
 
 .dl-application-form {
+  min-width: 0;
+  padding: clamp(25px, 4vw, 42px);
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 24px;
-  padding: 40px;
-  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05);
+  border-radius: 20px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.055);
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
+.dl-application-form:hover {
+  border-color: #dbe4e9;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
+}
+
+/* ==========================================================
+   FORM GRID
+========================================================== */
+
 .dl-form-grid {
+  width: 100%;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
 }
 
 .dl-form-group {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
 }
 
 .dl-form-full {
-  grid-column: span 2;
-  margin-top: 4px;
+  grid-column: 1 / -1;
+  margin-top: 20px;
 }
 
 .dl-form-group label {
-  font-size: 13.5px;
-  font-weight: 700;
   color: #1e293b;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .dl-required {
-  color: #ef4444;
+  color: #dc2626;
+  font-weight: 800;
 }
+
+/* ==========================================================
+   INPUTS / SELECTS / TEXTAREA
+========================================================== */
 
 .dl-form-group input,
 .dl-form-group select,
 .dl-form-group textarea {
   width: 100%;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 12px;
-  padding: 13px 16px;
-  font-size: 14px;
+  min-width: 0;
+  padding: 13px 15px;
   color: #0f172a;
+  background: #f8fafc;
+  border: 1px solid #dbe4e9;
+  border-radius: 11px;
   outline: none;
-  transition: all 0.25s ease;
   font-family: inherit;
-  box-sizing: border-box;
+  font-size: 13.5px;
+  line-height: 1.5;
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.dl-form-group input,
+.dl-form-group select {
+  min-height: 49px;
 }
 
 .dl-form-group textarea {
+  min-height: 125px;
   resize: vertical;
-  min-height: 120px;
+}
+
+.dl-form-group input::placeholder,
+.dl-form-group textarea::placeholder {
+  color: #94a3b8;
 }
 
 .dl-form-group select {
   appearance: none;
+  -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 16px center;
+  background-position: right 15px center;
   padding-right: 40px;
   cursor: pointer;
 }
@@ -417,7 +591,15 @@
 .dl-form-group textarea:focus {
   background: #ffffff;
   border-color: #15803d;
-  box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.12);
+  box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.10);
+}
+
+.dl-form-group input:disabled,
+.dl-form-group select:disabled,
+.dl-form-group textarea:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background: #f1f5f9;
 }
 
 /* ==========================================================
@@ -426,76 +608,106 @@
 
 .dl-program-preview-badge {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  padding: 14px 16px;
-  border-radius: 12px;
   margin-top: 22px;
+  padding: 16px 18px;
   color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.dl-program-preview-badge:hover {
+  transform: translateY(-3px);
+  border-color: #d4af37;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+}
+
+.dl-program-preview-badge > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .dl-program-preview-badge span {
+  display: block;
+  margin-bottom: 5px;
+  color: #166534;
   font-size: 11.5px;
   font-weight: 700;
-  color: #166534;
-  display: block;
 }
 
 .dl-program-preview-badge strong {
-  font-size: 13.5px;
+  display: block;
   color: #0f172a;
+  font-size: 13.5px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 /* ==========================================================
-   BUTTON
+   FORM ACTION BUTTONS
 ========================================================== */
 
 .dl-form-actions {
   margin-top: 28px;
 }
 
-.dl-btn {
+.dl-application-page .dl-btn {
+  min-height: 49px;
+  width: 100%;
+  padding: 13px 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  width: 100%;
-  padding: 15px 24px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.15);
-}
-
-.dl-btn-primary {
-  background: #15803d;
   color: #ffffff;
+  background: #15803d;
+  border: 1px solid #15803d;
+  border-radius: 11px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(21, 128, 61, 0.15);
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-.dl-btn-primary:hover {
+.dl-application-page .dl-btn-primary:hover {
+  color: #ffffff;
   background: #166534;
-  box-shadow: 0 6px 16px rgba(21, 128, 61, 0.25);
+  border-color: #d4af37;
+  box-shadow: 0 8px 20px rgba(21, 128, 61, 0.22);
+  transform: translateY(-3px);
+}
+
+.dl-application-page .dl-btn:active {
   transform: translateY(-1px);
 }
 
-.dl-btn:disabled {
-  opacity: 0.65;
+.dl-application-page .dl-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .dl-form-disclaimer {
   display: block;
-  text-align: center;
-  font-size: 12.5px;
+  margin-top: 19px;
   color: #94a3b8;
-  margin-top: 18px;
+  font-size: 11.5px;
+  line-height: 1.7;
+  text-align: center;
 }
 
 /* ==========================================================
@@ -503,216 +715,79 @@
 ========================================================== */
 
 .dl-application-success {
-  max-width: 680px;
   width: 100%;
+  max-width: 850px;
   margin: 0 auto;
-  box-sizing: border-box;
+  padding: 55px 40px;
   text-align: center;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 24px;
-  padding: 55px 40px;
-  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.07);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.055);
+  animation: dlFadeIn 0.6s ease both;
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.dl-application-success:hover {
+  transform: translateY(-4px);
+  border-color: #d4af37;
+  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.09);
 }
 
 .dl-success-icon {
-  width: 86px;
-  height: 86px;
-  background: #f0fdf4;
-  border: 1px solid #dcfce7;
-  color: #15803d;
-  border-radius: 50%;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 25px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 26px;
-  animation: dlBounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 50%;
+  animation: dlBounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .dl-application-success h1 {
-  font-size: clamp(23px, 3vw, 29px);
-  font-weight: 800;
+  margin: 0 0 15px;
   color: #0f172a;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 800;
   line-height: 1.3;
-  margin: 0 0 14px;
 }
 
 .dl-application-success p {
-  max-width: 470px;
+  max-width: 520px;
   margin: 0 auto 28px;
-  font-size: 15px;
   color: #64748b;
-  line-height: 1.7;
+  font-size: 14.5px;
+  line-height: 1.8;
 }
 
 .dl-application-success .dl-btn {
   width: auto;
-  min-width: 230px;
-  max-width: 300px;
+  min-width: 240px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 14px 24px;
 }
 
 /* ==========================================================
-   RESPONSIVE
-   SAME HERO SIZING SYSTEM AS CAMPUSES
-========================================================== */
-
-@media (max-width: 1100px) {
-  .dl-application-hero .dl-shell,
-  .dl-application-page .dl-shell {
-    width: min(100% - 40px, 1000px);
-  }
-
-  .dl-application-layout {
-    grid-template-columns: 320px 1fr;
-    gap: 35px;
-  }
-}
-
-@media (max-width: 992px) {
-  .dl-application-layout {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
-  .dl-application-intro {
-    position: static;
-  }
-}
-
-@media (max-width: 900px) {
-  .dl-application-hero {
-    min-height: 330px;
-    padding: 3rem 0;
-  }
-}
-
-@media (max-width: 700px) {
-  .dl-application-hero {
-    min-height: 300px;
-    padding: 2.7rem 0;
-  }
-
-  .dl-application-hero .dl-shell,
-  .dl-application-page .dl-shell {
-    width: calc(100% - 40px);
-  }
-
-  .dl-application-hero h1 {
-    font-size: clamp(30px, 7vw, 42px);
-  }
-
-  .dl-application-hero p {
-    font-size: 14.5px;
-  }
-
-  .dl-application-content {
-    padding: 45px 0 65px;
-  }
-}
-
-@media (max-width: 640px) {
-  .dl-form-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .dl-form-full {
-    grid-column: span 1;
-  }
-
-  .dl-application-form {
-    padding: 28px 20px;
-  }
-
-  .dl-application-success {
-    padding: 40px 22px;
-  }
-
-  .dl-application-success h1 {
-    font-size: 23px;
-  }
-
-  .dl-application-success .dl-btn {
-    width: 100%;
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .dl-application-hero {
-    min-height: 275px;
-    padding: 2.4rem 0;
-  }
-
-  .dl-application-hero .dl-shell,
-  .dl-application-page .dl-shell {
-    width: calc(100% - 32px);
-  }
-
-  .dl-application-hero h1 {
-    font-size: clamp(28px, 9vw, 38px);
-    line-height: 1.12;
-  }
-
-  .dl-application-hero p {
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  .dl-application-content {
-    padding: 38px 0 55px;
-  }
-
-  .dl-application-intro h2 {
-    font-size: 24px;
-  }
-
-  .dl-application-form {
-    border-radius: 18px;
-    padding: 24px 16px;
-  }
-
-  .dl-application-success {
-    border-radius: 20px;
-    padding: 36px 18px;
-  }
-}
-
-@media (max-width: 380px) {
-  .dl-application-hero {
-    min-height: 260px;
-    padding: 2.1rem 0;
-  }
-
-  .dl-application-hero .dl-shell,
-  .dl-application-page .dl-shell {
-    width: calc(100% - 28px);
-  }
-
-  .dl-application-hero h1 {
-    font-size: 28px;
-  }
-
-  .dl-application-hero p {
-    font-size: 13.5px;
-  }
-}
-
-/* ==========================================================
-   APPLICATION PAGE - PROFESSIONAL LOADING / ERROR STATES
+   LOADING / ERROR / EMPTY STATES
 ========================================================== */
 
 .dl-application-status {
   width: 100%;
+  min-width: 0;
+  margin: 20px 0;
+  padding: 18px;
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 13px;
-  margin: 18px 0;
-  padding: 17px;
-  border-radius: 12px;
+  border-radius: 13px;
   grid-column: 1 / -1;
 }
 
@@ -723,41 +798,41 @@
 
 .dl-application-status > div {
   flex: 1;
-  min-width: 180px;
+  min-width: 160px;
 }
 
 .dl-application-status strong {
   display: block;
   margin-bottom: 5px;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 800;
 }
 
 .dl-application-status p {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 12.5px;
+  line-height: 1.7;
 }
 
 /* LOADING */
 
 .dl-app-loading {
   align-items: center;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1d4ed8;
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
 }
 
 .dl-app-loading p {
-  color: #475569;
+  color: #64748b;
 }
 
 /* ERROR */
 
 .dl-app-error {
+  color: #b91c1c;
   background: #fef2f2;
   border: 1px solid #fecaca;
-  color: #b91c1c;
 }
 
 .dl-app-error strong {
@@ -771,9 +846,9 @@
 /* EMPTY */
 
 .dl-app-empty {
+  color: #64748b;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  color: #64748b;
 }
 
 .dl-app-empty strong {
@@ -787,55 +862,366 @@
 /* RETRY BUTTON */
 
 .dl-app-retry-btn {
+  min-height: 38px;
+  padding: 9px 13px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 9px 13px;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  background: #ffffff;
   color: #b91c1c;
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12.5px;
+  font-weight: 800;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
 }
 
 .dl-app-retry-btn:hover {
   background: #fee2e2;
   border-color: #f87171;
+  transform: translateY(-2px);
 }
 
 .dl-app-retry-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* SPINNER */
-
-.dl-app-spin {
-  animation: dlAppSpin 1s linear infinite;
-}
-
-@keyframes dlAppSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* SUBMISSION ERROR SPACING */
+/* SUBMISSION ERROR */
 
 .dl-app-submit-error {
   margin-top: 22px;
   margin-bottom: 18px;
 }
 
-/* DISABLED SUBMIT BUTTON */
+/* ==========================================================
+   ACCESSIBILITY
+========================================================== */
 
-.dl-form-actions button:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  transform: none;
+.dl-application-page button:focus-visible,
+.dl-application-page input:focus-visible,
+.dl-application-page select:focus-visible,
+.dl-application-page textarea:focus-visible {
+  outline: 3px solid rgba(34, 197, 94, 0.35);
+  outline-offset: 3px;
+}
+
+.dl-application-page .dl-btn:focus-visible,
+.dl-application-page .dl-app-retry-btn:focus-visible {
+  outline: 3px solid rgba(21, 128, 61, 0.35);
+  outline-offset: 3px;
+}
+
+/* ==========================================================
+   RESPONSIVE — 1100px
+========================================================== */
+
+@media (max-width: 1100px) {
+  .dl-application-layout {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.3fr);
+    gap: 24px;
+  }
+
+  .dl-application-form {
+    padding: 30px;
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE — 900px
+========================================================== */
+
+@media (max-width: 900px) {
+  .dl-application-hero {
+    min-height: 350px;
+    padding: 65px 0;
+  }
+
+  .dl-application-content {
+    padding: 65px 0 80px;
+  }
+
+  .dl-application-layout {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .dl-application-intro {
+    position: static;
+  }
+
+  .dl-application-intro > div:first-child {
+    max-width: 650px;
+  }
+
+  .dl-application-progress-card,
+  .dl-application-faq,
+  .dl-application-note {
+    width: 100%;
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE — 768px
+========================================================== */
+
+@media (max-width: 768px) {
+  .dl-application-hero {
+    min-height: 330px;
+    padding: 60px 0;
+  }
+
+  .dl-application-content {
+    padding: 60px 0 75px;
+  }
+
+  .dl-application-form {
+    padding: 30px;
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE — 700px
+========================================================== */
+
+@media (max-width: 700px) {
+  .dl-application-hero {
+    min-height: 300px;
+    padding: 50px 0;
+  }
+
+  .dl-application-page .dl-shell {
+    width: calc(100% - 40px);
+  }
+
+  .dl-application-hero h1 {
+    font-size: clamp(30px, 7vw, 42px);
+    letter-spacing: -1px;
+  }
+
+  .dl-application-hero p {
+    font-size: 14.5px;
+    line-height: 1.7;
+  }
+
+  .dl-application-content {
+    padding: 55px 0 70px;
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE — 640px
+========================================================== */
+
+@media (max-width: 640px) {
+  .dl-form-grid {
+    grid-template-columns: 1fr;
+    gap: 17px;
+  }
+
+  .dl-form-full {
+    grid-column: 1 / -1;
+    margin-top: 17px;
+  }
+
+  .dl-application-form {
+    padding: 27px 22px;
+    border-radius: 17px;
+  }
+
+  .dl-application-success {
+    padding: 42px 24px;
+  }
+
+  .dl-application-success .dl-btn {
+    width: 100%;
+  }
+
+  .dl-application-status {
+    padding: 15px;
+  }
+
+  .dl-app-retry-btn {
+    width: 100%;
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE — 480px
+========================================================== */
+
+@media (max-width: 480px) {
+  .dl-application-hero {
+    min-height: 275px;
+    padding: 42px 0;
+  }
+
+  .dl-application-page .dl-shell {
+    width: calc(100% - 32px);
+  }
+
+  .dl-application-hero h1 {
+    font-size: clamp(28px, 9vw, 38px);
+    line-height: 1.12;
+    letter-spacing: -1px;
+  }
+
+  .dl-application-hero p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .dl-application-content {
+    padding: 48px 0 58px;
+  }
+
+  .dl-application-intro h2 {
+    font-size: 25px;
+  }
+
+  .dl-application-intro {
+    gap: 17px;
+  }
+
+  .dl-application-progress-card,
+  .dl-application-faq {
+    padding: 17px;
+    border-radius: 14px;
+  }
+
+  .dl-application-note {
+    padding: 14px;
+  }
+
+  .dl-application-form {
+    padding: 23px 17px;
+    border-radius: 16px;
+  }
+
+  .dl-form-group input,
+  .dl-form-group select,
+  .dl-form-group textarea {
+    padding: 12px 13px;
+    font-size: 13px;
+  }
+
+  .dl-application-page .dl-btn {
+    width: 100%;
+    padding: 13px 15px;
+    font-size: 13px;
+  }
+
+  .dl-application-success {
+    padding: 35px 18px;
+    border-radius: 17px;
+  }
+
+  .dl-application-success h1 {
+    font-size: 23px;
+  }
+
+  .dl-application-success p {
+    font-size: 13.5px;
+  }
+
+  .dl-success-icon {
+    width: 76px;
+    height: 76px;
+  }
+
+  .dl-faq-item button {
+    font-size: 12.5px;
+  }
+
+  .dl-faq-answer p {
+    font-size: 12px;
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE — 380px
+========================================================== */
+
+@media (max-width: 380px) {
+  .dl-application-hero {
+    min-height: 260px;
+    padding: 36px 0;
+  }
+
+  .dl-application-page .dl-shell {
+    width: calc(100% - 28px);
+  }
+
+  .dl-application-hero h1 {
+    font-size: 28px;
+  }
+
+  .dl-application-hero p {
+    font-size: 13.5px;
+  }
+
+  .dl-application-content {
+    padding: 42px 0 52px;
+  }
+
+  .dl-application-intro h2 {
+    font-size: 23px;
+  }
+
+  .dl-application-form {
+    padding: 19px 13px;
+  }
+
+  .dl-application-progress-card,
+  .dl-application-faq {
+    padding: 15px;
+  }
+
+  .dl-application-status {
+    padding: 13px;
+    gap: 10px;
+  }
+
+  .dl-application-success {
+    padding: 30px 14px;
+  }
+
+  .dl-application-success h1 {
+    font-size: 21px;
+  }
+}
+
+/* ==========================================================
+   TOUCH DEVICES
+========================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  .dl-application-progress-card:hover,
+  .dl-application-note:hover,
+  .dl-program-preview-badge:hover,
+  .dl-application-success:hover,
+  .dl-application-page .dl-btn-primary:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================================
+   REDUCED MOTION
+========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-application-page *,
+  .dl-application-page *::before,
+  .dl-application-page *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
 }

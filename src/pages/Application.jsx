@@ -1,5 +1,6 @@
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+
 import {
   BookOpen,
   CheckCircle2,
@@ -15,6 +16,7 @@ import {
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import supabase from "../config/supabase";
 import api from "../admin/services/api";
 import "../styles/Application.css";
 
@@ -39,6 +41,41 @@ const initialFormData = {
   notes: "",
 };
 
+/* ==========================================================
+   FORMAT PROGRAMS FROM SUPABASE
+========================================================== */
+
+const formatPrograms = (data = []) => {
+  return data.map((program) => {
+    const campusRelations = Array.isArray(program.program_campuses)
+      ? program.program_campuses
+      : [];
+
+    const campuses = campusRelations
+      .map((relation) => {
+        // Supabase relationship response
+        const campus = relation.campus;
+
+        if (!campus) return null;
+
+        return {
+          id: campus.id,
+          name: campus.name?.replace(/\s+Campus$/i, "") || campus.name,
+        };
+      })
+      .filter(Boolean);
+
+    return {
+      ...program,
+      campuses,
+    };
+  });
+};
+
+/* ==========================================================
+   APPLICATION PAGE
+========================================================== */
+
 function Application() {
   const [formData, setFormData] = useState(initialFormData);
 
@@ -53,7 +90,10 @@ function Application() {
 
   const [activeFaq, setActiveFaq] = useState(null);
 
-  // Start the application page at the top.
+  /* ========================================================
+     SCROLL TO TOP
+  ======================================================== */
+
   useEffect(() => {
     window.scrollTo({
       top: 0,
@@ -62,54 +102,108 @@ function Application() {
     });
   }, []);
 
-  // Load active programs from the backend.
+  /* ========================================================
+     FETCH ACTIVE PROGRAMS DIRECTLY FROM SUPABASE
+  ======================================================== */
+
+  const loadPrograms = useCallback(async () => {
+    try {
+      setLoadingPrograms(true);
+      setProgramLoadError(false);
+
+      const { data, error: supabaseError } = await supabase
+        .from("programs")
+        .select(`
+          id,
+          title,
+          category,
+          is_active,
+          program_campuses (
+            campus:campuses (
+              id,
+              name
+            )
+          )
+        `)
+        .eq("is_active", true)
+        .order("title", { ascending: true });
+
+      if (supabaseError) {
+        console.error("Programs database error:", supabaseError);
+        throw supabaseError;
+      }
+
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid programs data received.");
+      }
+
+      const formattedPrograms = formatPrograms(data);
+
+      setPrograms(formattedPrograms);
+      setProgramLoadError(false);
+
+      // Clear selections that are no longer available.
+      setFormData((previous) => {
+        const selectedProgram = formattedPrograms.find(
+          (program) =>
+            String(program.id) === String(previous.programId)
+        );
+
+        if (!selectedProgram) {
+          return {
+            ...previous,
+            programId: "",
+            campusId: "",
+          };
+        }
+
+        const selectedCampusExists = selectedProgram.campuses.some(
+          (campus) =>
+            String(campus.id) === String(previous.campusId)
+        );
+
+        return {
+          ...previous,
+          campusId: selectedCampusExists
+            ? previous.campusId
+            : "",
+        };
+      });
+    } catch (error) {
+      console.error("Failed to load application programs:", error);
+
+      setPrograms([]);
+      setProgramLoadError(true);
+    } finally {
+      setLoadingPrograms(false);
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
-    const loadPrograms = async () => {
-      try {
-        setLoadingPrograms(true);
-        setProgramLoadError(false);
-
-        const response = await api.get("/programs");
-
-        if (!response?.success || !Array.isArray(response.data)) {
-          throw new Error("Invalid programs response.");
-        }
-
-        if (isMounted) {
-          setPrograms(
-            response.data.filter((program) => program.is_active)
-          );
-        }
-      } catch (error) {
-        console.error("Failed to load application programs:", error);
-
-        if (isMounted) {
-          setPrograms([]);
-          setProgramLoadError(true);
-        }
-      } finally {
-        if (isMounted) {
-          setLoadingPrograms(false);
-        }
-      }
+    const fetchData = async () => {
+      if (!isMounted) return;
+      await loadPrograms();
     };
 
-    loadPrograms();
+    fetchData();
 
     return () => {
       isMounted = false;
     };
-  }, [programRetry]);
+  }, [loadPrograms, programRetry]);
 
-  // Handle form changes.
+  /* ========================================================
+     HANDLE FORM CHANGES
+  ======================================================== */
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => {
+    setFormData((previous) => {
       const updated = {
-        ...prev,
+        ...previous,
         [name]: value,
       };
 
@@ -128,33 +222,51 @@ function Application() {
     setSubmitError(false);
   };
 
-  // Only show programs belonging to the selected study level.
+  /* ========================================================
+     FILTER PROGRAMS BY STUDY LEVEL
+  ======================================================== */
+
   const availablePrograms = useMemo(() => {
     return programs.filter(
-      (program) => program.category === formData.educationLevel
+      (program) =>
+        program.category === formData.educationLevel
     );
   }, [programs, formData.educationLevel]);
 
-  // Find the selected program.
+  /* ========================================================
+     SELECTED PROGRAM
+  ======================================================== */
+
   const selectedProgramDetails = useMemo(() => {
     return programs.find(
-      (program) => String(program.id) === String(formData.programId)
+      (program) =>
+        String(program.id) === String(formData.programId)
     );
   }, [programs, formData.programId]);
 
-  // Only show campuses belonging to the selected program.
+  /* ========================================================
+     CAMPUSES AVAILABLE FOR SELECTED PROGRAM
+  ======================================================== */
+
   const availableCampuses = useMemo(() => {
     return selectedProgramDetails?.campuses || [];
   }, [selectedProgramDetails]);
 
-  // Find the selected campus.
+  /* ========================================================
+     SELECTED CAMPUS
+  ======================================================== */
+
   const selectedCampusDetails = useMemo(() => {
     return availableCampuses.find(
-      (campus) => String(campus.id) === String(formData.campusId)
+      (campus) =>
+        String(campus.id) === String(formData.campusId)
     );
   }, [availableCampuses, formData.campusId]);
 
-  // Calculate completion percentage.
+  /* ========================================================
+     APPLICATION PROGRESS
+  ======================================================== */
+
   const formProgress = useMemo(() => {
     let filled = 0;
 
@@ -166,12 +278,19 @@ function Application() {
     return filled;
   }, [formData]);
 
-  // Retry loading programs.
+  /* ========================================================
+     RETRY PROGRAM FETCH
+  ======================================================== */
+
   const handleRetryPrograms = () => {
-    setProgramRetry((prev) => prev + 1);
+    setProgramRetry((previous) => previous + 1);
   };
 
-  // Submit application to the backend.
+  /* ========================================================
+     SUBMIT APPLICATION
+     EXPRESS BACKEND IS RETAINED FOR SECURE WRITES
+  ======================================================== */
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -224,7 +343,10 @@ function Application() {
     }
   };
 
-  // Start a fresh application.
+  /* ========================================================
+     NEW APPLICATION
+  ======================================================== */
+
   const handleNewApplication = () => {
     setSubmitted(false);
     setSubmitError(false);
@@ -237,12 +359,17 @@ function Application() {
     });
   };
 
+  /* ========================================================
+     RENDER
+  ======================================================== */
+
   return (
     <div className="dl-application-page">
       <Navbar />
 
       <main>
         {/* APPLICATION HERO */}
+
         <section className="dl-application-hero">
           <div className="dl-shell">
             <div className="dl-hero-badge-row">
@@ -261,8 +388,10 @@ function Application() {
         </section>
 
         {/* APPLICATION CONTENT */}
+
         <section className="dl-application-content">
           <div className="dl-shell">
+
             {submitted ? (
               <div className="dl-application-success dl-fade-in">
                 <div className="dl-success-icon">
@@ -286,8 +415,11 @@ function Application() {
               </div>
             ) : (
               <div className="dl-application-layout">
+
                 {/* INTRO SIDEBAR & FAQ */}
+
                 <div className="dl-application-intro">
+
                   <div>
                     <span className="dl-section-label">
                       Streamlined Admissions
@@ -306,6 +438,7 @@ function Application() {
                   </div>
 
                   {/* LIVE PROGRESS CARD */}
+
                   <div className="dl-application-progress-card">
                     <div className="dl-progress-header">
                       <span>Application Completion</span>
@@ -315,7 +448,9 @@ function Application() {
                     <div className="dl-progress-bar-track">
                       <div
                         className="dl-progress-bar-fill"
-                        style={{ width: `${formProgress}%` }}
+                        style={{
+                          width: `${formProgress}%`,
+                        }}
                       />
                     </div>
 
@@ -326,7 +461,8 @@ function Application() {
                     </p>
                   </div>
 
-                  {/* ACCORDION FAQ */}
+                  {/* FAQ */}
+
                   <div className="dl-application-faq">
                     <div className="dl-faq-title">
                       <HelpCircle size={18} />
@@ -347,7 +483,9 @@ function Application() {
                             type="button"
                             aria-expanded={isOpen}
                             onClick={() =>
-                              setActiveFaq(isOpen ? null : index)
+                              setActiveFaq(
+                                isOpen ? null : index
+                              )
                             }
                           >
                             <span>{faq.q}</span>
@@ -371,6 +509,7 @@ function Application() {
                   </div>
 
                   {/* SECURE NOTE */}
+
                   <div className="dl-application-note">
                     <ShieldCheck size={20} />
 
@@ -382,12 +521,15 @@ function Application() {
                 </div>
 
                 {/* APPLICATION FORM */}
+
                 <form
                   onSubmit={handleSubmit}
                   className="dl-application-form dl-slide-up"
                 >
                   <div className="dl-form-grid">
+
                     {/* FULL NAME */}
+
                     <div className="dl-form-group">
                       <label htmlFor="fullName">
                         Full Name <span className="dl-required">*</span>
@@ -407,6 +549,7 @@ function Application() {
                     </div>
 
                     {/* EMAIL */}
+
                     <div className="dl-form-group">
                       <label htmlFor="email">
                         Email Address <span className="dl-required">*</span>
@@ -426,6 +569,7 @@ function Application() {
                     </div>
 
                     {/* PHONE */}
+
                     <div className="dl-form-group">
                       <label htmlFor="phone">
                         Phone Number <span className="dl-required">*</span>
@@ -445,6 +589,7 @@ function Application() {
                     </div>
 
                     {/* STUDY LEVEL */}
+
                     <div className="dl-form-group">
                       <label htmlFor="educationLevel">
                         Study Level
@@ -468,6 +613,7 @@ function Application() {
                     </div>
 
                     {/* PROGRAM */}
+
                     <div className="dl-form-group">
                       <label htmlFor="programId">
                         Select Program <span className="dl-required">*</span>
@@ -508,6 +654,7 @@ function Application() {
                     </div>
 
                     {/* CAMPUS */}
+
                     <div className="dl-form-group">
                       <label htmlFor="campusId">
                         Preferred Campus <span className="dl-required">*</span>
@@ -519,7 +666,10 @@ function Application() {
                         value={formData.campusId}
                         onChange={handleChange}
                         required
-                        disabled={!selectedProgramDetails || submitting}
+                        disabled={
+                          !selectedProgramDetails ||
+                          submitting
+                        }
                       >
                         <option value="">
                           {!selectedProgramDetails
@@ -542,6 +692,7 @@ function Application() {
                   </div>
 
                   {/* PROGRAM LOADING */}
+
                   {loadingPrograms && (
                     <div className="dl-application-status dl-app-loading">
                       <LoaderCircle
@@ -558,7 +709,8 @@ function Application() {
                     </div>
                   )}
 
-                  {/* PROGRAM LOADING ERROR */}
+                  {/* PROGRAM ERROR */}
+
                   {programLoadError && (
                     <div
                       className="dl-application-status dl-app-error"
@@ -570,7 +722,7 @@ function Application() {
                         <strong>Unable to Load Programs</strong>
                         <p>
                           We couldn't retrieve the available programs.
-                          Please try again.
+                          Please check your connection and try again.
                         </p>
                       </div>
 
@@ -587,6 +739,7 @@ function Application() {
                   )}
 
                   {/* EMPTY PROGRAM STATE */}
+
                   {!loadingPrograms &&
                     !programLoadError &&
                     availablePrograms.length === 0 && (
@@ -603,7 +756,8 @@ function Application() {
                       </div>
                     )}
 
-                  {/* LIVE PROGRAM PREVIEW */}
+                  {/* PROGRAM PREVIEW */}
+
                   {selectedProgramDetails && (
                     <div className="dl-program-preview-badge dl-fade-in">
                       <BookOpen size={16} />
@@ -619,6 +773,7 @@ function Application() {
                   )}
 
                   {/* NOTES */}
+
                   <div className="dl-form-group dl-form-full">
                     <label htmlFor="notes">
                       Additional Information or Notes (Optional)
@@ -636,6 +791,7 @@ function Application() {
                   </div>
 
                   {/* SUBMISSION ERROR */}
+
                   {submitError && (
                     <div
                       className="dl-application-status dl-app-error dl-app-submit-error"
@@ -667,7 +823,8 @@ function Application() {
                     </div>
                   )}
 
-                  {/* SUBMIT ACTIONS */}
+                  {/* SUBMIT BUTTON */}
+
                   <div className="dl-form-actions">
                     <button
                       id="dl-application-submit"
